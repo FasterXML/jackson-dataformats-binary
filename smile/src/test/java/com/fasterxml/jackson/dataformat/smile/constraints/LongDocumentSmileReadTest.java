@@ -4,6 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.UUID;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.StreamReadConstraints;
@@ -12,6 +14,9 @@ import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class LongDocumentSmileReadTest extends BaseTestForSmile
 {
@@ -25,6 +30,7 @@ public class LongDocumentSmileReadTest extends BaseTestForSmile
             .build()
             ).build());
 
+    @Test
     public void testLongDocumentConstraint() throws Exception
     {
         // Need a bit longer than minimum since checking is approximate, not exact

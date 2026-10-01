@@ -1,11 +1,19 @@
 package com.fasterxml.jackson.dataformat.smile.parse;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class ParserDupHandlingTest extends BaseTestForSmile
 {
+    @Test
     public void testSimpleDups() throws Exception
     {
         for (String json : new String[] {

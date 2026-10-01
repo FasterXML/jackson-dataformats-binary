@@ -2,10 +2,15 @@ package com.fasterxml.jackson.dataformat.smile.fuzz;
 
 import java.io.ByteArrayOutputStream;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 // for [dataformats-binary#268]
 public class Fuzz32665RepeatedHeaderTest extends BaseTestForSmile
@@ -13,6 +18,7 @@ public class Fuzz32665RepeatedHeaderTest extends BaseTestForSmile
     private final ObjectMapper MAPPER = smileMapper();
 
     // for [dataformats-binary#268]
+    @Test
     public void testLongRepeatedHeaders() throws Exception
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(16001);

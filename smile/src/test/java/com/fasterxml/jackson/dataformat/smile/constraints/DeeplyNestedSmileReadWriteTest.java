@@ -1,5 +1,7 @@
 package com.fasterxml.jackson.dataformat.smile.constraints;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.core.StreamWriteConstraints;
@@ -13,6 +15,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class DeeplyNestedSmileReadWriteTest extends BaseTestForSmile
 {
@@ -28,10 +33,12 @@ public class DeeplyNestedSmileReadWriteTest extends BaseTestForSmile
             .build()
             );
 
+    @Test
     public void testDeepNestingArrayRead() throws Exception {
         _testDeepNestingRead(createDeepNestedArrayDoc(13));
     }
 
+    @Test
     public void testDeepNestingObjectRead() throws Exception {
         _testDeepNestingRead(createDeepNestedObjectDoc(13));
     }
@@ -48,10 +55,12 @@ public class DeeplyNestedSmileReadWriteTest extends BaseTestForSmile
         }
     }
 
+    @Test
     public void testDeepNestingArrayWrite() throws Exception {
         _testDeepNestingWrite(createDeepNestedArrayDoc(13));
     }
 
+    @Test
     public void testDeepNestingObjectWrite() throws Exception {
         _testDeepNestingWrite(createDeepNestedObjectDoc(13));
     }

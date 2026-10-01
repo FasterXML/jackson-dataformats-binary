@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.smile.mapper;
 
-import org.junit.Assert;
+
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,10 +9,17 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class TreeNodesTest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = new ObjectMapper(new SmileFactory());
 
+    @Test
     public void testSimple() throws Exception
     {
          // create the serialized JSON with byte array
@@ -33,9 +41,10 @@ public class TreeNodesTest extends BaseTestForSmile
              fail("Expected binary node; got "+datNode.getClass().getName());
          }
          byte[] bytes = datNode.binaryValue();
-         Assert.assertArrayEquals(TEXT_BYTES, bytes);
+         assertArrayEquals(TEXT_BYTES, bytes);
      }
 
+    @Test
     public void testNumbers() throws Exception
     {
         ObjectNode root = MAPPER.createObjectNode();

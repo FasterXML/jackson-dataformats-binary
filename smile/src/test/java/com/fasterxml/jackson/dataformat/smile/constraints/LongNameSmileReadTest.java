@@ -3,6 +3,8 @@ package com.fasterxml.jackson.dataformat.smile.constraints;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -12,6 +14,11 @@ import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.async.AsyncReaderWrapper;
 import com.fasterxml.jackson.dataformat.smile.async.AsyncTestBase;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 // [dataformats-binary#726]: `maxNameLength` was not enforced by Smile parsers
 public class LongNameSmileReadTest extends AsyncTestBase
@@ -41,6 +48,7 @@ public class LongNameSmileReadTest extends AsyncTestBase
     private final static int LEN_OVER = MAX_NAME_LEN + 100;
     private final static int LEN_WAY_OVER = 400_000;
 
+    @Test
     public void testLongNameBlocking() throws Exception
     {
         for (boolean stream : new boolean[] { true, false }) {
@@ -50,6 +58,7 @@ public class LongNameSmileReadTest extends AsyncTestBase
         }
     }
 
+    @Test
     public void testLongNameAsync() throws Exception
     {
         // vary feed sizes to exercise both the single-chunk and the
@@ -62,6 +71,7 @@ public class LongNameSmileReadTest extends AsyncTestBase
     }
 
     // Names at or below the limit must still be accepted
+    @Test
     public void testNameWithinLimitBlocking() throws Exception
     {
         for (boolean stream : new boolean[] { true, false }) {
@@ -71,6 +81,7 @@ public class LongNameSmileReadTest extends AsyncTestBase
         }
     }
 
+    @Test
     public void testNameWithinLimitAsync() throws Exception
     {
         for (int bytesPerFeed : new int[] { 1, 7, 1000, 100_000 }) {
@@ -86,21 +97,20 @@ public class LongNameSmileReadTest extends AsyncTestBase
     // check would catch the name either way; what shows it is the length the
     // failure reports, which is how much had been read when it gave up. For a
     // name this far over the limit that has to be a small fraction of the whole.
+    @Test
     public void testLongNameRejectedBeforeBufferedInFull() throws Exception
     {
         final byte[] doc = _nameDoc(LEN_WAY_OVER);
 
         for (boolean stream : new boolean[] { true, false }) {
             int reported = _verifyFails(doc, stream);
-            assertTrue("Should have given up well before reading all "+LEN_WAY_OVER
-                    +" bytes of name, but reported length was "+reported,
-                    reported < (LEN_WAY_OVER / 4));
+            assertTrue(reported < (LEN_WAY_OVER / 4), "Should have given up well before reading all "+LEN_WAY_OVER
+                    +" bytes of name, but reported length was "+reported);
         }
         for (int bytesPerFeed : new int[] { 1, 100_000 }) {
             int reported = _verifyFailsAsync(doc, bytesPerFeed);
-            assertTrue("Should have given up well before reading all "+LEN_WAY_OVER
-                    +" bytes of name, but reported length was "+reported,
-                    reported < (LEN_WAY_OVER / 4));
+            assertTrue(reported < (LEN_WAY_OVER / 4), "Should have given up well before reading all "+LEN_WAY_OVER
+                    +" bytes of name, but reported length was "+reported);
         }
     }
 
@@ -111,6 +121,7 @@ public class LongNameSmileReadTest extends AsyncTestBase
     // the very first occurrence of a name would ever be checked.
     // Both directions matter: repeated legal names must keep working, and
     // repeated over-long ones must be rejected every time.
+    @Test
     public void testRepeatedNamesViaSymbolTable() throws Exception
     {
         // both sizes fit the already-allocated buffer, so the lookup, and not
@@ -155,9 +166,8 @@ public class LongNameSmileReadTest extends AsyncTestBase
     private int _verifyNameLengthException(StreamConstraintsException e)
     {
         final String msg = e.getMessage();
-        assertTrue("Unexpected message: "+msg, msg.contains("Name length ("));
-        assertTrue("Unexpected message: "+msg,
-                msg.contains("exceeds the maximum allowed ("+MAX_NAME_LEN));
+        assertTrue(msg.contains("Name length ("), "Unexpected message: "+msg);
+        assertTrue(msg.contains("exceeds the maximum allowed ("+MAX_NAME_LEN), "Unexpected message: "+msg);
         int start = msg.indexOf('(') + 1;
         return Integer.parseInt(msg.substring(start, msg.indexOf(')', start)));
     }

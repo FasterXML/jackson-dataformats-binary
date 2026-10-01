@@ -2,9 +2,16 @@ package com.fasterxml.jackson.dataformat.smile.async;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SimpleNestedTest extends AsyncTestBase
 {
@@ -19,6 +26,7 @@ public class SimpleNestedTest extends AsyncTestBase
     /**********************************************************************
      */
 
+    @Test
     public void testStuffInObject() throws Exception
     {
         byte[] data = _smileDoc(aposToQuotes("{'foobar':[1,2,-999],'other':{'':null} }"), true);
@@ -71,6 +79,7 @@ public class SimpleNestedTest extends AsyncTestBase
         assertNull(r.parser().nextToken());
     }
 
+    @Test
     public void testStuffInArray() throws Exception
     {
         byte[] data = _smileDoc(aposToQuotes("[true,{'extraOrdinary':''},[null],{'extraOrdinary':23}]"), true);
