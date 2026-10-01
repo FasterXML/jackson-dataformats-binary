@@ -392,27 +392,24 @@ public class ApacheAvroParserImpl extends AvroParserImpl
 
     /**
      * Helper method for reading a {@code bytes} value of given length: allocates
-     * the full result buffer up front only if content is already available, or
-     * length is modest; otherwise reads content in chunks, so that truncated
-     * content is reported before a buffer of the declared length is allocated.
-     *<p>
-     * NOTE: for {@code byte[]} input, decoder's {@code available()} is exact
-     * (whole remaining content); for {@code InputStream} input it only covers
-     * already buffered content (or what the stream reports).
+     * the full result buffer up front only if length is modest (at most
+     * {@code LONGEST_NON_CHUNKED_BINARY}); otherwise reads content in chunks,
+     * so that truncated content is reported before a buffer of the declared
+     * length is allocated. Declared length is never trusted for larger values
+     * (decoder does not expose how much content is actually buffered).
      *
      * @since 2.18.12
      */
     private byte[] _readBytes(final int len) throws IOException
     {
-        if ((len <= LONGEST_NON_CHUNKED_BINARY)
-                || (len <= _decoder.inputStream().available())) {
+        if (len <= LONGEST_NON_CHUNKED_BINARY) {
             byte[] b = new byte[len];
             // this is simple raw read, safe to use:
             _decoder.readFixed(b, 0, len);
             return b;
         }
         final byte[] chunk = new byte[LONGEST_NON_CHUNKED_BINARY];
-        final ByteArrayBuilder bb = new ByteArrayBuilder(LONGEST_NON_CHUNKED_BINARY);
+        final ByteArrayBuilder bb = _getByteArrayBuilder();
         int left = len;
         while (left > 0) {
             int count = Math.min(chunk.length, left);

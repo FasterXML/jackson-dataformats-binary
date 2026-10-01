@@ -814,7 +814,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             _read(b, 0, len);
             return b;
         }
-        final ByteArrayBuilder bb = new ByteArrayBuilder(LONGEST_NON_CHUNKED_BINARY);
+        final ByteArrayBuilder bb = _getByteArrayBuilder();
         int left = len;
         while (left > 0) {
             int avail = _inputEnd - _inputPtr;
