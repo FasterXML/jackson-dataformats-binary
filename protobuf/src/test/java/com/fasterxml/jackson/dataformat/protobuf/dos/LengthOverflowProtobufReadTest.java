@@ -4,7 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -15,7 +15,7 @@ import com.fasterxml.jackson.dataformat.protobuf.*;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 // Length-prefixed values with length close to Integer.MAX_VALUE must not
 // overflow bounds checks (`_inputPtr + len`) nor trigger huge allocations;
