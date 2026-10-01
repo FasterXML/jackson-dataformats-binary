@@ -7,6 +7,7 @@ import java.io.Writer;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.IOContext;
+import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 
 /**
  * Implementation class that exposes additional internal API
@@ -792,12 +793,43 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             _binaryValue = NO_BYTES;
         } else {
             _validateValueLength(len);
+            _binaryValue = _readBytes(len);
+        }
+        return JsonToken.VALUE_EMBEDDED_OBJECT;
+    }
+
+    /**
+     * Helper method for reading a {@code bytes} or {@code fixed} value of given length: allocates
+     * the full result buffer up front only if content is already buffered, or
+     * length is modest; otherwise reads content in chunks, so that truncated
+     * content is reported before a buffer of the declared length is allocated.
+     *
+     * @since 2.18.12
+     */
+    private final byte[] _readBytes(final int len) throws IOException
+    {
+        if ((len <= LONGEST_NON_CHUNKED_BINARY_READ) || (len <= (_inputEnd - _inputPtr))) {
             byte[] b = new byte[len];
             // this is simple raw read, safe to use:
             _read(b, 0, len);
-            _binaryValue = b;
+            return b;
         }
-        return JsonToken.VALUE_EMBEDDED_OBJECT;
+        final ByteArrayBuilder bb = _getByteArrayBuilder();
+        int left = len;
+        while (left > 0) {
+            int avail = _inputEnd - _inputPtr;
+            if (avail <= 0) {
+                if (!_loadMore()) {
+                    _reportError("Needed to read "+len+" bytes, reached end-of-input after reading "+(len - left));
+                }
+                continue;
+            }
+            int count = Math.min(avail, left);
+            bb.write(_inputBuffer, _inputPtr, count);
+            _inputPtr += count;
+            left -= count;
+        }
+        return bb.toByteArray();
     }
 
     @Override
@@ -817,9 +849,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     @Override
     public JsonToken decodeFixed(int size) throws IOException {
         _validateValueLength(size);
-        byte[] data = new byte[size];
-        _read(data, 0, size);
-        _binaryValue = data;
+        _binaryValue = _readBytes(size);
         return JsonToken.VALUE_EMBEDDED_OBJECT;
     }
 
@@ -854,6 +884,10 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         _inputPtr = ptr + available;
         offset += available;
         int left = len - available;
+        // [dataformats-binary#819]: no input stream (closed, or non-stream input source)
+        if (_inputStream == null) {
+            _reportError("Needed to read "+len+" bytes, reached end-of-input after reading "+available);
+        }
         // 18-Sep-2026, tatu: [dataformats-binary#785] Bytes read directly from
         //    input source bypass `_loadMore()` so need explicit accounting
         _markBufferConsumed();
