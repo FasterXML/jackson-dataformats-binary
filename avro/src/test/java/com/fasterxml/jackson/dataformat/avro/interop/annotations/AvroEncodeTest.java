@@ -11,8 +11,8 @@ import org.apache.avro.reflect.AvroEncode;
 import org.apache.avro.reflect.CustomEncoding;
 import org.apache.avro.reflect.Nullable;
 import org.apache.avro.reflect.ReflectData;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestTemplate;
 
 import com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
@@ -140,7 +140,7 @@ public class AvroEncodeTest extends InteropTestBase {
     protected Wrapper wrapper;
     protected Wrapper result;
 
-    @Before
+    @BeforeEach
     public void setup() throws IOException {
         wrapper = new Wrapper();
         //
@@ -169,42 +169,42 @@ public class AvroEncodeTest extends InteropTestBase {
         result = roundTrip(wrapper);
     }
 
-    @Test
+    @TestTemplate
     public void testByteValue() {
         assertThat(result.component.byteValue).isEqualTo(wrapper.component.byteValue);
     }
 
-    @Test
+    @TestTemplate
     public void testShortValue() {
         assertThat(result.component.shortValue).isEqualTo(wrapper.component.shortValue);
     }
 
-    @Test
+    @TestTemplate
     public void testStringValue() {
         assertThat(result.component.stringValue).isEqualTo(wrapper.component.stringValue);
     }
 
-    @Test
+    @TestTemplate
     public void testDoubleValue() {
         assertThat(result.component.doubleValue).isEqualTo(wrapper.component.doubleValue);
     }
 
-    @Test
+    @TestTemplate
     public void testLongValue() {
         assertThat(result.component.longValue).isEqualTo(wrapper.component.longValue);
     }
 
-    @Test
+    @TestTemplate
     public void testIntegerValue() {
         assertThat(result.component.intValue).isEqualTo(wrapper.component.intValue);
     }
 
-    @Test
+    @TestTemplate
     public void testNestedUuidValue() {
         assertThat(result.component.nestedRecordValue.uuidValue).isEqualTo(wrapper.component.nestedRecordValue.uuidValue);
     }
 
-    @Test
+    @TestTemplate
     public void testUuidValue() {
         assertThat(result.component.uuidValue).isEqualTo(wrapper.component.uuidValue);
     }

@@ -3,7 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.interop.records;
 import java.io.IOException;
 import java.util.Objects;
 
-import org.junit.Test;
+import org.junit.jupiter.api.TestTemplate;
 
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
@@ -51,7 +51,7 @@ public class RecordWithPrimitiveWrapperArrayTest extends InteropTestBase
         }
     }
 
-    @Test
+    @TestTemplate
     public void testByteField() throws IOException {
         TestRecord record = new TestRecord();
         record.byteArrayField = new Byte[]{1, 0, -1, Byte.MIN_VALUE, Byte.MAX_VALUE};
@@ -61,7 +61,7 @@ public class RecordWithPrimitiveWrapperArrayTest extends InteropTestBase
         assertThat(result.byteArrayField).isEqualTo(record.byteArrayField);
     }
 
-    @Test
+    @TestTemplate
     public void testCharacterField() throws IOException {
         TestRecord record = new TestRecord();
         record.characterArrayField = new Character[]{1, 0, Character.MIN_VALUE, Character.MAX_VALUE};
@@ -71,7 +71,7 @@ public class RecordWithPrimitiveWrapperArrayTest extends InteropTestBase
         assertThat(result.characterArrayField).isEqualTo(record.characterArrayField);
     }
 
-    @Test
+    @TestTemplate
     public void testDoubleField() throws IOException {
         TestRecord record = new TestRecord();
         record.doubleArrayField = new Double[]{1D, 0D, -1D, Double.MIN_VALUE, Double.MAX_VALUE};
@@ -81,7 +81,7 @@ public class RecordWithPrimitiveWrapperArrayTest extends InteropTestBase
         assertThat(result.doubleArrayField).isEqualTo(record.doubleArrayField);
     }
 
-    @Test
+    @TestTemplate
     public void testFloatField() throws IOException {
         TestRecord record = new TestRecord();
         record.floatArrayField = new Float[]{1F, 0F, -1F, Float.MIN_VALUE, Float.MAX_VALUE};
@@ -91,7 +91,7 @@ public class RecordWithPrimitiveWrapperArrayTest extends InteropTestBase
         assertThat(result.floatArrayField).isEqualTo(record.floatArrayField);
     }
 
-    @Test
+    @TestTemplate
     public void testInteger() throws IOException {
         TestRecord record = new TestRecord();
         record.integerArrayField = new Integer[]{1, 0, -1, Integer.MIN_VALUE, Integer.MAX_VALUE};
@@ -101,7 +101,7 @@ public class RecordWithPrimitiveWrapperArrayTest extends InteropTestBase
         assertThat(result.integerArrayField).isEqualTo(record.integerArrayField);
     }
 
-    @Test
+    @TestTemplate
     public void testLongField() throws IOException {
         TestRecord record = new TestRecord();
         record.longArrayField = new Long[]{1L, 0L, -1L, Long.MIN_VALUE, Long.MAX_VALUE};
@@ -111,7 +111,7 @@ public class RecordWithPrimitiveWrapperArrayTest extends InteropTestBase
         assertThat(result.longArrayField).isEqualTo(record.longArrayField);
     }
 
-    @Test
+    @TestTemplate
     public void testShortField() throws IOException {
         TestRecord record = new TestRecord();
         record.shortArrayField = new Short[]{1, 0, -1, Short.MIN_VALUE, Short.MAX_VALUE};
@@ -121,7 +121,7 @@ public class RecordWithPrimitiveWrapperArrayTest extends InteropTestBase
         assertThat(result.shortArrayField).isEqualTo(record.shortArrayField);
     }
 
-    @Test
+    @TestTemplate
     public void testStringField() throws IOException {
         TestRecord record = new TestRecord();
         record.stringArrayField = new String[]{"", "one", "HelloWorld"};
