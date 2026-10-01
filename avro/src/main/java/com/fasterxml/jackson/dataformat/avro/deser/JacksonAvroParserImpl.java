@@ -849,9 +849,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     @Override
     public JsonToken decodeFixed(int size) throws IOException {
         _validateValueLength(size);
-        byte[] data = new byte[size];
-        _read(data, 0, size);
-        _binaryValue = data;
+        _binaryValue = _readBytes(size);
         return JsonToken.VALUE_EMBEDDED_OBJECT;
     }
 

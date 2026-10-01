@@ -430,9 +430,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
 
     @Override
     public JsonToken decodeFixed(int size) throws IOException {
-        byte[] data = new byte[size];
-        _decoder.readFixed(data);
-        _binaryValue = data;
+        _binaryValue = _readBytes(size);
         return JsonToken.VALUE_EMBEDDED_OBJECT;
     }
 

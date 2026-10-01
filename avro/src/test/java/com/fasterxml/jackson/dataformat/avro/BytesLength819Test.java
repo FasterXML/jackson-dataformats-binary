@@ -58,6 +58,65 @@ public class BytesLength819Test extends AvroTestBase
         _testValid(APACHE_MAPPER, data);
     }
 
+    // Same for `fixed`, where size comes from the schema (no length prefix in content)
+    public void testTruncatedFixed() throws Exception
+    {
+        _testTruncatedFixed(Integer.MAX_VALUE - 8, new byte[1000]);
+        _testTruncatedFixed(LONG_LENGTH, new byte[1000]);
+        _testTruncatedFixed(10, new byte[3]);
+    }
+
+    public void testLongValidFixed() throws Exception
+    {
+        byte[] data = new byte[LONG_LENGTH];
+        for (int i = 0; i < data.length; ++i) {
+            data[i] = (byte) (i * 7);
+        }
+        final String schemaJson = _fixedSchema(LONG_LENGTH);
+        for (AvroMapper mapper : new AvroMapper[] { JACKSON_MAPPER, APACHE_MAPPER }) {
+            final AvroSchema schema = mapper.schemaFrom(schemaJson);
+            byte[] doc = mapper.writer(schema).writeValueAsBytes(new BytesWrapper(data));
+            final ObjectReader r = mapper.readerFor(BytesWrapper.class).with(schema);
+            assertTrue(Arrays.equals(data, ((BytesWrapper) r.readValue(doc)).b));
+            assertTrue(Arrays.equals(data, ((BytesWrapper) r.readValue(
+                    ThrottledInputStream.wrap(new ByteArrayInputStream(doc), 1000))).b));
+        }
+    }
+
+    private static String _fixedSchema(int size) {
+        return aposToQuotes("{'type':'record','name':'BytesWrapper','fields':[{'name':'b',"
+                +"'type':{'type':'fixed','name':'Fix','size':"+size+"}}]}");
+    }
+
+    private void _testTruncatedFixed(int size, byte[] doc) throws Exception
+    {
+        final String schemaJson = _fixedSchema(size);
+        final ObjectReader jacksonR = JACKSON_MAPPER.readerFor(BytesWrapper.class)
+                .with(JACKSON_MAPPER.schemaFrom(schemaJson));
+        try {
+            jacksonR.readValue(doc);
+            fail("Should not pass (byte[] input)");
+        } catch (StreamReadException e) {
+            verifyException(e, "end-of-input");
+        }
+        try {
+            jacksonR.readValue(_stream(doc));
+            fail("Should not pass (InputStream input)");
+        } catch (StreamReadException e) {
+            verifyException(e, "end-of-input");
+        }
+        final ObjectReader apacheR = APACHE_MAPPER.readerFor(BytesWrapper.class)
+                .with(APACHE_MAPPER.schemaFrom(schemaJson));
+        try {
+            apacheR.readValue(doc);
+            fail("Should not pass (byte[] input)");
+        } catch (EOFException e) { }
+        try {
+            apacheR.readValue(_stream(doc));
+            fail("Should not pass (InputStream input)");
+        } catch (EOFException e) { }
+    }
+
     private void _testTruncated(byte[] doc) throws Exception
     {
         final ObjectReader jacksonR = _reader(JACKSON_MAPPER);
