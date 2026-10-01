@@ -14,6 +14,11 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.21.8 (not yet released)
+
+#817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
+ (fix by @pjfanning, w/ Claude code)
+
 2.21.7 (21-Sep-2026)
 
 #761: (smile) Async parser misses #312 NUL-padding: short property name
@@ -189,6 +194,11 @@ No changes since 2.19.1
  (contributed by Manuel S)
 #571: Unable to deserialize a pojo with IonStruct
  (reported, fix contributed by Josh C)
+
+2.18.12 (not yet released)
+
+#817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
+ (fix by @pjfanning, w/ Claude code)
 
 2.18.11 (20-Sep-2026)
 
