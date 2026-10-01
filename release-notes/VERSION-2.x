@@ -29,6 +29,9 @@ Active maintainers:
 #817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
   [CVE-2026-104016][CVE-2026-104017]
  (fix by @pjfanning, w/ Claude code)
+#819: (avro) `bytes` value allocated to declared length before checking available content
+  [CVE-2026-104015]
+ (fix by @pjfanning, w/ Claude code)
 
 2.22.3 (21-Sep-2026)
 
@@ -89,6 +92,9 @@ No changes since 2.21
 
 #817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
   [CVE-2026-104016][CVE-2026-104017]
+ (fix by @pjfanning, w/ Claude code)
+#819: (avro) `bytes` value allocated to declared length before checking available content
+  [CVE-2026-104015]
  (fix by @pjfanning, w/ Claude code)
 
 2.21.7 (21-Sep-2026)
