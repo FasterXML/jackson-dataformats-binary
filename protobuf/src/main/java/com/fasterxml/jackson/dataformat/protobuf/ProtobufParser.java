@@ -1924,22 +1924,11 @@ public class ProtobufParser extends ParserMinimalBase
         if (len > (_inputEnd - _inputPtr)) {
             return _finishLongBytes(len);
         }
+        // Otherwise all content is buffered, can copy in one go
         byte[] b = new byte[len];
-        if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
-        }
-        int ptr = 0;
-        while (true) {
-            int toAdd = Math.min(len, _inputEnd - _inputPtr);
-            System.arraycopy(_inputBuffer, _inputPtr, b, ptr, toAdd);
-            _inputPtr += toAdd;
-            ptr += toAdd;
-            len -= toAdd;
-            if (len <= 0) {
-                return b;
-            }
-            loadMoreGuaranteed();
-        }
+        System.arraycopy(_inputBuffer, _inputPtr, b, 0, len);
+        _inputPtr += len;
+        return b;
     }
 
     // Used when declared length exceeds buffered input: grows the result
@@ -1947,21 +1936,28 @@ public class ProtobufParser extends ParserMinimalBase
     private final byte[] _finishLongBytes(final int expLen) throws IOException
     {
         int len = expLen;
-        try (ByteArrayBuilder bb = new ByteArrayBuilder()) {
-            while (len > 0) {
-                if (_inputPtr >= _inputEnd) {
-                    if (!loadMore()) {
-                        _reportInvalidEOF(String.format(
-                                " for Binary value: expected %d bytes, only found %d",
-                                expLen, expLen - len), JsonToken.VALUE_EMBEDDED_OBJECT);
-                    }
-                }
-                int toAdd = Math.min(len, _inputEnd - _inputPtr);
-                bb.write(_inputBuffer, _inputPtr, toAdd);
-                _inputPtr += toAdd;
-                len -= toAdd;
+        final ByteArrayBuilder bb = _getByteArrayBuilder();
+        while (len > 0) {
+            if (_inputPtr >= _inputEnd) {
+                _loadMoreForLongValue(JsonToken.VALUE_EMBEDDED_OBJECT, expLen, expLen - len);
             }
-            return bb.toByteArray();
+            int toAdd = Math.min(len, _inputEnd - _inputPtr);
+            bb.write(_inputBuffer, _inputPtr, toAdd);
+            _inputPtr += toAdd;
+            len -= toAdd;
+        }
+        return bb.toByteArray();
+    }
+
+    // Loads more content for long String/Binary value; if none available,
+    // reports EOF with expected/actual length
+    private final void _loadMoreForLongValue(JsonToken type, int expLen, int found)
+        throws IOException
+    {
+        if (!loadMore()) {
+            final String desc = (type == JsonToken.VALUE_STRING) ? "String" : "Binary";
+            _reportInvalidEOF(String.format(" for %s value: expected %d bytes, only found %d",
+                    desc, expLen, found), type);
         }
     }
 
@@ -2019,15 +2015,21 @@ public class ProtobufParser extends ParserMinimalBase
         return _textBuffer.setCurrentAndReturn(outPtr);
     }
 
-    private final void _finishLongText(int len) throws IOException
+    private final void _finishLongText(final int expLen) throws IOException
     {
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         int outPtr = 0;
         final int[] codes = UTF8_UNIT_CODES;
         int outEnd = outBuf.length;
+        int len = expLen;
 
         while (--len >= 0) {
-            int c = _nextByte() & 0xFF;
+            // Check for end-of-input here to report expected/actual length
+            // (truncation within multi-byte character gets generic error)
+            if (_inputPtr >= _inputEnd) {
+                _loadMoreForLongValue(JsonToken.VALUE_STRING, expLen, expLen - len - 1);
+            }
+            int c = _inputBuffer[_inputPtr++] & 0xFF;
             int code = codes[c];
             if (code == 0 && outPtr < outEnd) {
                 outBuf[outPtr++] = (char) c;
@@ -2196,7 +2198,7 @@ public class ProtobufParser extends ParserMinimalBase
                 if (count == 0) {
                     throw new IOException("InputStream.read() returned 0 characters when trying to read "+amount+" bytes");
                 }
-                throw _constructError("Needed to read "+minAvailable+" bytes, missed "+minAvailable+" before end-of-input");
+                throw _constructError("Needed to read "+minAvailable+" bytes, missed "+(minAvailable - _inputEnd)+" before end-of-input");
             }
             _inputEnd += count;
         }

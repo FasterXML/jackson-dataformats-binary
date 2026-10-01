@@ -6,8 +6,8 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 
@@ -45,7 +45,8 @@ public class LengthOverflowProtobufReadTest extends ProtobufTestBase
         }
     }
 
-    // Payload as reported: repeated string field with huge length
+    // Payload as reported: field 7 (`sarr`, repeated string) with length
+    // Integer.MAX_VALUE, followed by garbage
     @Test
     public void testStringArrayHugeLength() throws Exception {
         final byte[] doc = {
@@ -72,7 +73,7 @@ public class LengthOverflowProtobufReadTest extends ProtobufTestBase
             assertEquals("s", p.nextFieldName());
             p.nextTextValue();
             fail("Should not pass");
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             // fine, any parse failure
         }
     }
@@ -86,7 +87,7 @@ public class LengthOverflowProtobufReadTest extends ProtobufTestBase
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
             p.getValueAsString();
             fail("Should not pass");
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             // fine, any parse failure
         }
     }
@@ -98,12 +99,34 @@ public class LengthOverflowProtobufReadTest extends ProtobufTestBase
 
     @Test
     public void testNestedMessageHugeLength() throws Exception {
-        _verifyFailure(_doc(0x42));
+        _verifyFailure(_doc(0x42), "Message length overflows for field 'inner'");
     }
 
     @Test
     public void testPackedArrayHugeLength() throws Exception {
-        _verifyFailure(_doc(0x4A));
+        _verifyFailure(_doc(0x4A), "Packed array length overflows for field 'packed'");
+    }
+
+    // String with declared length below input buffer size, but truncated content:
+    // should report actual number of missing bytes
+    @Test
+    public void testStringTruncatedViaInputStream() throws Exception {
+        // tag for field 1 (string); VInt 4000 (0x0FA0); then just 10 bytes
+        final byte[] doc = new byte[3 + 10];
+        doc[0] = (byte) 0x0A;
+        doc[1] = (byte) 0xA0;
+        doc[2] = (byte) 0x1F;
+        Arrays.fill(doc, 3, doc.length, (byte) 'a');
+        try (JsonParser p = MAPPER.createParser(new ByteArrayInputStream(doc))) {
+            p.setSchema(SCHEMA);
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertToken(JsonToken.VALUE_STRING, p.nextToken());
+            p.getText();
+            fail("Should not pass");
+        } catch (StreamReadException e) {
+            verifyException(e, "Needed to read 4000 bytes, missed 3990 before end-of-input");
+        }
     }
 
     // Bytes field with large (800 MB) but not near-overflow length, and no content:
@@ -140,6 +163,63 @@ public class LengthOverflowProtobufReadTest extends ProtobufTestBase
         _verifyBytesEOF(MAPPER.createParser(new ByteArrayInputStream(truncated)), 700_000, 699_000);
     }
 
+    // Similarly long String content (longer than input buffer) must work,
+    // and truncated content be reported with expected/actual length
+    @Test
+    public void testStringLongValidAndTruncated() throws Exception {
+        // mix of 1-, 2- and 3-byte UTF-8 characters
+        final StringBuilder sb = new StringBuilder();
+        while (sb.length() < 300_000) {
+            sb.append("abcé€");
+        }
+        final String str = sb.toString();
+        final byte[] utf8 = str.getBytes("UTF-8");
+        // tag for field 1 (string); VInt length
+        final byte[] header = { (byte) 0x0A,
+            (byte) (0x80 | (utf8.length & 0x7F)),
+            (byte) (0x80 | ((utf8.length >> 7) & 0x7F)),
+            (byte) (utf8.length >> 14) };
+        final byte[] doc = new byte[header.length + utf8.length];
+        System.arraycopy(header, 0, doc, 0, header.length);
+        System.arraycopy(utf8, 0, doc, header.length, utf8.length);
+
+        _verifyString(MAPPER.createParser(doc), str);
+        _verifyString(MAPPER.createParser(new ByteArrayInputStream(doc)), str);
+
+        final byte[] truncated = Arrays.copyOf(doc, doc.length - 1000);
+        final int found = utf8.length - 1000;
+        _verifyStringEOF(MAPPER.createParser(truncated), utf8.length, found);
+        _verifyStringEOF(MAPPER.createParser(new ByteArrayInputStream(truncated)),
+                utf8.length, found);
+    }
+
+    private void _verifyString(JsonParser p, String exp) throws Exception {
+        try (JsonParser p2 = p) {
+            _advanceToString(p2);
+            assertEquals(exp, p2.getText());
+            assertToken(JsonToken.END_OBJECT, p2.nextToken());
+        }
+    }
+
+    private void _verifyStringEOF(JsonParser p, int expLen, int found) throws Exception {
+        try (JsonParser p2 = p) {
+            _advanceToString(p2);
+            p2.getText();
+            fail("Should not pass");
+        } catch (StreamReadException e) {
+            verifyException(e, "Unexpected end-of-input");
+            verifyException(e, "for String value: expected "+expLen+" bytes, only found "+found);
+        }
+    }
+
+    private void _advanceToString(JsonParser p) throws Exception {
+        p.setSchema(SCHEMA);
+        assertToken(JsonToken.START_OBJECT, p.nextToken());
+        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals("s", p.currentName());
+        assertToken(JsonToken.VALUE_STRING, p.nextToken());
+    }
+
     private void _verifyBytes(JsonParser p, byte[] exp) throws Exception {
         try (JsonParser p2 = p) {
             _advanceToBytes(p2);
@@ -155,7 +235,7 @@ public class LengthOverflowProtobufReadTest extends ProtobufTestBase
             fail("Should not pass");
         } catch (StreamReadException e) {
             verifyException(e, "Unexpected end-of-input");
-            verifyException(e, "expected "+expLen+" bytes, only found "+found);
+            verifyException(e, "for Binary value: expected "+expLen+" bytes, only found "+found);
         }
     }
 
@@ -179,18 +259,27 @@ public class LengthOverflowProtobufReadTest extends ProtobufTestBase
     }
 
     private void _verifyFailure(byte[] doc) throws Exception {
+        _verifyFailure(doc, null);
+    }
+
+    // If `expMsg` is null, any parse failure is fine
+    private void _verifyFailure(byte[] doc, String expMsg) throws Exception {
         try {
             MAPPER.readerFor(Map.class).with(SCHEMA).readValue(doc);
             fail("Should not pass");
-        } catch (JsonProcessingException e) {
-            // fine, any parse failure
+        } catch (JacksonException e) {
+            if (expMsg != null) {
+                verifyException(e, expMsg);
+            }
         }
         try {
             MAPPER.readerFor(Map.class).with(SCHEMA)
                 .readValue(new ByteArrayInputStream(doc));
             fail("Should not pass");
-        } catch (JsonProcessingException e) {
-            // fine, any parse failure
+        } catch (JacksonException e) {
+            if (expMsg != null) {
+                verifyException(e, expMsg);
+            }
         }
     }
 }
