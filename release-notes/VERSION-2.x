@@ -17,6 +17,7 @@ Active maintainers:
 2.18.12 (not yet released)
 
 #817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
+  [CVE-2026-104016][CVE-2026-104017]
  (fix by @pjfanning, w/ Claude code)
 
 2.18.11 (20-Sep-2026)
