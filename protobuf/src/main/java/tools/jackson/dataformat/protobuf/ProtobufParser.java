@@ -1299,7 +1299,8 @@ public class ProtobufParser extends ParserMinimalBase
         if (len == 0) {
             return "";
         }
-        if ((_inputPtr + len) <= _inputEnd) {
+        // Compare against remaining input: `_inputPtr + len` may overflow
+        if (len <= (_inputEnd - _inputPtr)) {
             return _finishShortText(len);
         }
         if (len >= _inputBuffer.length) {

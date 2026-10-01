@@ -106,6 +106,34 @@ public class LengthOverflowProtobufReadTest extends ProtobufTestBase
         _verifyFailure(_doc(0x4A), "Packed array length overflows for field 'packed'");
     }
 
+    // `map` with `string` key that has huge length: must not overflow (3.x only)
+    @Test
+    public void testMapStringKeyHugeLength() throws Exception {
+        final ProtobufSchema mapSchema = ProtobufSchemaLoader.std.parse(
+                "syntax = \"proto3\";\n"
+                + "message M { map<string, int32> counts = 1; }\n", "M");
+        // tag for field 1 (map entry); entry length; then key tag (field 1, string),
+        // key length of Integer.MAX_VALUE, then filler
+        final byte[] doc = new byte[2 + 1 + MAX_INT_VINT.length + 20];
+        doc[0] = (byte) 0x0A;
+        doc[1] = (byte) (doc.length - 2);
+        doc[2] = (byte) 0x0A;
+        System.arraycopy(MAX_INT_VINT, 0, doc, 3, MAX_INT_VINT.length);
+        Arrays.fill(doc, 3 + MAX_INT_VINT.length, doc.length, (byte) 'a');
+        for (Object input : new Object[] { doc, new ByteArrayInputStream(doc) }) {
+            try {
+                if (input instanceof byte[]) {
+                    MAPPER.readerFor(Map.class).with(mapSchema).readValue((byte[]) input);
+                } else {
+                    MAPPER.readerFor(Map.class).with(mapSchema).readValue((InputStream) input);
+                }
+                fail("Should not pass");
+            } catch (JacksonException e) {
+                // fine, any parse failure
+            }
+        }
+    }
+
     // String with declared length below input buffer size, but truncated content:
     // should report actual number of missing bytes
     @Test
