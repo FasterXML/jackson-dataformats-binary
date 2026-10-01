@@ -16,6 +16,8 @@ Active maintainers:
 
 2.18.12 (not yet released)
 
+#817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
+ (fix by @pjfanning, w/ Claude code)
 #819: (avro) `bytes` value allocated to declared length before checking available content
  (fix by @pjfanning, w/ Claude code)
 
