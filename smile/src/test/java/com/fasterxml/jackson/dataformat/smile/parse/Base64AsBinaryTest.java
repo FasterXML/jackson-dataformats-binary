@@ -3,7 +3,8 @@ package com.fasterxml.jackson.dataformat.smile.parse;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.Assert;
+
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -11,6 +12,10 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class Base64AsBinaryTest extends BaseTestForSmile
 {
@@ -26,6 +31,7 @@ public class Base64AsBinaryTest extends BaseTestForSmile
     }
 
     // [dataformats-binary#284]: binary from Base64 encoded
+    @Test
     public void testGetBase64AsBinary() throws Exception
     {
         // First, verify regularly
@@ -44,13 +50,14 @@ public class Base64AsBinaryTest extends BaseTestForSmile
             assertToken(JsonToken.FIELD_NAME, p.nextToken());
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
             byte[] binary = p.getBinaryValue();
-            Assert.assertArrayEquals(DECODED_BASE64, binary);
+            assertArrayEquals(DECODED_BASE64, binary);
             assertToken(JsonToken.END_OBJECT, p.nextToken());
             assertNull(p.nextToken());
         }
     }
 
     // [dataformats-binary#284]: binary from Base64 encoded
+    @Test
     public void testReadBase64AsBinary() throws Exception
     {
         // And further via read
@@ -61,7 +68,7 @@ public class Base64AsBinaryTest extends BaseTestForSmile
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             int count = p.readBinaryValue(bytes);
             assertEquals(5, count);
-            Assert.assertArrayEquals(DECODED_BASE64, bytes.toByteArray());
+            assertArrayEquals(DECODED_BASE64, bytes.toByteArray());
             assertToken(JsonToken.END_OBJECT, p.nextToken());
             assertNull(p.nextToken());
         }

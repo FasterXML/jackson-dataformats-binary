@@ -48,6 +48,13 @@ tree model)
       <artifactId>jackson-annotations</artifactId>
       <scope>provided</scope>
     </dependency>
+
+    <!-- JUnit 5 for `smile` module (see `cbor/pom.xml` for why not in root POM) -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

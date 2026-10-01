@@ -5,9 +5,16 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.dataformat.smile.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SimpleScalarArrayTest extends AsyncTestBase
 {
@@ -27,6 +34,7 @@ public class SimpleScalarArrayTest extends AsyncTestBase
     /**********************************************************************
      */
 
+    @Test
     public void testBooleans() throws IOException
     {
         byte[] data = _smileDoc("[ true, false, true, true, false ]", true);
@@ -81,6 +89,7 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         assertTrue(r.isClosed());
     }
 
+    @Test
     public void testInts() throws IOException
     {
         final int[] input = new int[] { 1, -1, 16, -17, 131, -155, 1000, -3000, 0xFFFF, -99999,
@@ -120,6 +129,7 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         assertTrue(r.isClosed());
     }
 
+    @Test
     public void testLong() throws IOException
     {
         final long[] input = new long[] {
@@ -172,6 +182,7 @@ public class SimpleScalarArrayTest extends AsyncTestBase
     /**********************************************************************
      */
 
+    @Test
     public void testFloats() throws IOException
     {
         final float[] input = new float[] { 0.0f, 0.25f, -0.5f, 10000.125f, - 99999.075f };
@@ -212,6 +223,7 @@ public class SimpleScalarArrayTest extends AsyncTestBase
         assertTrue(r.isClosed());
     }
 
+    @Test
     public void testDoubles() throws IOException
     {
         final double[] input = new double[] { 0.0, 0.25, -0.5, 10000.125, -99999.075 };
@@ -259,6 +271,7 @@ public class SimpleScalarArrayTest extends AsyncTestBase
     /**********************************************************************
      */
 
+    @Test
     public void testBigIntegers() throws IOException
     {
         BigInteger bigBase = BigInteger.valueOf(1234567890344656736L);
@@ -320,6 +333,7 @@ System.err.println();
         assertTrue(r.isClosed());
     }
 
+    @Test
     public void testBigDecimals() throws IOException
     {
         BigDecimal bigBase = new BigDecimal("1234567890344656736.125");

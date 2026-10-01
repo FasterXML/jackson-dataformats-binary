@@ -2,13 +2,19 @@ package com.fasterxml.jackson.dataformat.smile.filter;
 
 import java.io.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.*;
 import com.fasterxml.jackson.dataformat.smile.testutil.PrefixInputDecorator;
 import com.fasterxml.jackson.dataformat.smile.testutil.PrefixOutputDecorator;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 public class StreamingDecoratorsTest extends BaseTestForSmile
 {
+    @Test
     public void testInputDecorators() throws Exception
     {
         final byte[] DOC = _smileDoc("42   37");
@@ -24,6 +30,7 @@ public class StreamingDecoratorsTest extends BaseTestForSmile
         p.close();
     }
 
+    @Test
     public void testOutputDecorators() throws Exception
     {
         final byte[] DOC = _smileDoc(" 137");

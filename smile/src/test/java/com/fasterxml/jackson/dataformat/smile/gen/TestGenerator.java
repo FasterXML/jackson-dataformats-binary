@@ -3,6 +3,8 @@ package com.fasterxml.jackson.dataformat.smile.gen;
 import java.io.*;
 import java.util.HashMap;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.io.SerializedString;
@@ -12,11 +14,19 @@ import com.fasterxml.jackson.dataformat.smile.*;
 
 import static com.fasterxml.jackson.dataformat.smile.SmileConstants.*;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class TestGenerator extends BaseTestForSmile
 {
     /**
      * Test for verifying handling of 'true', 'false' and 'null' literals
      */
+    @Test
     public void testSimpleLiterals() throws Exception
     {
         // false, no header (or frame marker)
@@ -70,6 +80,7 @@ public class TestGenerator extends BaseTestForSmile
                 TOKEN_LITERAL_NULL, BYTE_MARKER_END_OF_CONTENT);
     }
 
+    @Test
     public void testSimpleArray() throws Exception
     {
     	// First: empty array (2 bytes)
@@ -105,6 +116,7 @@ public class TestGenerator extends BaseTestForSmile
         assertEquals(7, out.toByteArray().length);
     }
 
+    @Test
     public void testShortAscii() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -115,6 +127,7 @@ public class TestGenerator extends BaseTestForSmile
     }
 
 
+    @Test
     public void testTrivialObject() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -128,6 +141,7 @@ public class TestGenerator extends BaseTestForSmile
         		SmileConstants.TOKEN_LITERAL_END_OBJECT);
     }
 
+    @Test
     public void test2FieldObject() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -143,6 +157,7 @@ public class TestGenerator extends BaseTestForSmile
         		SmileConstants.TOKEN_LITERAL_END_OBJECT);
     }
 
+    @Test
     public void testAnotherObject() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -169,6 +184,7 @@ public class TestGenerator extends BaseTestForSmile
     }
 
     // [dataformat-smile#30]: problems with empty string key
+    @Test
     public void testObjectWithEmptyKey() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -236,6 +252,7 @@ public class TestGenerator extends BaseTestForSmile
     /**
      * Test to verify that
      */
+    @Test
     public void testSharedStrings() throws Exception
     {
         // first, no sharing, 2 separate Strings
@@ -249,6 +266,7 @@ public class TestGenerator extends BaseTestForSmile
         }
     }
 
+    @Test
     public void testWithMap() throws Exception
     {
         final SmileFactory smileFactory = new SmileFactory();
@@ -274,6 +292,7 @@ public class TestGenerator extends BaseTestForSmile
     }
 
     // [Issue#6], missing overrides for File-backed generator
+    @Test
     public void testWriteToFile() throws Exception
     {
         final SmileFactory smileFactory = new SmileFactory();

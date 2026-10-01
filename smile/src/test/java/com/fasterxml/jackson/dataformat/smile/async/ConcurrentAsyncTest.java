@@ -6,6 +6,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.async.ByteArrayFeeder;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -16,6 +18,7 @@ import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 // for [dataformats-binary#384]
 public class ConcurrentAsyncTest extends AsyncTestBase
 {
+    @Test
     public void testConcurrentHandling() throws Exception
     {
         Map<String, Map<String, String>> tags = new HashMap<>();

@@ -3,6 +3,8 @@ package com.fasterxml.jackson.dataformat.smile.constraints;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.StreamReadConstraints;
@@ -12,12 +14,16 @@ import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 // [dataformats-binary#651] Validate maxTokenCount support for Smile
 public class TokenCountSmileReadTest extends BaseTestForSmile
 {
     private final SmileMapper MAPPER = new SmileMapper();
 
     // Verify token count is tracked accurately
+    @Test
     public void testTokenCountIsTracked() throws Exception
     {
         // [1, 2, 3]: START_ARRAY, VALUE_NUMBER_INT x3, END_ARRAY = 5 tokens
@@ -30,6 +36,7 @@ public class TokenCountSmileReadTest extends BaseTestForSmile
         }
     }
 
+    @Test
     public void testTokenCountLimitWithStream() throws Exception
     {
         // createDoc(100) produces START_ARRAY + 100xVALUE_NUMBER_INT + END_ARRAY = 102 tokens
@@ -44,6 +51,7 @@ public class TokenCountSmileReadTest extends BaseTestForSmile
         }
     }
 
+    @Test
     public void testTokenCountLimitWithByteArray() throws Exception
     {
         // createDoc(100) produces START_ARRAY + 100xVALUE_NUMBER_INT + END_ARRAY = 102 tokens

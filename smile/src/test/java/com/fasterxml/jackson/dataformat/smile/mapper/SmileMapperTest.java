@@ -6,7 +6,8 @@ import java.io.IOException;
 import java.io.SequenceInputStream;
 import java.util.*;
 
-import org.junit.Assert;
+
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -24,6 +25,14 @@ import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class SmileMapperTest extends BaseTestForSmile
 {
@@ -61,6 +70,7 @@ public class SmileMapperTest extends BaseTestForSmile
 
     private final ObjectMapper MAPPER = smileMapper();
 
+    @Test
     public void testBinary() throws IOException
     {
         byte[] input = new byte[] { 1, 2, 3, -1, 8, 0, 42 };
@@ -68,10 +78,11 @@ public class SmileMapperTest extends BaseTestForSmile
         BytesBean result = MAPPER.readValue(smile, BytesBean.class);
 
         assertNotNull(result.bytes);
-        Assert.assertArrayEquals(input, result.bytes);
+        assertArrayEquals(input, result.bytes);
     }
 
     // [dataformats-binary#1711]
+    @Test
     public void testWrappedBinary() throws IOException
     {
         byte[] bytes = {1, 2, 3, 4, 5};
@@ -95,6 +106,7 @@ public class SmileMapperTest extends BaseTestForSmile
     }
 
     // UUIDs should be written as binary (starting with 2.3)
+    @Test
     public void testUUIDs() throws IOException
     {
         UUID uuid = UUID.randomUUID();
@@ -113,6 +125,7 @@ public class SmileMapperTest extends BaseTestForSmile
         p.close();
     }
 
+    @Test
     public void testWithNestedMaps() throws IOException
     {
         Map<Object,Object> map = new HashMap<Object,Object>();
@@ -130,6 +143,7 @@ public class SmileMapperTest extends BaseTestForSmile
     }
 
     // for [dataformat-smile#26]
+    @Test
     public void testIssue26ArrayOutOfBounds() throws Exception
     {
         SmileFactory f = new SmileFactory();
@@ -176,6 +190,7 @@ public class SmileMapperTest extends BaseTestForSmile
     }
 
     // Test for [dataformats-binary#301]
+    @Test
     public void testStreamingFeaturesViaMapper() throws Exception
     {
         SmileMapper mapperWithHeaders = SmileMapper.builder()
@@ -209,6 +224,7 @@ public class SmileMapperTest extends BaseTestForSmile
     }
 
     // [databind#3212]
+    @Test
     public void testMapperCopy() throws Exception
     {
         SmileMapper src = smileMapper();

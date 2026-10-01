@@ -9,8 +9,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.core.JsonToken;
 
-public abstract class AsyncReaderWrapper
-{
+public abstract class AsyncReaderWrapper {
     protected final JsonParser _streamReader;
 
     protected AsyncReaderWrapper(JsonParser sr) {
