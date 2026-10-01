@@ -5,7 +5,7 @@ import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
 
 import org.apache.avro.Schema;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

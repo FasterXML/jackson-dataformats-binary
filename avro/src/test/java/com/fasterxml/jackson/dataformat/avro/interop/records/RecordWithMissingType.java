@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.avro.Schema;
-import org.junit.Test;
+import org.junit.jupiter.api.TestTemplate;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -48,7 +48,7 @@ public class RecordWithMissingType {
             + "          } ]\n        }\n      } ]\n    }\n  } ]\n}";
 
     @SuppressWarnings("unchecked")
-    @Test
+    @TestTemplate
     public void testRecordWithPolymorphicKeyDeserialization() throws IOException {
         Schema schema = getJacksonSchema(type(WrapperOuter.class, type(WrapperInner.class, type(Holder.class, Double.class))));
         Holder<Double> holder = new Holder<>();

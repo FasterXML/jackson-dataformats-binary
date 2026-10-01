@@ -6,11 +6,19 @@ import java.io.EOFException;
 import java.io.InputStream;
 import java.util.Arrays;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheAvroFactory;
 import com.fasterxml.jackson.dataformat.avro.testsupport.ThrottledInputStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 // [dataformats-binary#819]: `bytes` value with declared length exceeding
 // available content should fail on end-of-input, without first allocating
@@ -33,22 +41,26 @@ public class BytesLength819Test extends AvroTestBase
     // Longer than `AvroParserImpl.LONGEST_NON_CHUNKED_BINARY_READ`, not a multiple of it
     private final static int LONG_LENGTH = 777_777;
 
+    @Test
     public void testTruncatedHugeLength() throws Exception
     {
         // length prefix for `Integer.MAX_VALUE`, followed by no content
         _testTruncated(_lengthPrefix(Integer.MAX_VALUE));
     }
 
+    @Test
     public void testTruncatedLongLength() throws Exception
     {
         _testTruncated(_concat(_lengthPrefix(LONG_LENGTH), new byte[1000]));
     }
 
+    @Test
     public void testTruncatedShortLength() throws Exception
     {
         _testTruncated(_concat(_lengthPrefix(10), new byte[3]));
     }
 
+    @Test
     public void testLongValidValue() throws Exception
     {
         byte[] data = new byte[LONG_LENGTH];
@@ -60,6 +72,7 @@ public class BytesLength819Test extends AvroTestBase
     }
 
     // Same for `fixed`, where size comes from the schema (no length prefix in content)
+    @Test
     public void testTruncatedFixed() throws Exception
     {
         _testTruncatedFixed(Integer.MAX_VALUE - 8, new byte[1000]);
@@ -67,6 +80,7 @@ public class BytesLength819Test extends AvroTestBase
         _testTruncatedFixed(10, new byte[3]);
     }
 
+    @Test
     public void testLongValidFixed() throws Exception
     {
         byte[] data = new byte[LONG_LENGTH];
@@ -85,6 +99,7 @@ public class BytesLength819Test extends AvroTestBase
     }
 
     // Apache parser allocates its scratch buffer lazily for `byte[]` input: must be released on close
+    @Test
     public void testApacheBufferReleasedOnClose() throws Exception
     {
         final AvroSchema schema = APACHE_MAPPER.schemaFrom(SCHEMA_JSON);

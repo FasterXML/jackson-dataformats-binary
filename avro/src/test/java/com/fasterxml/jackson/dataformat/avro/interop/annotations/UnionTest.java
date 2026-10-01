@@ -9,13 +9,13 @@ import java.util.Map;
 import org.apache.avro.UnresolvedUnionException;
 import org.apache.avro.reflect.Nullable;
 import org.apache.avro.reflect.Union;
-import org.junit.Test;
+import org.junit.jupiter.api.TestTemplate;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests for @Union
@@ -109,7 +109,7 @@ public class UnionTest extends InteropTestBase {
         }
     }
 
-    @Test
+    @TestTemplate
     public void testRootUnionWithAnimal() throws IOException {
         Cat cat = new Cat("meow");
         //
@@ -118,7 +118,7 @@ public class UnionTest extends InteropTestBase {
         assertThat(result).isEqualTo(cat);
     }
 
-    @Test
+    @TestTemplate
     public void testInterfaceUnionWithCat() throws IOException {
         Cage cage = new Cage(new Cat("test"));
         //
@@ -127,7 +127,7 @@ public class UnionTest extends InteropTestBase {
         assertThat(result).isEqualTo(cage);
     }
 
-    @Test
+    @TestTemplate
     public void testInterfaceUnionWithDog() throws IOException {
         Cage cage = new Cage(new Dog(4));
         //
@@ -136,7 +136,7 @@ public class UnionTest extends InteropTestBase {
         assertThat(result).isEqualTo(cage);
     }
 
-    @Test
+    @TestTemplate
     public void testInterfaceUnionWithBird() throws IOException {
         Cage cage = new Cage(new Bird(true));
         //
@@ -148,7 +148,7 @@ public class UnionTest extends InteropTestBase {
         }
     }
 
-    @Test
+    @TestTemplate
     public void testListWithInterfaceUnion() throws IOException {
         PetShop shop = new PetShop(new Cat("tabby"), new Dog(4), new Dog(5), new Cat("calico"));
         //
@@ -157,7 +157,7 @@ public class UnionTest extends InteropTestBase {
         assertThat(result).isEqualTo(shop);
     }
 
-    @Test
+    @TestTemplate
     public void testMapWithInterfaceUnion() throws IOException {
         PetShop shop = new PetShop(new Cat("tabby"), new Dog(4), new Dog(5), new Cat("calico"));
         shop.specialPets.put("pet1", new Cat("siamese"));

@@ -8,7 +8,7 @@ import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
 
 import org.apache.avro.Schema;
 import org.apache.avro.specific.SpecificData;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class Enum_schemaCreationTest extends AvroTestBase {
 
@@ -27,7 +27,7 @@ public class Enum_schemaCreationTest extends AvroTestBase {
         MAPPER.acceptJsonFormatVisitor(NumbersEnum.class , gen);
         Schema actualSchema = gen.getGeneratedSchema().getAvroSchema();
 
-        System.out.println("schema:\n" + actualSchema.toString(true));
+        //System.out.println("schema:\n" + actualSchema.toString(true));
 
         // THEN
         assertThat(actualSchema.getType()).isEqualTo( Schema.Type.ENUM);
@@ -44,7 +44,7 @@ public class Enum_schemaCreationTest extends AvroTestBase {
         MAPPER.acceptJsonFormatVisitor(NumbersEnum.class , gen);
         Schema actualSchema = gen.getGeneratedSchema().getAvroSchema();
 
-        System.out.println("schema:\n" + actualSchema.toString(true));
+        //System.out.println("schema:\n" + actualSchema.toString(true));
 
         // THEN
         assertThat(actualSchema.getType()).isEqualTo( Schema.Type.STRING);
@@ -52,5 +52,4 @@ public class Enum_schemaCreationTest extends AvroTestBase {
         // When type is stringable then java-class property is addded.
         assertThat(actualSchema.getProp(SpecificData.CLASS_PROP)).isNotEmpty();
     }
-
 }

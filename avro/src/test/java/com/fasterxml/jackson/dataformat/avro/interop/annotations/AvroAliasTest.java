@@ -6,7 +6,7 @@ import org.apache.avro.Schema;
 import org.apache.avro.SchemaCompatibility;
 import org.apache.avro.reflect.AvroAlias;
 import org.apache.avro.reflect.Nullable;
-import org.junit.Test;
+import org.junit.jupiter.api.TestTemplate;
 
 import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
@@ -58,7 +58,7 @@ public class AvroAliasTest extends InteropTestBase {
         LARGE;
     }
 
-    @Test
+    @TestTemplate
     public void testAliasedRecordForwardsCompatible() throws IOException {
         Schema oldSchema = schemaFunctor.apply(AvroTestBase.Employee.class);
         Schema newSchema = schemaFunctor.apply(NewEmployee.class);
@@ -69,7 +69,7 @@ public class AvroAliasTest extends InteropTestBase {
         checkSchemaIsCompatible(compatibility);
     }
 
-    @Test
+    @TestTemplate
     public void testAliasedRecordBackwardsCompatible() throws IOException {
         Schema oldSchema = schemaFunctor.apply(AvroTestBase.Employee.class);
         Schema newSchema = schemaFunctor.apply(NewEmployee.class);
@@ -80,7 +80,7 @@ public class AvroAliasTest extends InteropTestBase {
         assertThat(compatibility.getType()).isEqualTo(SchemaCompatibility.SchemaCompatibilityType.INCOMPATIBLE);
     }
 
-    @Test
+    @TestTemplate
     public void testAliasedRecordForwardsCompatibleSameNamespace() throws IOException {
         Schema oldSchema = schemaFunctor.apply(NewEmployee.class);
         Schema newSchema = schemaFunctor.apply(AliasedNameEmployee.class);
@@ -91,7 +91,7 @@ public class AvroAliasTest extends InteropTestBase {
         checkSchemaIsCompatible(compatibility);
     }
 
-    @Test
+    @TestTemplate
     public void testAliasedRecordBackwardsCompatibleSameNamespace() throws IOException {
         Schema oldSchema = schemaFunctor.apply(NewEmployee.class);
         Schema newSchema = schemaFunctor.apply(AliasedNameEmployee.class);
@@ -102,7 +102,7 @@ public class AvroAliasTest extends InteropTestBase {
         assertThat(compatibility.getType()).isEqualTo(SchemaCompatibility.SchemaCompatibilityType.INCOMPATIBLE);
     }
 
-    @Test
+    @TestTemplate
     public void testAliasedEnumForwardsCompatible() throws IOException {
         Schema oldSchema = schemaFunctor.apply(AvroTestBase.Size.class);
         Schema newSchema = schemaFunctor.apply(NewSize.class);
@@ -113,7 +113,7 @@ public class AvroAliasTest extends InteropTestBase {
         checkSchemaIsCompatible(compatibility);
     }
 
-    @Test
+    @TestTemplate
     public void testAliasedEnumBackwardsCompatible() throws IOException {
         Schema oldSchema = schemaFunctor.apply(AvroTestBase.Size.class);
         Schema newSchema = schemaFunctor.apply(NewSize.class);
@@ -124,7 +124,7 @@ public class AvroAliasTest extends InteropTestBase {
         assertThat(compatibility.getType()).isEqualTo(SchemaCompatibility.SchemaCompatibilityType.INCOMPATIBLE);
     }
 
-    @Test
+    @TestTemplate
     public void testAliasedEnumForwardsAndBackwardsCompatible() throws IOException {
         Schema oldSchema = schemaFunctor.apply(NewerSize.class);
         Schema newSchema = schemaFunctor.apply(NewestSize.class);

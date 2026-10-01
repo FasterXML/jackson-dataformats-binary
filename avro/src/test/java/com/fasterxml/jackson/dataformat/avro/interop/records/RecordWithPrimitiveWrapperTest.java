@@ -3,7 +3,7 @@ package com.fasterxml.jackson.dataformat.avro.interop.records;
 import java.io.IOException;
 import java.util.Objects;
 
-import org.junit.Test;
+import org.junit.jupiter.api.TestTemplate;
 
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
@@ -52,7 +52,7 @@ public class RecordWithPrimitiveWrapperTest extends InteropTestBase
         }
     }
 
-    @Test
+    @TestTemplate
     public void testByteField() throws IOException {
         TestRecord record = new TestRecord();
         record.byteField = Byte.MAX_VALUE;
@@ -60,7 +60,7 @@ public class RecordWithPrimitiveWrapperTest extends InteropTestBase
         assertThat(result.byteField).isEqualTo(record.byteField);
     }
 
-    @Test
+    @TestTemplate
     public void testCharacterField() throws IOException {
         TestRecord record = new TestRecord();
         record.characterField = Character.MAX_VALUE;
@@ -70,7 +70,7 @@ public class RecordWithPrimitiveWrapperTest extends InteropTestBase
         assertThat(result.characterField).isEqualTo(record.characterField);
     }
 
-    @Test
+    @TestTemplate
     public void testDoubleField() throws IOException {
         TestRecord record = new TestRecord();
         record.doubleField = Double.MAX_VALUE;
@@ -80,7 +80,7 @@ public class RecordWithPrimitiveWrapperTest extends InteropTestBase
         assertThat(result.doubleField).isEqualTo(record.doubleField);
     }
 
-    @Test
+    @TestTemplate
     public void testFloatField() throws IOException {
         TestRecord record = new TestRecord();
         record.floatField = Float.MAX_VALUE;
@@ -90,7 +90,7 @@ public class RecordWithPrimitiveWrapperTest extends InteropTestBase
         assertThat(result.floatField).isEqualTo(record.floatField);
     }
 
-    @Test
+    @TestTemplate
     public void testInteger() throws IOException {
         TestRecord record = new TestRecord();
         record.integerField = Integer.MAX_VALUE;
@@ -100,7 +100,7 @@ public class RecordWithPrimitiveWrapperTest extends InteropTestBase
         assertThat(result.integerField).isEqualTo(record.integerField);
     }
 
-    @Test
+    @TestTemplate
     public void testLongField() throws IOException {
         TestRecord record = new TestRecord();
         record.longField = Long.MAX_VALUE;
@@ -110,7 +110,7 @@ public class RecordWithPrimitiveWrapperTest extends InteropTestBase
         assertThat(result.longField).isEqualTo(record.longField);
     }
 
-    @Test
+    @TestTemplate
     public void testShortField() throws IOException {
         TestRecord record = new TestRecord();
         record.shortField = Short.MAX_VALUE;
@@ -120,7 +120,7 @@ public class RecordWithPrimitiveWrapperTest extends InteropTestBase
         assertThat(result.shortField).isEqualTo(record.shortField);
     }
 
-    @Test
+    @TestTemplate
     public void testStringField() throws IOException {
         TestRecord record = new TestRecord();
         record.stringField = "Hello World";
