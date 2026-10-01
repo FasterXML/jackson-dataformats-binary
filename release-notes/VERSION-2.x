@@ -20,6 +20,7 @@ Active maintainers:
   [CVE-2026-104016][CVE-2026-104017]
  (fix by @pjfanning, w/ Claude code)
 #819: (avro) `bytes` value allocated to declared length before checking available content
+  [CVE-2026-104015]
  (fix by @pjfanning, w/ Claude code)
 
 2.18.11 (20-Sep-2026)
