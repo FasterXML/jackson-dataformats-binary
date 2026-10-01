@@ -799,7 +799,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     }
 
     /**
-     * Helper method for reading a {@code bytes} value of given length: allocates
+     * Helper method for reading a {@code bytes} or {@code fixed} value of given length: allocates
      * the full result buffer up front only if content is already buffered, or
      * length is modest; otherwise reads content in chunks, so that truncated
      * content is reported before a buffer of the declared length is allocated.

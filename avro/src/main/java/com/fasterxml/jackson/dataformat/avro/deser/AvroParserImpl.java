@@ -18,8 +18,8 @@ public abstract class AvroParserImpl
     extends AvroParser
 {
     /**
-     * Longest {@code bytes} value that will be allocated as a single buffer before
-     * reading content, when content is not already available: longer values are
+     * Longest {@code bytes} or {@code fixed} value that will be allocated as a single
+     * buffer before reading content, when content is not already available: longer values are
      * read in chunks, so that truncated content is detected before allocating
      * a buffer for the full declared length.
      *

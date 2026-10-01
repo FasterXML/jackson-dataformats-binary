@@ -6,6 +6,7 @@ import java.io.EOFException;
 import java.io.InputStream;
 import java.util.Arrays;
 
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheAvroFactory;
@@ -29,7 +30,7 @@ public class BytesLength819Test extends AvroTestBase
     private final AvroMapper JACKSON_MAPPER = AvroMapper.builder(new AvroFactory()).build();
     private final AvroMapper APACHE_MAPPER = AvroMapper.builder(new ApacheAvroFactory()).build();
 
-    // Longer than `AvroParserImpl.LONGEST_NON_CHUNKED_BINARY`, not a multiple of it
+    // Longer than `AvroParserImpl.LONGEST_NON_CHUNKED_BINARY_READ`, not a multiple of it
     private final static int LONG_LENGTH = 777_777;
 
     public void testTruncatedHugeLength() throws Exception
@@ -81,6 +82,32 @@ public class BytesLength819Test extends AvroTestBase
             assertTrue(Arrays.equals(data, ((BytesWrapper) r.readValue(
                     ThrottledInputStream.wrap(new ByteArrayInputStream(doc), 1000))).b));
         }
+    }
+
+    // Apache parser allocates its scratch buffer lazily for `byte[]` input: must be released on close
+    public void testApacheBufferReleasedOnClose() throws Exception
+    {
+        final AvroSchema schema = APACHE_MAPPER.schemaFrom(SCHEMA_JSON);
+        byte[] doc = APACHE_MAPPER.writer(schema).writeValueAsBytes(new BytesWrapper(new byte[LONG_LENGTH]));
+        for (boolean useStream : new boolean[] { false, true }) {
+            AvroParser p = useStream
+                    ? (AvroParser) APACHE_MAPPER.getFactory().createParser(new ByteArrayInputStream(doc))
+                    : (AvroParser) APACHE_MAPPER.getFactory().createParser(doc);
+            p.setSchema(schema);
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
+            assertEquals(LONG_LENGTH, p.getBinaryValue().length);
+            assertNotNull(_inputBuffer(p)); // chunked read must have used one
+            p.close();
+            assertNull(_inputBuffer(p));
+        }
+    }
+
+    private static Object _inputBuffer(AvroParser p) throws Exception {
+        java.lang.reflect.Field f = p.getClass().getDeclaredField("_inputBuffer");
+        f.setAccessible(true);
+        return f.get(p);
     }
 
     private static String _fixedSchema(int size) {

@@ -391,9 +391,9 @@ public class ApacheAvroParserImpl extends AvroParserImpl
     }
 
     /**
-     * Helper method for reading a {@code bytes} value of given length: allocates
+     * Helper method for reading a {@code bytes} or {@code fixed} value of given length: allocates
      * the full result buffer up front only if length is modest (at most
-     * {@code LONGEST_NON_CHUNKED_BINARY}); otherwise reads content in chunks,
+     * {@code LONGEST_NON_CHUNKED_BINARY_READ}); otherwise reads content in chunks,
      * so that truncated content is reported before a buffer of the declared
      * length is allocated. Declared length is never trusted for larger values
      * (decoder does not expose how much content is actually buffered).
