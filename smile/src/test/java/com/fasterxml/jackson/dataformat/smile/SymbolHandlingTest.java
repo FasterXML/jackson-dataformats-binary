@@ -2,12 +2,20 @@ package com.fasterxml.jackson.dataformat.smile;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 // Tests that have to reside in this package, due to access restrictions
 public class SymbolHandlingTest extends BaseTestForSmile
 {
+    @Test
     public void testSymbolTable() throws IOException
     {
         final String STR1 = "a";

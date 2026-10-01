@@ -2,9 +2,15 @@ package com.fasterxml.jackson.dataformat.smile.seq;
 
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.*;
 
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ReadTreesTest extends BaseTestForSmile
 {
@@ -20,6 +26,7 @@ public class ReadTreesTest extends BaseTestForSmile
     /**********************************************************
      */
 
+    @Test
     public void testReadTreeSequence() throws Exception {
         _testReadTreeSequence(true);
         _testReadTreeSequence(false);

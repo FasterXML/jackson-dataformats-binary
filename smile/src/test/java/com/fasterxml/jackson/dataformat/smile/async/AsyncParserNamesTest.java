@@ -3,17 +3,26 @@ package com.fasterxml.jackson.dataformat.smile.async;
 import java.io.*;
 import java.util.Random;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
 public class AsyncParserNamesTest extends AsyncTestBase
 {
+    @Test
     public void testLongNames() throws IOException
     {
         _testWithName(generateName(5000));
     }
 
+    @Test
     public void testEvenLongerName() throws Exception
     {
         StringBuilder nameBuf = new StringBuilder("longString");
@@ -25,6 +34,7 @@ public class AsyncParserNamesTest extends AsyncTestBase
         _testWithName(name);
     }
 
+    @Test
     public void testSymbolTable() throws IOException
     {
         final String STR1 = "a";

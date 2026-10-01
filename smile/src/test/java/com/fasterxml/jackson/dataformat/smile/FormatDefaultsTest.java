@@ -1,13 +1,18 @@
 package com.fasterxml.jackson.dataformat.smile;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.StreamReadCapability;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FormatDefaultsTest extends BaseTestForSmile
 {
     private final ObjectMapper MAPPER = smileMapper();
 
+    @Test
     public void testParserDefaults() throws Exception
     {
         try (JsonParser p = MAPPER.createParser(new byte[4])) {

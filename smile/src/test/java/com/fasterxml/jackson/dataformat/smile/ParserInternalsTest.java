@@ -2,14 +2,20 @@ package com.fasterxml.jackson.dataformat.smile;
 
 import java.io.InputStream;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.dataformat.smile.testutil.ThrottledInputStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ParserInternalsTest extends BaseTestForSmile
 {
     private final ByteQuadsCanonicalizer ROOT_SYMBOLS = ByteQuadsCanonicalizer.createRoot();
 
+    @Test
     public void testPositiveVIntGoodCases() throws Exception
     {
         // First, couple of known good cases
@@ -20,6 +26,7 @@ public class ParserInternalsTest extends BaseTestForSmile
         });
     }
 
+    @Test
     public void testPositiveVIntOverflows() throws Exception
     {
         // Bad: ends at 5th, but overflows

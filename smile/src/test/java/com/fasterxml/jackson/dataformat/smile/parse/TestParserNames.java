@@ -3,17 +3,24 @@ package com.fasterxml.jackson.dataformat.smile.parse;
 import java.io.*;
 import java.util.Random;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 public class TestParserNames extends BaseTestForSmile
 {
+    @Test
     public void testLongNames() throws IOException
     {
         _testWithName(generateName(5000));
     }
 
+    @Test
     public void testJsonBinForLargeObjects() throws Exception
     {
         StringBuilder nameBuf = new StringBuilder("longString");

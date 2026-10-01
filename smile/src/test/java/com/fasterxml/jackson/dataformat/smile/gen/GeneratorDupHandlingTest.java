@@ -2,17 +2,24 @@ package com.fasterxml.jackson.dataformat.smile.gen;
 
 import java.io.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class GeneratorDupHandlingTest extends BaseTestForSmile
 {
+    @Test
     public void testSimpleDupsEagerlyBytes() throws Exception {
         _testSimpleDups(false, new JsonFactory());
     }
 
     // Testing ability to enable checking after construction of
     // generator, not just via JsonFactory
+    @Test
     public void testSimpleDupsLazilyBytes() throws Exception {
         final JsonFactory f = new JsonFactory();
         assertFalse(f.isEnabled(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION));
