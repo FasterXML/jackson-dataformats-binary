@@ -104,7 +104,7 @@ public class BytesLength819Test extends AvroTestBase
                     ? (AvroParser) APACHE_MAPPER.reader(schema).createParser(new ByteArrayInputStream(doc))
                     : (AvroParser) APACHE_MAPPER.reader(schema).createParser(doc);
             assertToken(JsonToken.START_OBJECT, p.nextToken());
-            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
             assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
             assertEquals(LONG_LENGTH, p.getBinaryValue().length);
             assertNotNull(_inputBuffer(p)); // chunked read must have used one
