@@ -170,7 +170,7 @@ public class LengthOverflowProtobufReadTest extends ProtobufTestBase
         // mix of 1-, 2- and 3-byte UTF-8 characters
         final StringBuilder sb = new StringBuilder();
         while (sb.length() < 300_000) {
-            sb.append("abcé€");
+            sb.append("abc\u00E9\u20AC");
         }
         final String str = sb.toString();
         final byte[] utf8 = str.getBytes("UTF-8");
@@ -186,6 +186,8 @@ public class LengthOverflowProtobufReadTest extends ProtobufTestBase
         _verifyString(MAPPER.createParser(doc), str);
         _verifyString(MAPPER.createParser(new ByteArrayInputStream(doc)), str);
 
+        // NOTE: repeated chunk is 8 bytes, so cutting 1000 bytes lands on character
+        // boundary; mid-character truncation would get generic EOF error instead
         final byte[] truncated = Arrays.copyOf(doc, doc.length - 1000);
         final int found = utf8.length - 1000;
         _verifyStringEOF(MAPPER.createParser(truncated), utf8.length, found);
