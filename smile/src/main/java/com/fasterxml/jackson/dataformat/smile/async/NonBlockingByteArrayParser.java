@@ -84,6 +84,9 @@ public class NonBlockingByteArrayParser
         if (end < start) {
             _reportError("Input end (%d) may not be before start (%d)", end, start);
         }
+        if (_closed) {
+            _reportError("Parser closed, can not feed more input");
+        }
         // and shouldn't have been marked as end-of-input
         if (_endOfInput) {
             _reportError("Already closed, can not feed more input");
@@ -1270,7 +1273,7 @@ public class NonBlockingByteArrayParser
         if ((_inputPtr + 5) > _inputEnd) {
             return _finishBigIntLen(0, 0);
         }
-        _pending32 = _decodeUnsignedVInt();
+        _pending32 = _decodeUnsignedVInt(JsonToken.VALUE_NUMBER_INT);
         _inputCopyLen = 0;
         return _finishBigIntBody();
     }
@@ -1280,13 +1283,13 @@ public class NonBlockingByteArrayParser
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
             if (b < 0) { // got it all; these are last 6 bits
-                _pending32 = _lastUnsignedVIntByte(value, bytesRead, b);
+                _pending32 = _lastVIntByte(value, bytesRead, b, JsonToken.VALUE_NUMBER_INT);
                 _inputCopyLen = 0;
                 return _finishBigIntBody();
             }
             // can't get too big; 5 bytes is max
             if (++bytesRead >= 5 ) {
-                _reportError("Corrupt input; 32-bit VInt extends beyond 5 data bytes");
+                _reportInvalidVInt(JsonToken.VALUE_NUMBER_INT, value >>> 21, b);
             }
             value = (value << 7) | b;
         }
@@ -1401,7 +1404,7 @@ public class NonBlockingByteArrayParser
             return _finishBigDecimalScale(0, 0);
         }
         // note! Scale stored here, need _pending32 for byte length
-        _pending64 = _decodeUnsignedVInt();
+        _pending64 = _decodeUnsignedVInt(JsonToken.VALUE_NUMBER_FLOAT);
         return _finishBigDecimalLen(0, 0);
     }
 
@@ -1410,12 +1413,12 @@ public class NonBlockingByteArrayParser
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
             if (b < 0) { // got it all; these are last 6 bits
-                _pending64 = _lastUnsignedVIntByte(value, bytesRead, b);
+                _pending64 = _lastVIntByte(value, bytesRead, b, JsonToken.VALUE_NUMBER_FLOAT);
                 return _finishBigDecimalLen(0, 0);
             }
             // can't get too big; 5 bytes is max
             if (++bytesRead >= 5 ) {
-                _reportError("Corrupt input; 32-bit VInt extends beyond 5 data bytes");
+                _reportInvalidVInt(JsonToken.VALUE_NUMBER_FLOAT, value >>> 21, b);
             }
             value = (value << 7) | b;
         }
@@ -1431,13 +1434,13 @@ public class NonBlockingByteArrayParser
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
             if (b < 0) { // got it all; these are last 6 bits
-                _pending32 = _lastUnsignedVIntByte(value, bytesRead, b);
+                _pending32 = _lastVIntByte(value, bytesRead, b, JsonToken.VALUE_NUMBER_FLOAT);
                 _inputCopyLen = 0;
                 return _finishBigDecimalBody();
             }
             // can't get too big; 5 bytes is max
             if (++bytesRead >= 5 ) {
-                _reportError("Corrupt input; 32-bit VInt extends beyond 5 data bytes");
+                _reportInvalidVInt(JsonToken.VALUE_NUMBER_FLOAT, value >>> 21, b);
             }
             value = (value << 7) | b;
         }
@@ -1480,7 +1483,7 @@ public class NonBlockingByteArrayParser
         if ((_inputPtr + 5) > _inputEnd) {
             return _finishRawBinaryLen(0, 0);
         }
-        return _startRawBinaryBody(_decodeUnsignedVInt());
+        return _startRawBinaryBody(_decodeUnsignedVInt(JsonToken.VALUE_EMBEDDED_OBJECT));
     }
 
     private final JsonToken _finishRawBinaryLen(int value, int bytesRead) throws IOException
@@ -1488,11 +1491,11 @@ public class NonBlockingByteArrayParser
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
             if (b < 0) { // got it all; these are last 6 bits
-                return _startRawBinaryBody(_lastUnsignedVIntByte(value, bytesRead, b));
+                return _startRawBinaryBody(_lastVIntByte(value, bytesRead, b, JsonToken.VALUE_EMBEDDED_OBJECT));
             }
             // can't get too big; 5 bytes is max
             if (++bytesRead >= 5 ) {
-                _reportError("Corrupt input; 32-bit VInt extends beyond 5 data bytes");
+                _reportInvalidVInt(JsonToken.VALUE_EMBEDDED_OBJECT, value >>> 21, b);
             }
             value = (value << 7) | b;
         }
@@ -1504,22 +1507,37 @@ public class NonBlockingByteArrayParser
 
     private final JsonToken _startRawBinaryBody(final int len) throws IOException
     {
+        final int avail = _inputEnd - _inputPtr;
         // If all content is available, can allocate exact-size result and copy
-        if ((_inputEnd - _inputPtr) >= len) {
+        if (avail >= len) {
             _binaryValue = new byte[len];
             System.arraycopy(_inputBuffer, _inputPtr, _binaryValue, 0, len);
             _inputPtr += len;
             return _valueComplete(JsonToken.VALUE_EMBEDDED_OBJECT);
         }
+        _pending32 = len;
+        _inputCopyLen = 0;
+        // If no content yet, wait: may get all of it with the next chunk
+        if (avail == 0) {
+            _minorState = MINOR_VALUE_BINARY_RAW_BODY;
+            return _updateTokenToNA();
+        }
         // Otherwise do not trust declared length for allocation (could be bogus):
         // accumulate content as it arrives
         _initByteArrayBuilder();
-        _pending32 = len;
-        _inputCopyLen = 0;
-        return _finishRawBinaryBody();
+        return _appendRawBinaryBody();
     }
 
     private final JsonToken _finishRawBinaryBody() throws IOException
+    {
+        // Nothing buffered yet? Re-check if exact-size allocation possible
+        if (_inputCopyLen == 0) {
+            return _startRawBinaryBody(_pending32);
+        }
+        return _appendRawBinaryBody();
+    }
+
+    private final JsonToken _appendRawBinaryBody() throws IOException
     {
         final int needed = _pending32 - _inputCopyLen;
         final int count = Math.min(_inputEnd - _inputPtr, needed);
@@ -1531,10 +1549,6 @@ public class NonBlockingByteArrayParser
             return _updateTokenToNA();
         }
         _binaryValue = _byteArrayBuilder.toByteArray();
-        // Builder may have grown big: let it be GC'd rather than retained
-        if (_binaryValue.length > LONGEST_NON_CHUNKED_BINARY) {
-            _byteArrayBuilder = null;
-        }
         return _valueComplete(JsonToken.VALUE_EMBEDDED_OBJECT);
     }
 
@@ -1544,7 +1558,7 @@ public class NonBlockingByteArrayParser
         if ((_inputPtr + 5) > _inputEnd) {
             return _finish7BitBinaryLen(0, 0);
         }
-        _pending32 = _decodeUnsignedVInt();
+        _pending32 = _decodeUnsignedVInt(JsonToken.VALUE_EMBEDDED_OBJECT);
         _inputCopyLen = 0;
         return _finish7BitBinaryBody();
     }
@@ -1554,13 +1568,13 @@ public class NonBlockingByteArrayParser
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
             if (b < 0) { // got it all; these are last 6 bits
-                _pending32 = _lastUnsignedVIntByte(value, bytesRead, b);
+                _pending32 = _lastVIntByte(value, bytesRead, b, JsonToken.VALUE_EMBEDDED_OBJECT);
                 _inputCopyLen = 0;
                 return _finish7BitBinaryBody();
             }
             // can't get too big; 5 bytes is max
             if (++bytesRead >= 5 ) {
-                _reportError("Corrupt input; 32-bit VInt extends beyond 5 data bytes");
+                _reportInvalidVInt(JsonToken.VALUE_EMBEDDED_OBJECT, value >>> 21, b);
             }
             value = (value << 7) | b;
         }
@@ -1759,8 +1773,8 @@ public class NonBlockingByteArrayParser
     }
 
     // Same as _decodeVInt() but for unsigned (31-bit) values: verifies there
-    // is no overflow
-    private final int _decodeUnsignedVInt() throws IOException
+    // is no overflow. Caller must ensure 5 bytes are available.
+    private final int _decodeUnsignedVInt(JsonToken valueType) throws IOException
     {
         int ptr = _inputPtr;
         int value = 0;
@@ -1768,10 +1782,10 @@ public class NonBlockingByteArrayParser
             int b = _inputBuffer[ptr++];
             if (b < 0) {
                 _inputPtr = ptr;
-                return _lastUnsignedVIntByte(value, bytesRead, b);
+                return _lastVIntByte(value, bytesRead, b, valueType);
             }
             if (bytesRead >= 4) {
-                _reportInvalidUnsignedVInt(value >>> 21, b);
+                _reportInvalidVInt(valueType, value >>> 21, b);
             }
             value = (value << 7) | b;
         }
@@ -1779,14 +1793,30 @@ public class NonBlockingByteArrayParser
 
     // Helper for handling the last byte of an unsigned VInt, given value
     // decoded so far and number of bytes before the last one
-    private final int _lastUnsignedVIntByte(int value, int bytesRead, int lastByte)
+    private final int _lastVIntByte(int value, int bytesRead, int lastByte,
+            JsonToken valueType)
         throws IOException
     {
         // 4 x 7 + 6 == 34 bits, but only 31 allowed for unsigned int
         if ((bytesRead == 4) && ((value >>> 25) != 0)) {
-            _reportInvalidUnsignedVInt(value >>> 21, lastByte);
+            _reportInvalidVInt(valueType, value >>> 21, lastByte);
         }
         return (value << 6) | (lastByte & 0x3F);
+    }
+
+    // Same as SmileParser._reportInvalidUnsignedVInt() but with type of value
+    // being decoded passed (current token is not yet updated)
+    private final void _reportInvalidVInt(JsonToken valueType, int firstByte, int lastByte)
+        throws IOException
+    {
+        if (lastByte >= 0) {
+            _reportError(
+"Overflow in VInt (current token %s): 5th byte (0x%02X) of 5-byte sequence must have its highest bit set to indicate end",
+valueType, lastByte);
+        }
+        _reportError(
+"Overflow in VInt (current token %s): 1st byte (0x%02X) of 5-byte sequence must have its top 4 bits zeroes",
+valueType, firstByte);
     }
 
     private final boolean _decode7BitEncoded() throws IOException

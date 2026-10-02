@@ -27,10 +27,13 @@ public class AsyncZeroLengthBigNumberTest extends AsyncTestBase
         };
         for (int bytesPerRead : new int[] { 1, 99 }) {
             AsyncReaderWrapper r = asyncForBytes(F, bytesPerRead, input, 0);
-            assertToken(JsonToken.VALUE_NUMBER_INT, r.nextToken());
-            assertEquals(JsonParser.NumberType.BIG_INTEGER, r.getNumberType());
-            assertEquals(BigInteger.ZERO, r.getBigIntegerValue());
-            r.close();
+            try {
+                assertToken(JsonToken.VALUE_NUMBER_INT, r.nextToken());
+                assertEquals(JsonParser.NumberType.BIG_INTEGER, r.getNumberType());
+                assertEquals(BigInteger.ZERO, r.getBigIntegerValue());
+            } finally {
+                r.close();
+            }
         }
     }
 
@@ -45,10 +48,13 @@ public class AsyncZeroLengthBigNumberTest extends AsyncTestBase
         };
         for (int bytesPerRead : new int[] { 1, 99 }) {
             AsyncReaderWrapper r = asyncForBytes(F, bytesPerRead, input, 0);
-            assertToken(JsonToken.VALUE_NUMBER_FLOAT, r.nextToken());
-            assertEquals(JsonParser.NumberType.BIG_DECIMAL, r.getNumberType());
-            assertEquals(BigDecimal.ZERO, r.getBigDecimalValue());
-            r.close();
+            try {
+                assertToken(JsonToken.VALUE_NUMBER_FLOAT, r.nextToken());
+                assertEquals(JsonParser.NumberType.BIG_DECIMAL, r.getNumberType());
+                assertEquals(BigDecimal.ZERO, r.getBigDecimalValue());
+            } finally {
+                r.close();
+            }
         }
     }
 }

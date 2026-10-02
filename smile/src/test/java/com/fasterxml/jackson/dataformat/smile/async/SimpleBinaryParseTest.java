@@ -22,7 +22,7 @@ public class SimpleBinaryParseTest extends AsyncTestBase
     final static int[] SIZES = new int[] {
         1, 2, 3, 4, 5, 7, 11,
         90, 350, 1900, 6000, 19000, 65000,
-        139000, 270000
+        139000
     };
 
     @Test
@@ -38,6 +38,36 @@ public class SimpleBinaryParseTest extends AsyncTestBase
     @Test
     public void testRawAsObject() throws IOException {
         _testBinaryAsObject(F_RAW);
+    }
+
+    // Long raw values (above LONGEST_NON_CHUNKED_BINARY) fed in small chunks,
+    // with parser (and its buffers) reused for subsequent values
+    @Test
+    public void testLongRawValuesAsArray() throws IOException
+    {
+        final byte[] long1 = _generateData(270000);
+        final byte[] short1 = _generateData(1000);
+        final byte[] long2 = _generateData(260000);
+        ByteArrayOutputStream bo = new ByteArrayOutputStream();
+        try (SmileGenerator g = F_RAW.createGenerator(bo)) {
+            g.writeStartArray();
+            g.writeBinary(long1);
+            g.writeBinary(short1);
+            g.writeBinary(long2);
+            g.writeEndArray();
+        }
+        AsyncReaderWrapper p = asyncForBytes(F_RAW, 3, bo.toByteArray(), 0);
+        try {
+            assertToken(JsonToken.START_ARRAY, p.nextToken());
+            for (byte[] exp : new byte[][] { long1, short1, long2 }) {
+                assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
+                assertArrayEquals(exp, p.getBinaryValue());
+            }
+            assertToken(JsonToken.END_ARRAY, p.nextToken());
+            assertNull(p.nextToken());
+        } finally {
+            p.close();
+        }
     }
 
     @Test
