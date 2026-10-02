@@ -30,6 +30,8 @@ Active maintainers:
  (fix by @cowtowncoder, w/ Claude code)
 #835: (smile) `SmileParser.getText(Writer)` writes stale text for numeric tokens
  (fix by @cowtowncoder, w/ Claude code)
+#842: (cbor) `CBORGenerator` writes wrong exponent for `BigDecimal` with scale `Integer.MIN_VALUE`
+ (fix by @cowtowncoder, w/ Claude code)
 
 2.22.4 (not yet released)
 
