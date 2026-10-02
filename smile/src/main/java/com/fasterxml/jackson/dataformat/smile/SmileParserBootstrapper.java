@@ -55,7 +55,11 @@ public class SmileParserBootstrapper
      * before contents of current input buffer.
      *<p>
      * Note: includes possible BOMs, if those were part of the input.
+     *
+     * @deprecated Since 2.23 not used: never passed to {@link SmileParser}, which
+     *    accounts for input start offset itself.
      */
+    @Deprecated
     protected int _inputProcessed;
 
     /*
@@ -81,7 +85,7 @@ public class SmileParserBootstrapper
         _inputBuffer = inputBuffer;
         _inputPtr = inputStart;
         _inputEnd = (inputStart + inputLen);
-        // Need to offset this for correct location info
+        // NOTE: not used for location info; `SmileParser` offsets `inputStart` itself
         _inputProcessed = -inputStart;
         _bufferRecyclable = false;
     }

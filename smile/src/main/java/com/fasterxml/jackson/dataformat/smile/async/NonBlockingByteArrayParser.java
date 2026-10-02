@@ -36,11 +36,12 @@ public class NonBlockingByteArrayParser
     protected byte[] _inputBuffer = NO_BYTES;
 
     /**
-     * In addition to current buffer pointer, and end pointer,
-     * we will also need to know number of bytes originally
-     * contained. This is needed to correctly update location
-     * information when the block has been completed.
+     * Number of bytes contained in the current input chunk.
+     *
+     * @deprecated Since 2.23 not used: location information is calculated
+     *    using {@code _currInputProcessed} (offset by chunk start) and {@code _inputPtr}.
      */
+    @Deprecated
     protected int _origBufferLen;
 
     // And from ParserBase:
@@ -488,6 +489,10 @@ public class NonBlockingByteArrayParser
             if (_minorState == MINOR_HEADER_INLINE) {
                 return null;
             }
+            // [dataformats-binary#831]: if no more content available, token location
+            // should still point to after the header (recursive call will update
+            // otherwise)
+            _tokenInputTotal = _currInputProcessed + _inputPtr;
             // Ok to use recursion in case of initial header, as well:
             return nextToken();
         default:
