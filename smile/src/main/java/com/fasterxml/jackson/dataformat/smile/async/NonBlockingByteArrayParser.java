@@ -273,7 +273,7 @@ public class NonBlockingByteArrayParser
             return _finishDouble(_pending64, _inputCopyLen);
 
         case MINOR_VALUE_NUMBER_BIGDEC_SCALE:
-            return _finishBigDecimalScale((int) _pending64, _inputCopyLen);
+            return _finishBigDecimalScale(_pending32, _inputCopyLen);
         case MINOR_VALUE_NUMBER_BIGDEC_LEN:
             return _finishBigDecimalLen(_pending32, _inputCopyLen);
         case MINOR_VALUE_NUMBER_BIGDEC_BODY:
@@ -1270,29 +1270,17 @@ public class NonBlockingByteArrayParser
     private final JsonToken _startBigInt() throws IOException
     {
         _initByteArrayBuilder();
-        if ((_inputPtr + 5) > _inputEnd) {
-            return _finishBigIntLen(0, 0);
-        }
-        return _startBigIntBody(_decodeUnsignedVInt(JsonToken.VALUE_NUMBER_INT));
+        return _finishBigIntLen(0, 0);
     }
 
     private final JsonToken _finishBigIntLen(int value, int bytesRead) throws IOException
     {
-        while (_inputPtr < _inputEnd) {
-            int b = _inputBuffer[_inputPtr++];
-            if (b < 0) { // got it all; these are last 6 bits
-                return _startBigIntBody(_lastVIntByte(value, bytesRead, b, JsonToken.VALUE_NUMBER_INT));
-            }
-            // can't get too big; 5 bytes is max
-            if (++bytesRead >= 5 ) {
-                _reportInvalidVInt(JsonToken.VALUE_NUMBER_INT, value >>> 21, b);
-            }
-            value = (value << 7) | b;
+        final int len = _decodeUnsignedVInt(value, bytesRead, JsonToken.VALUE_NUMBER_INT);
+        if (len < 0) {
+            _minorState = MINOR_VALUE_NUMBER_BIGINT_LEN;
+            return _updateTokenToNA();
         }
-        _minorState = MINOR_VALUE_NUMBER_BIGINT_LEN;
-        _pending32 = value;
-        _inputCopyLen = bytesRead;
-        return _updateTokenToNA();
+        return _startBigIntBody(len);
     }
 
     private final JsonToken _startBigIntBody(int len) throws IOException
@@ -1404,57 +1392,33 @@ public class NonBlockingByteArrayParser
     private final JsonToken _startBigDecimal() throws IOException
     {
         _initByteArrayBuilder();
-        if ((_inputPtr + 5) > _inputEnd) {
-            return _finishBigDecimalScale(0, 0);
-        }
-        // note! Scale stored here, need _pending32 for byte length
-        _pending64 = _decodeUnsignedVInt(JsonToken.VALUE_NUMBER_FLOAT);
-        return _finishBigDecimalLen(0, 0);
+        return _finishBigDecimalScale(0, 0);
     }
 
     private final JsonToken _finishBigDecimalScale(int value, int bytesRead) throws IOException
     {
-        while (_inputPtr < _inputEnd) {
-            int b = _inputBuffer[_inputPtr++];
-            if (b < 0) { // got it all; these are last 6 bits
-                _pending64 = _lastVIntByte(value, bytesRead, b, JsonToken.VALUE_NUMBER_FLOAT);
-                return _finishBigDecimalLen(0, 0);
-            }
-            // can't get too big; 5 bytes is max
-            if (++bytesRead >= 5 ) {
-                _reportInvalidVInt(JsonToken.VALUE_NUMBER_FLOAT, value >>> 21, b);
-            }
-            value = (value << 7) | b;
+        final int scale = _decodeUnsignedVInt(value, bytesRead, JsonToken.VALUE_NUMBER_FLOAT);
+        if (scale < 0) {
+            _minorState = MINOR_VALUE_NUMBER_BIGDEC_SCALE;
+            return _updateTokenToNA();
         }
-        _minorState = MINOR_VALUE_NUMBER_BIGDEC_SCALE;
         // note! Scale stored here, need _pending32 for byte length
-        _pending64 = value;
-        _inputCopyLen = bytesRead;
-        return _updateTokenToNA();
+        _pending64 = scale;
+        return _finishBigDecimalLen(0, 0);
     }
 
     private final JsonToken _finishBigDecimalLen(int value, int bytesRead) throws IOException
     {
-        while (_inputPtr < _inputEnd) {
-            int b = _inputBuffer[_inputPtr++];
-            if (b < 0) { // got it all; these are last 6 bits
-                final int len = _lastVIntByte(value, bytesRead, b, JsonToken.VALUE_NUMBER_FLOAT);
-                // Validate declared length before buffering content
-                _streamReadConstraints.validateFPLength(len);
-                _pending32 = len;
-                _inputCopyLen = 0;
-                return _finishBigDecimalBody();
-            }
-            // can't get too big; 5 bytes is max
-            if (++bytesRead >= 5 ) {
-                _reportInvalidVInt(JsonToken.VALUE_NUMBER_FLOAT, value >>> 21, b);
-            }
-            value = (value << 7) | b;
+        final int len = _decodeUnsignedVInt(value, bytesRead, JsonToken.VALUE_NUMBER_FLOAT);
+        if (len < 0) {
+            _minorState = MINOR_VALUE_NUMBER_BIGDEC_LEN;
+            return _updateTokenToNA();
         }
-        _minorState = MINOR_VALUE_NUMBER_BIGDEC_LEN;
-        _pending32 = value;
-        _inputCopyLen = bytesRead;
-        return _updateTokenToNA();
+        // Validate declared length before buffering content
+        _streamReadConstraints.validateFPLength(len);
+        _pending32 = len;
+        _inputCopyLen = 0;
+        return _finishBigDecimalBody();
     }
 
     private final JsonToken _finishBigDecimalBody() throws IOException
@@ -1486,29 +1450,17 @@ public class NonBlockingByteArrayParser
 
     protected final JsonToken _startRawBinary() throws IOException
     {
-        if ((_inputPtr + 5) > _inputEnd) {
-            return _finishRawBinaryLen(0, 0);
-        }
-        return _startRawBinaryBody(_decodeUnsignedVInt(JsonToken.VALUE_EMBEDDED_OBJECT));
+        return _finishRawBinaryLen(0, 0);
     }
 
     private final JsonToken _finishRawBinaryLen(int value, int bytesRead) throws IOException
     {
-        while (_inputPtr < _inputEnd) {
-            int b = _inputBuffer[_inputPtr++];
-            if (b < 0) { // got it all; these are last 6 bits
-                return _startRawBinaryBody(_lastVIntByte(value, bytesRead, b, JsonToken.VALUE_EMBEDDED_OBJECT));
-            }
-            // can't get too big; 5 bytes is max
-            if (++bytesRead >= 5 ) {
-                _reportInvalidVInt(JsonToken.VALUE_EMBEDDED_OBJECT, value >>> 21, b);
-            }
-            value = (value << 7) | b;
+        final int len = _decodeUnsignedVInt(value, bytesRead, JsonToken.VALUE_EMBEDDED_OBJECT);
+        if (len < 0) {
+            _minorState = MINOR_VALUE_BINARY_RAW_LEN;
+            return _updateTokenToNA();
         }
-        _minorState = MINOR_VALUE_BINARY_RAW_LEN;
-        _pending32 = value;
-        _inputCopyLen = bytesRead;
-        return _updateTokenToNA();
+        return _startRawBinaryBody(len);
     }
 
     private final JsonToken _startRawBinaryBody(final int len) throws IOException
@@ -1561,33 +1513,19 @@ public class NonBlockingByteArrayParser
     private final JsonToken _start7BitBinary() throws IOException
     {
         _initByteArrayBuilder();
-        if ((_inputPtr + 5) > _inputEnd) {
-            return _finish7BitBinaryLen(0, 0);
-        }
-        _pending32 = _decodeUnsignedVInt(JsonToken.VALUE_EMBEDDED_OBJECT);
-        _inputCopyLen = 0;
-        return _finish7BitBinaryBody();
+        return _finish7BitBinaryLen(0, 0);
     }
 
     private final JsonToken _finish7BitBinaryLen(int value, int bytesRead) throws IOException
     {
-        while (_inputPtr < _inputEnd) {
-            int b = _inputBuffer[_inputPtr++];
-            if (b < 0) { // got it all; these are last 6 bits
-                _pending32 = _lastVIntByte(value, bytesRead, b, JsonToken.VALUE_EMBEDDED_OBJECT);
-                _inputCopyLen = 0;
-                return _finish7BitBinaryBody();
-            }
-            // can't get too big; 5 bytes is max
-            if (++bytesRead >= 5 ) {
-                _reportInvalidVInt(JsonToken.VALUE_EMBEDDED_OBJECT, value >>> 21, b);
-            }
-            value = (value << 7) | b;
+        final int len = _decodeUnsignedVInt(value, bytesRead, JsonToken.VALUE_EMBEDDED_OBJECT);
+        if (len < 0) {
+            _minorState = MINOR_VALUE_BINARY_7BIT_LEN;
+            return _updateTokenToNA();
         }
-        _minorState = MINOR_VALUE_BINARY_7BIT_LEN;
-        _pending32 = value;
-        _inputCopyLen = bytesRead;
-        return _updateTokenToNA();
+        _pending32 = len;
+        _inputCopyLen = 0;
+        return _finish7BitBinaryBody();
     }
 
     private final JsonToken _finish7BitBinaryBody() throws IOException
@@ -1778,36 +1716,40 @@ public class NonBlockingByteArrayParser
         return (value << 6) + (i & 0x3F);
     }
 
-    // Same as _decodeVInt() but for unsigned (31-bit) values: verifies there
-    // is no overflow. Caller must ensure 5 bytes are available.
-    private final int _decodeUnsignedVInt(JsonToken valueType) throws IOException
+    /**
+     * Helper method for decoding unsigned (31-bit) VInts used for lengths (and
+     * {@code BigDecimal} scale), verifying there is no overflow. Decoding is
+     * resumable: if not all bytes are available, partial value is stored in
+     * {@code _pending32} and byte count in {@code _inputCopyLen}, and caller
+     * needs to call this method with them when more input is available.
+     *
+     * @param value Value decoded so far (0 when starting)
+     * @param bytesRead Number of bytes decoded so far (0 when starting)
+     * @param valueType Type of value being decoded, for error messages
+     *
+     * @return Decoded value, if complete; -1 if more input is needed
+     */
+    private final int _decodeUnsignedVInt(int value, int bytesRead, JsonToken valueType)
+        throws IOException
     {
-        int ptr = _inputPtr;
-        int value = 0;
-        for (int bytesRead = 0; ; ++bytesRead) {
-            int b = _inputBuffer[ptr++];
-            if (b < 0) {
-                _inputPtr = ptr;
-                return _lastVIntByte(value, bytesRead, b, valueType);
+        while (_inputPtr < _inputEnd) {
+            int b = _inputBuffer[_inputPtr++];
+            if (b < 0) { // got it all; these are last 6 bits
+                // 4 x 7 + 6 == 34 bits, but only 31 allowed for unsigned int
+                if ((bytesRead == 4) && ((value >>> 25) != 0)) {
+                    _reportInvalidVInt(valueType, value >>> 21, b);
+                }
+                return (value << 6) | (b & 0x3F);
             }
-            if (bytesRead >= 4) {
+            // can't get too big; 5 bytes is max
+            if (++bytesRead >= 5) {
                 _reportInvalidVInt(valueType, value >>> 21, b);
             }
             value = (value << 7) | b;
         }
-    }
-
-    // Helper for handling the last byte of an unsigned VInt, given value
-    // decoded so far and number of bytes before the last one
-    private final int _lastVIntByte(int value, int bytesRead, int lastByte,
-            JsonToken valueType)
-        throws IOException
-    {
-        // 4 x 7 + 6 == 34 bits, but only 31 allowed for unsigned int
-        if ((bytesRead == 4) && ((value >>> 25) != 0)) {
-            _reportInvalidVInt(valueType, value >>> 21, lastByte);
-        }
-        return (value << 6) | (lastByte & 0x3F);
+        _pending32 = value;
+        _inputCopyLen = bytesRead;
+        return -1;
     }
 
     // Same as SmileParser._reportInvalidUnsignedVInt() but with type of value
