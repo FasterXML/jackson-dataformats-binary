@@ -1841,20 +1841,10 @@ public class ProtobufParser extends ParserMinimalBase
             }
             return _textBuffer.contentsToWriter(writer);
         }
-        if (t == JsonToken.FIELD_NAME) {
-            String n = _parsingContext.getCurrentName();
-            writer.write(n);
-            return n.length();
-        }
-        if (t != null) {
-            if (t.isNumeric()) {
-                return _textBuffer.contentsToWriter(writer);
-            }
-            char[] ch = t.asCharArray();
-            writer.write(ch);
-            return ch.length;
-        }
-        return 0;
+        // [dataformats-binary#846]: numbers are not decoded into `_textBuffer`,
+        // and binary values have no textual representation: so defer to
+        // default implementation that goes through `getText()`
+        return super.getText(writer);
     }
 
     /*
