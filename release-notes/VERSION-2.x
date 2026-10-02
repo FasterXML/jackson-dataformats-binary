@@ -278,6 +278,12 @@ No changes since 2.19.1
 #817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
   [CVE-2026-104016][CVE-2026-104017]
  (fix by @pjfanning, w/ Claude code)
+#819: (avro) `bytes` value allocated to declared length before checking available content
+  [CVE-2026-104015]
+ (fix by @pjfanning, w/ Claude code)
+#825: (smile) Non-blocking Smile parser should validate raw binary length and not pre-allocate
+  full buffer [CVE-2026-104895]
+ (fix by @pjfanning, w/ Claude code)
 
 2.18.11 (20-Sep-2026)
 
