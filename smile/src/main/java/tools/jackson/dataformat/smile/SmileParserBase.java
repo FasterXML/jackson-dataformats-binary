@@ -102,15 +102,30 @@ public abstract class SmileParserBase extends ParserMinimalBase
 
     /**
      * Number of characters/bytes that were contained in previous blocks
-     * (blocks that were already processed prior to the current buffer).
+     * (blocks that were already processed prior to the current buffer),
+     * minus offset of the input buffer at which content starts: so that
+     * {@code _currInputProcessed + _inputPtr} is the absolute byte offset
+     * of the current input position.
      */
     protected long _currInputProcessed;
 
     /**
-     * Alternative to {@code _tokenInputTotal} that will only contain
-     * offset within input buffer, as int.
+     * Offset within input buffer of the start of the current token.
+     *
+     * @deprecated Since 2.23 replaced by {@link #_tokenInputTotal} (no longer
+     *   used or updated)
      */
+    @Deprecated
     protected int _tokenOffsetForTotal;
+
+    /**
+     * Absolute byte offset (from the beginning of the whole content) of the
+     * start of the current token: absolute, as opposed to relative to current
+     * input buffer, since a token may span multiple buffers.
+     *
+     * @since 2.23
+     */
+    protected long _tokenInputTotal;
 
     /**
      * Information about parser context, context in which
@@ -324,12 +339,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     @Override
     public final TokenStreamLocation currentTokenLocation()
     {
-        // token location is correctly managed...
-        long total = _currInputProcessed + _tokenOffsetForTotal;
-        // 2.4: used to be: _tokenInputTotal
-        return new TokenStreamLocation(_ioContext.contentReference(),
-                total, // bytes
-                -1, -1, (int) total); // char offset, line, column
+        return _locationAt(_tokenInputTotal);
     }
 
     /**
@@ -339,10 +349,16 @@ public abstract class SmileParserBase extends ParserMinimalBase
     @Override
     public final TokenStreamLocation currentLocation()
     {
-        final long offset = _currInputProcessed + _inputPtr;
+        return _locationAt(_currInputProcessed + _inputPtr);
+    }
+
+    /**
+     * @since 2.23
+     */
+    protected TokenStreamLocation _locationAt(long byteOffset) {
         return new TokenStreamLocation(_ioContext.contentReference(),
-                offset, // bytes
-                -1, -1, (int) offset); // char offset, line, column
+                byteOffset, // bytes
+                -1, -1, (int) byteOffset); // char offset, line, column
     }
 
     /**
