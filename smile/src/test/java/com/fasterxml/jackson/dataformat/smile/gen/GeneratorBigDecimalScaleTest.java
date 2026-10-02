@@ -8,16 +8,17 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.async.ByteArrayFeeder;
 import com.fasterxml.jackson.core.exc.StreamWriteException;
 import com.fasterxml.jackson.dataformat.smile.*;
+import com.fasterxml.jackson.dataformat.smile.async.AsyncReaderWrapper;
+import com.fasterxml.jackson.dataformat.smile.async.AsyncTestBase;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 // [dataformats-binary#834]: `BigDecimal` scales outside of range that can be
 // encoded (zigzag value must fit in 31 bits) must fail, not be silently truncated
 public class GeneratorBigDecimalScaleTest
-    extends BaseTestForSmile
+    extends AsyncTestBase
 {
     private final static int MIN_SCALE = -(1 << 30);
     private final static int MAX_SCALE = (1 << 30) - 1;
@@ -32,7 +33,11 @@ public class GeneratorBigDecimalScaleTest
             final BigDecimal value = new BigDecimal(BigInteger.ONE, scale);
             final byte[] doc = _write(value);
             assertEquals(value, _readBlocking(doc), "Blocking, scale "+scale);
-            assertEquals(value, _readNonBlocking(doc), "Non-blocking, scale "+scale);
+            // Non-blocking: both all content at once and byte-by-byte (split scale VInt)
+            for (int bytesPerFeed : new int[] { 1, 2, 3, doc.length }) {
+                assertEquals(value, _readNonBlocking(doc, bytesPerFeed),
+                        "Non-blocking ("+bytesPerFeed+" bytes per feed), scale "+scale);
+            }
         }
     }
 
@@ -84,16 +89,16 @@ public class GeneratorBigDecimalScaleTest
         }
     }
 
-    private BigDecimal _readNonBlocking(byte[] doc) throws Exception
+    private BigDecimal _readNonBlocking(byte[] doc, int bytesPerFeed) throws Exception
     {
-        try (JsonParser p = F.createNonBlockingByteArrayParser()) {
-            ByteArrayFeeder feeder = (ByteArrayFeeder) p.getNonBlockingInputFeeder();
-            feeder.feedInput(doc, 0, doc.length);
-            feeder.endOfInput();
-            assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
-            BigDecimal result = p.getDecimalValue();
-            assertNull(p.nextToken());
+        AsyncReaderWrapper r = asyncForBytes(F, bytesPerFeed, doc, 0);
+        try {
+            assertToken(JsonToken.VALUE_NUMBER_FLOAT, r.nextToken());
+            BigDecimal result = r.getBigDecimalValue();
+            assertNull(r.nextToken());
             return result;
+        } finally {
+            r.close();
         }
     }
 }
