@@ -1270,7 +1270,7 @@ public class NonBlockingByteArrayParser
         if ((_inputPtr + 5) > _inputEnd) {
             return _finishBigIntLen(0, 0);
         }
-        _pending32 = _decodeVInt();
+        _pending32 = _decodeUnsignedVInt();
         _inputCopyLen = 0;
         return _finishBigIntBody();
     }
@@ -1280,7 +1280,7 @@ public class NonBlockingByteArrayParser
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
             if (b < 0) { // got it all; these are last 6 bits
-                _pending32 = (value << 6) | (b & 0x3F);
+                _pending32 = _lastUnsignedVIntByte(value, bytesRead, b);
                 _inputCopyLen = 0;
                 return _finishBigIntBody();
             }
@@ -1396,7 +1396,7 @@ public class NonBlockingByteArrayParser
             return _finishBigDecimalScale(0, 0);
         }
         // note! Scale stored here, need _pending32 for byte length
-        _pending64 = _decodeVInt();
+        _pending64 = _decodeUnsignedVInt();
         return _finishBigDecimalLen(0, 0);
     }
 
@@ -1405,8 +1405,7 @@ public class NonBlockingByteArrayParser
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
             if (b < 0) { // got it all; these are last 6 bits
-                value = (value << 6) | (b & 0x3F);
-                _pending64 = value;
+                _pending64 = _lastUnsignedVIntByte(value, bytesRead, b);
                 return _finishBigDecimalLen(0, 0);
             }
             // can't get too big; 5 bytes is max
@@ -1427,7 +1426,7 @@ public class NonBlockingByteArrayParser
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
             if (b < 0) { // got it all; these are last 6 bits
-                _pending32 = (value << 6) | (b & 0x3F);
+                _pending32 = _lastUnsignedVIntByte(value, bytesRead, b);
                 _inputCopyLen = 0;
                 return _finishBigDecimalBody();
             }
@@ -1471,7 +1470,7 @@ public class NonBlockingByteArrayParser
         if ((_inputPtr + 5) > _inputEnd) {
             return _finishRawBinaryLen(0, 0);
         }
-        return _startRawBinaryBody(_decodeVInt());
+        return _startRawBinaryBody(_decodeUnsignedVInt());
     }
 
     private final JsonToken _finishRawBinaryLen(int value, int bytesRead) throws IOException
@@ -1479,7 +1478,7 @@ public class NonBlockingByteArrayParser
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
             if (b < 0) { // got it all; these are last 6 bits
-                return _startRawBinaryBody((value << 6) | (b & 0x3F));
+                return _startRawBinaryBody(_lastUnsignedVIntByte(value, bytesRead, b));
             }
             // can't get too big; 5 bytes is max
             if (++bytesRead >= 5 ) {
@@ -1495,17 +1494,16 @@ public class NonBlockingByteArrayParser
 
     private final JsonToken _startRawBinaryBody(final int len) throws IOException
     {
-        if (len < 0) {
-            _reportError("Corrupt input; invalid length for raw binary value: "+len);
-        }
-        // Avoid eager allocation for very long content: accumulate as it
-        // arrives (same as blocking parser does)
-        if (len > LONGEST_NON_CHUNKED_BINARY) {
-            _binaryValue = null;
-            _initByteArrayBuilder();
-        } else {
+        // If all content is available, can allocate exact-size result and copy
+        if ((_inputEnd - _inputPtr) >= len) {
             _binaryValue = new byte[len];
+            System.arraycopy(_inputBuffer, _inputPtr, _binaryValue, 0, len);
+            _inputPtr += len;
+            return _valueComplete(JsonToken.VALUE_EMBEDDED_OBJECT);
         }
+        // Otherwise do not trust declared length for allocation (could be bogus):
+        // accumulate content as it arrives
+        _initByteArrayBuilder();
         _pending32 = len;
         _inputCopyLen = 0;
         return _finishRawBinaryBody();
@@ -1513,36 +1511,21 @@ public class NonBlockingByteArrayParser
 
     private final JsonToken _finishRawBinaryBody() throws IOException
     {
-        int totalLen = _pending32;
-        int offset = _inputCopyLen;
-
-        int needed = totalLen - offset;
-        int avail = _inputEnd - _inputPtr;
-        if (_binaryValue == null) { // long content, accumulated in builder
-            int count = Math.min(avail, needed);
-            _byteArrayBuilder.write(_inputBuffer, _inputPtr, count);
-            _inputPtr += count;
-            if (count == needed) {
-                _binaryValue = _byteArrayBuilder.toByteArray();
-                return _valueComplete(JsonToken.VALUE_EMBEDDED_OBJECT);
-            }
-            _inputCopyLen = offset+count;
+        final int needed = _pending32 - _inputCopyLen;
+        final int count = Math.min(_inputEnd - _inputPtr, needed);
+        _byteArrayBuilder.write(_inputBuffer, _inputPtr, count);
+        _inputPtr += count;
+        if (count < needed) {
+            _inputCopyLen += count;
             _minorState = MINOR_VALUE_BINARY_RAW_BODY;
             return _updateTokenToNA();
         }
-        if (avail >= needed) {
-            System.arraycopy(_inputBuffer, _inputPtr, _binaryValue, offset, needed);
-            _inputPtr += needed;
-            return _valueComplete(JsonToken.VALUE_EMBEDDED_OBJECT);
+        _binaryValue = _byteArrayBuilder.toByteArray();
+        // Builder may have grown big: let it be GC'd rather than retained
+        if (_binaryValue.length > LONGEST_NON_CHUNKED_BINARY) {
+            _byteArrayBuilder = null;
         }
-        if (avail > 0) {
-            System.arraycopy(_inputBuffer, _inputPtr, _binaryValue, offset, avail);
-            _inputPtr += avail;
-        }
-        _pending32 = totalLen;
-        _inputCopyLen = offset+avail;
-        _minorState = MINOR_VALUE_BINARY_RAW_BODY;
-        return _updateTokenToNA();
+        return _valueComplete(JsonToken.VALUE_EMBEDDED_OBJECT);
     }
 
     private final JsonToken _start7BitBinary() throws IOException
@@ -1551,7 +1534,7 @@ public class NonBlockingByteArrayParser
         if ((_inputPtr + 5) > _inputEnd) {
             return _finish7BitBinaryLen(0, 0);
         }
-        _pending32 = _decodeVInt();
+        _pending32 = _decodeUnsignedVInt();
         _inputCopyLen = 0;
         return _finish7BitBinaryBody();
     }
@@ -1561,7 +1544,7 @@ public class NonBlockingByteArrayParser
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
             if (b < 0) { // got it all; these are last 6 bits
-                _pending32 = (value << 6) | (b & 0x3F);
+                _pending32 = _lastUnsignedVIntByte(value, bytesRead, b);
                 _inputCopyLen = 0;
                 return _finish7BitBinaryBody();
             }
@@ -1763,6 +1746,37 @@ public class NonBlockingByteArrayParser
         }
         _inputPtr = ptr;
         return (value << 6) + (i & 0x3F);
+    }
+
+    // Same as _decodeVInt() but for unsigned (31-bit) values: verifies there
+    // is no overflow
+    private final int _decodeUnsignedVInt() throws IOException
+    {
+        int ptr = _inputPtr;
+        int value = 0;
+        for (int bytesRead = 0; ; ++bytesRead) {
+            int b = _inputBuffer[ptr++];
+            if (b < 0) {
+                _inputPtr = ptr;
+                return _lastUnsignedVIntByte(value, bytesRead, b);
+            }
+            if (bytesRead >= 4) {
+                _reportInvalidUnsignedVInt(value >>> 21, b);
+            }
+            value = (value << 7) | b;
+        }
+    }
+
+    // Helper for handling the last byte of an unsigned VInt, given value
+    // decoded so far and number of bytes before the last one
+    private final int _lastUnsignedVIntByte(int value, int bytesRead, int lastByte)
+        throws IOException
+    {
+        // 4 x 7 + 6 == 34 bits, but only 31 allowed for unsigned int
+        if ((bytesRead == 4) && ((value >>> 25) != 0)) {
+            _reportInvalidUnsignedVInt(value >>> 21, lastByte);
+        }
+        return (value << 6) | (lastByte & 0x3F);
     }
 
     private final boolean _decode7BitEncoded() throws IOException

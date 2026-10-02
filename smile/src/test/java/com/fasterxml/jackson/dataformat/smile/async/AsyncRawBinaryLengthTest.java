@@ -1,7 +1,5 @@
 package com.fasterxml.jackson.dataformat.smile.async;
 
-import java.io.ByteArrayOutputStream;
-
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -13,83 +11,106 @@ import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-// Checks handling of declared length of raw binary values by the
+// Checks handling of declared lengths of binary (and big number) values by the
 // non-blocking parser: validated, and not used for allocation up front
 public class AsyncRawBinaryLengthTest extends AsyncTestBase
 {
+    private final static byte[] HEADER = new byte[] {
+            SmileConstants.HEADER_BYTE_1, SmileConstants.HEADER_BYTE_2,
+            SmileConstants.HEADER_BYTE_3, SmileConstants.HEADER_BIT_HAS_RAW_BINARY
+    };
+
+    private final static byte[] RAW_BINARY = { SmileConstants.TOKEN_MISC_BINARY_RAW };
+    private final static byte[] BINARY_7BIT = { SmileConstants.TOKEN_MISC_BINARY_7BIT };
+    private final static byte[] BIG_INTEGER = { SmileConstants.TOKEN_PREFIX_INTEGER + 2 };
+    private final static byte[] BIG_DECIMAL = { SmileConstants.TOKEN_PREFIX_FP + 2 };
+
+    // Integer.MAX_VALUE as unsigned VInt: no heap could allocate that up front
+    private final static byte[] MAX_LENGTH = { 0x0F, 0x7F, 0x7F, 0x7F, (byte) 0xBF };
+
+    // 5-byte VInts that do not fit in 31 bits: one wraps to -1, the other
+    // to 2^32 + 3 truncated to 3
+    private final static byte[] OVERFLOW_NEGATIVE = { 0x7F, 0x7F, 0x7F, 0x7F, (byte) 0xBF };
+    private final static byte[] OVERFLOW_POSITIVE = { 0x20, 0x00, 0x00, 0x00, (byte) 0x83 };
+
     private final SmileFactory F = new SmileFactory();
 
-    // Declared length (~2 GB) far exceeds content fed so far: should just
-    // wait for more content
+    // Declared length far exceeds content fed so far: should just wait for
+    // more content, not try to allocate full length
     @Test
     public void testLongDeclaredLengthWithShortContent() throws Exception
     {
-        // 2_000_000_000 as unsigned VInt: 4 x 7 bits, then last 6 bits
-        final int len = 2_000_000_000;
-        byte[] doc = _rawBinaryDoc(new byte[] {
-                (byte) ((len >>> 27) & 0x7F),
-                (byte) ((len >>> 20) & 0x7F),
-                (byte) ((len >>> 13) & 0x7F),
-                (byte) ((len >>> 6) & 0x7F),
-                (byte) (0x80 | (len & 0x3F))
-        }, 100);
+        byte[] doc = concat(HEADER, RAW_BINARY, MAX_LENGTH, new byte[100]);
         // both with all content at once, and byte-by-byte (split length)
         _verifyNotAvailable(doc, doc.length);
         _verifyNotAvailable(doc, 1);
     }
 
-    // 5-byte VInt whose value does not fit in 31 bits
     @Test
-    public void testInvalidDeclaredLength() throws Exception
+    public void testInvalidRawBinaryLength() throws Exception
     {
-        byte[] doc = _rawBinaryDoc(new byte[] {
-                0x7F, 0x7F, 0x7F, 0x7F, (byte) 0xBF
-        }, 10);
-        _verifyInvalidLength(doc, doc.length);
-        _verifyInvalidLength(doc, 1);
+        _verifyOverflow(RAW_BINARY, "abc".getBytes("UTF-8"));
+    }
+
+    @Test
+    public void testInvalid7BitBinaryLength() throws Exception
+    {
+        _verifyOverflow(BINARY_7BIT, new byte[] { 0x01, 0x02 });
+    }
+
+    @Test
+    public void testInvalidBigIntegerLength() throws Exception
+    {
+        _verifyOverflow(BIG_INTEGER, new byte[] { 0x01, 0x02 });
+    }
+
+    @Test
+    public void testInvalidBigDecimalScaleAndLength() throws Exception
+    {
+        // invalid scale
+        _verifyOverflow(BIG_DECIMAL, new byte[] { (byte) 0x81, 0x01 });
+        // valid scale (0), invalid length
+        _verifyOverflow(concat(BIG_DECIMAL, new byte[] { (byte) 0x80 }),
+                new byte[] { 0x01, 0x02 });
+    }
+
+    private void _verifyOverflow(byte[] prefix, byte[] suffix) throws Exception
+    {
+        for (byte[] vint : new byte[][] { OVERFLOW_NEGATIVE, OVERFLOW_POSITIVE }) {
+            // add trailing content so that all of VInt is decoded at once
+            byte[] doc = concat(HEADER, prefix, vint, suffix, new byte[10]);
+            _verifyInvalidLength(doc, doc.length);
+            _verifyInvalidLength(doc, 1);
+        }
     }
 
     private void _verifyNotAvailable(byte[] doc, int chunk) throws Exception
     {
         try (JsonParser p = F.createNonBlockingByteArrayParser()) {
-            assertEquals(JsonToken.NOT_AVAILABLE, _feedAll(p, doc, chunk));
+            ByteArrayFeeder feeder = (ByteArrayFeeder) p.getNonBlockingInputFeeder();
+            for (int offset = 0; offset < doc.length; offset += chunk) {
+                feeder.feedInput(doc, offset, Math.min(doc.length, offset + chunk));
+                assertEquals(JsonToken.NOT_AVAILABLE, p.nextToken());
+            }
         }
     }
 
     private void _verifyInvalidLength(byte[] doc, int chunk) throws Exception
     {
         try (JsonParser p = F.createNonBlockingByteArrayParser()) {
-            _feedAll(p, doc, chunk);
+            ByteArrayFeeder feeder = (ByteArrayFeeder) p.getNonBlockingInputFeeder();
+            for (int offset = 0; offset < doc.length; offset += chunk) {
+                feeder.feedInput(doc, offset, Math.min(doc.length, offset + chunk));
+                JsonToken t;
+                while ((t = p.nextToken()) != JsonToken.NOT_AVAILABLE) {
+                    if (t == null) {
+                        break;
+                    }
+                }
+            }
             fail("Should not pass");
         } catch (StreamReadException e) {
-            verifyException(e, "invalid length for raw binary value");
+            verifyException(e, "Overflow in VInt");
         }
-    }
-
-    // Feeds all of content, returns last token returned
-    private JsonToken _feedAll(JsonParser p, byte[] doc, int chunk) throws Exception
-    {
-        ByteArrayFeeder feeder = (ByteArrayFeeder) p.getNonBlockingInputFeeder();
-        JsonToken t = null;
-        for (int offset = 0; offset < doc.length; offset += chunk) {
-            feeder.feedInput(doc, offset, Math.min(doc.length, offset + chunk));
-            while ((t = p.nextToken()) != JsonToken.NOT_AVAILABLE) {
-                assertFalse(t == JsonToken.VALUE_EMBEDDED_OBJECT, "Should not get complete value");
-            }
-        }
-        return t;
-    }
-
-    private byte[] _rawBinaryDoc(byte[] vint, int contentLen)
-    {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        bytes.write(SmileConstants.HEADER_BYTE_1);
-        bytes.write(SmileConstants.HEADER_BYTE_2);
-        bytes.write(SmileConstants.HEADER_BYTE_3);
-        bytes.write(SmileConstants.HEADER_BIT_HAS_RAW_BINARY);
-        bytes.write(SmileConstants.TOKEN_MISC_BINARY_RAW);
-        bytes.write(vint, 0, vint.length);
-        bytes.write(new byte[contentLen], 0, contentLen);
-        return bytes.toByteArray();
     }
 }

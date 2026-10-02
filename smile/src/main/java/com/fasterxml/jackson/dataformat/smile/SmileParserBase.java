@@ -419,6 +419,25 @@ public abstract class SmileParserBase extends ParserMinimalBase
 
     protected abstract void _releaseBuffers2();
 
+    /*
+    /**********************************************************
+    /* Error reporting
+    /**********************************************************
+     */
+
+    // @since 2.18.12 (moved from SmileParser)
+    protected final void _reportInvalidUnsignedVInt(int firstCh, int lastCh) throws IOException
+    {
+        if (lastCh >= 0) {
+            _reportError(
+"Overflow in VInt (current token %s): 5th byte (0x%2X) of 5-byte sequence must have its highest bit set to indicate end",
+currentToken(), lastCh);
+        }
+        _reportError(
+"Overflow in VInt (current token %s): 1st byte (0x%2X) of 5-byte sequence must have its top 4 bits zeroes",
+currentToken(), firstCh);
+    }
+
     @Override public final boolean isClosed() { return _closed; }
     @Override public final JsonReadContext getParsingContext() { return _streamReadContext; }
 
