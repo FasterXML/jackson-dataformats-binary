@@ -1078,6 +1078,10 @@ versionBits));
     public String getText() throws IOException
     {
         if (_tokenIncomplete) {
+            // Binary values have no textual representation: avoid decoding them
+            if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT) {
+                return null;
+            }
             _tokenIncomplete = false;
             // Let's inline part of "_finishToken", common case
             int tb = _typeAsInt;
@@ -1111,7 +1115,8 @@ versionBits));
     public char[] getTextCharacters() throws IOException
     {
         if (_currToken != null) { // null only before/after document
-            if (_tokenIncomplete) {
+            // Binary values have no textual representation: avoid decoding them
+            if (_tokenIncomplete && (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT)) {
                 _finishToken();
             }
             if (_currToken == JsonToken.VALUE_STRING) {
@@ -1143,7 +1148,8 @@ versionBits));
     public int getTextLength() throws IOException
     {
         if (_currToken != null) { // null only before/after document
-            if (_tokenIncomplete) {
+            // Binary values have no textual representation: avoid decoding them
+            if (_tokenIncomplete && (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT)) {
                 _finishToken();
             }
             if (_currToken == JsonToken.VALUE_STRING) {

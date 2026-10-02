@@ -104,8 +104,10 @@ public class ParserGetTextWriter835Test extends BaseTestForSmile
         StringWriter w = new StringWriter();
         assertEquals(0, p.getText(w));
         assertEquals("", w.toString());
-        assertArrayEquals(new byte[] { 1, 2, 3 }, p.getBinaryValue());
         assertNull(p.getText());
+        assertNull(p.getTextCharacters());
+        assertEquals(0, p.getTextLength());
+        assertArrayEquals(new byte[] { 1, 2, 3 }, p.getBinaryValue());
         assertToken(JsonToken.VALUE_TRUE, p.nextToken());
         assertEquals("true", _getTextWriter(p));
         assertToken(JsonToken.VALUE_NULL, p.nextToken());
