@@ -150,6 +150,11 @@ public class NonBlockingByteArrayParser
             }
             // note: if so, do not even bother changing state
             if (_endOfInput) { // except for this special case
+                // [dataformats-binary#830]: end-of-input in the middle of a token
+                // is never valid (no Smile token can end at end-of-input)
+                if (_currToken == JsonToken.NOT_AVAILABLE) {
+                    _reportEOFInToken();
+                }
                 return _eofAsNextToken();
             }
             return JsonToken.NOT_AVAILABLE;
@@ -326,6 +331,69 @@ public class NonBlockingByteArrayParser
         default:
         }
         throw new IllegalStateException("Illegal state when trying to complete token: majorState="+_majorState);
+    }
+
+    // [dataformats-binary#830]: Reports end-of-input encountered when decoding
+    // of a token is incomplete (current token is `NOT_AVAILABLE`)
+    private final void _reportEOFInToken() throws IOException
+    {
+        final String desc;
+        final JsonToken type;
+        switch (_minorState) {
+        case MINOR_HEADER_INITIAL:
+        case MINOR_HEADER_INLINE:
+            desc = "Smile header";
+            type = null;
+            break;
+        case MINOR_FIELD_NAME_2BYTE:
+        case MINOR_FIELD_NAME_LONG:
+        case MINOR_FIELD_NAME_SHORT_ASCII:
+        case MINOR_FIELD_NAME_SHORT_UNICODE:
+            desc = "Field name";
+            type = JsonToken.FIELD_NAME;
+            break;
+        case MINOR_VALUE_NUMBER_INT:
+        case MINOR_VALUE_NUMBER_LONG:
+        case MINOR_VALUE_NUMBER_BIGINT_LEN:
+        case MINOR_VALUE_NUMBER_BIGINT_BODY:
+            desc = "Number value";
+            type = JsonToken.VALUE_NUMBER_INT;
+            break;
+        case MINOR_VALUE_NUMBER_FLOAT:
+        case MINOR_VALUE_NUMBER_DOUBLE:
+        case MINOR_VALUE_NUMBER_BIGDEC_SCALE:
+        case MINOR_VALUE_NUMBER_BIGDEC_LEN:
+        case MINOR_VALUE_NUMBER_BIGDEC_BODY:
+            desc = "Number value";
+            type = JsonToken.VALUE_NUMBER_FLOAT;
+            break;
+        case MINOR_VALUE_SKIP_7BIT_BODY:
+            desc = "Number value (being skipped)";
+            type = null;
+            break;
+        case MINOR_VALUE_STRING_SHORT_ASCII:
+        case MINOR_VALUE_STRING_SHORT_UNICODE:
+        case MINOR_VALUE_STRING_LONG_ASCII:
+        case MINOR_VALUE_STRING_LONG_UNICODE:
+        case MINOR_VALUE_STRING_SHARED_2BYTE:
+            desc = "String value";
+            type = JsonToken.VALUE_STRING;
+            break;
+        case MINOR_VALUE_BINARY_RAW_LEN:
+        case MINOR_VALUE_BINARY_RAW_BODY:
+            desc = "Binary value (raw)";
+            type = JsonToken.VALUE_EMBEDDED_OBJECT;
+            break;
+        case MINOR_VALUE_BINARY_7BIT_LEN:
+        case MINOR_VALUE_BINARY_7BIT_BODY:
+            desc = "Binary value (7-bit)";
+            type = JsonToken.VALUE_EMBEDDED_OBJECT;
+            break;
+        default:
+            desc = "token (internal state: "+_minorState+")";
+            type = null;
+        }
+        _reportInvalidEOF(" in "+desc, type);
     }
 
     /*
