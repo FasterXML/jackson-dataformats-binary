@@ -591,6 +591,8 @@ public abstract class NonBlockingParserBase
      * input feeder has indicated no more input will be forthcoming.
      */
     protected final JsonToken _eofAsNextToken() throws IOException {
+        // [dataformats-binary#831]: end-of-input "token" located at end of content
+        _tokenInputTotal = _currInputProcessed + _inputPtr;
         _majorState = MAJOR_CLOSED;
         if (!_streamReadContext.inRoot()) {
             _handleEOF();
