@@ -275,6 +275,8 @@ No changes since 2.19.1
 
 2.18.12 (not yet released)
 
+#770: (smile) Async parser decodes short ASCII values split across input feeds
+  as short Unicode
 #817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
   [CVE-2026-104016][CVE-2026-104017]
  (fix by @pjfanning, w/ Claude code)
