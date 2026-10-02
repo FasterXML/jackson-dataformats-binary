@@ -900,7 +900,9 @@ public class CBORParser extends ParserBase
                     nr = new BigInteger(_binaryValue).negate();
                 }
             } else {
-                nr = new BigInteger(_binaryValue);
+                // Bignum content is unsigned magnitude, so must not decode as
+                // two's complement (high bit set would otherwise yield negative value)
+                nr = new BigInteger(1, _binaryValue);
             }
             _numberBigInt = nr;
         }
@@ -924,19 +926,24 @@ public class CBORParser extends ParserBase
 
         // but has to have length of 2; otherwise we have a problem...
         if (len != 2) {
-            _reportError("Unexpected array size ("+len+") for tagged 'bigfloat' value; should have exactly 2 number elements");
+            _reportError("Unexpected array size ("+len+") for tagged 'decimal fraction' value; should have exactly 2 number elements");
         }
         // and then use recursion to get values
         // First: exponent, which MUST be a simple integer value
-        if (!_checkNextIsIntInArray("bigfloat")) {
-            _reportError("Unexpected token ("+currentToken()+") as the first part of 'bigfloat' value: should get VALUE_NUMBER_INT");
+        if (!_checkNextIsIntInArray("decimal fraction")) {
+            _reportError("Unexpected token ("+currentToken()+") as the first part of 'decimal fraction' value: should get VALUE_NUMBER_INT");
         }
         // 27-Nov-2019, tatu: As per [dataformats-binary#139] need to change sign here
-        int exp = -getIntValue();
+        final int exp;
+        if ((_numTypesValid == NR_INT) && (_numberInt != Integer.MIN_VALUE)) {
+            exp = -_numberInt;
+        } else {
+            exp = _decimalFractionScale();
+        }
 
         // Should get an integer value; int/long/BigInteger
-        if (!_checkNextIsIntInArray("bigfloat")) {
-            _reportError("Unexpected token ("+currentToken()+") as the second part of 'bigfloat' value: should get VALUE_NUMBER_INT");
+        if (!_checkNextIsIntInArray("decimal fraction")) {
+            _reportError("Unexpected token ("+currentToken()+") as the second part of 'decimal fraction' value: should get VALUE_NUMBER_INT");
         }
 
         // important: check number type here
@@ -950,13 +957,42 @@ public class CBORParser extends ParserBase
 
         // but verify closing END_ARRAY here, as this will now override current token
         if (!_checkNextIsEndArray()) {
-            _reportError("Unexpected token ("+currentToken()+") after 2 elements of 'bigfloat' value");
+            _reportError("Unexpected token ("+currentToken()+") after 2 elements of 'decimal fraction' value");
         }
 
         // which needs to be reset here
         _numberBigDecimal = dec;
         _numTypesValid = NR_BIGDECIMAL;
         return _updateToken(JsonToken.VALUE_NUMBER_FLOAT);
+    }
+
+    // [dataformats-binary#842]: exponent of 2^31 is valid (scale of Integer.MIN_VALUE),
+    // but -2^31 is not (would need scale of 2^31), so need to negate as long
+    // @since 3.1.8
+    private int _decimalFractionScale() throws JacksonException
+    {
+        final long exp64;
+        if (getNumberType() == NumberType.BIG_INTEGER) {
+            final BigInteger big = getBigIntegerValue();
+            if (big.bitLength() > 63) {
+                _reportDecimalFractionExponentOutOfRange(big);
+            }
+            exp64 = big.longValue();
+        } else {
+            exp64 = getLongValue();
+        }
+        final long scale64 = -exp64;
+        if ((scale64 < Integer.MIN_VALUE) || (scale64 > Integer.MAX_VALUE)) {
+            _reportDecimalFractionExponentOutOfRange(exp64);
+        }
+        return (int) scale64;
+    }
+
+    // @since 3.1.8
+    private void _reportDecimalFractionExponentOutOfRange(Object exp) throws JacksonException
+    {
+        _reportError("Exponent ("+exp+") of 'decimal fraction' value out of range for `BigDecimal`: must be within ["
+                +(-(long) Integer.MAX_VALUE)+", "+(-(long) Integer.MIN_VALUE)+"]");
     }
 
     /**
@@ -1049,10 +1085,11 @@ public class CBORParser extends ParserBase
             }
             if (tagValues == null) {
                 _updateToken(JsonToken.VALUE_NUMBER_INT);
-            } else {
-                _handleTaggedInt(tagValues);
+                return true;
             }
-            return true;
+            // [dataformats-binary#842]: tagged int may resolve to something else
+            // (like String for stringref), so need to verify
+            return (_handleTaggedInt(tagValues) == JsonToken.VALUE_NUMBER_INT);
         case 1: // negative int
             _numTypesValid = NR_INT;
             if (lowBits <= 23) {

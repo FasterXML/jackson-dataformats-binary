@@ -130,4 +130,35 @@ public class CBORBigNumberParserTest extends CBORTestBase
             assertNull(parser.nextToken());
         }
     }
+
+    // Bignum content is unsigned: high bit of first byte must not make value negative
+    @Test
+    public void testBigIntegerHighBitSet() throws Exception
+    {
+        // 2([0x80 00 00 00]) == 2^31
+        _verifyBigInteger(BigInteger.ONE.shiftLeft(31),
+                new byte[] { (byte) 0xC2, 0x44, (byte) 0x80, 0, 0, 0 });
+        // 2([0xFF x 9]) == 2^72 - 1
+        final byte FF = (byte) 0xFF;
+        _verifyBigInteger(BigInteger.ONE.shiftLeft(72).subtract(BigInteger.ONE),
+                new byte[] { (byte) 0xC2, 0x49, FF, FF, FF, FF, FF, FF, FF, FF, FF });
+        // 3([0x80 00 00 00]) == -1 - 2^31 with standard encoding
+        _verifyBigInteger(BigInteger.ONE.shiftLeft(31).add(BigInteger.ONE).negate(),
+                cborFactoryBuilder().enable(CBORReadFeature.DECODE_USING_STANDARD_NEGATIVE_BIGINT_ENCODING).build(),
+                new byte[] { (byte) 0xC3, 0x44, (byte) 0x80, 0, 0, 0 });
+        // (legacy negative decoding left as-is for compatibility: see `CBORMapperTest`)
+    }
+
+    private void _verifyBigInteger(BigInteger exp, byte[] doc) throws Exception {
+        _verifyBigInteger(exp, cborFactory(), doc);
+    }
+
+    private void _verifyBigInteger(BigInteger exp, CBORFactory f, byte[] doc) throws Exception
+    {
+        try (CBORParser p = cborParser(f, doc)) {
+            assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(exp, p.getBigIntegerValue());
+            assertNull(p.nextToken());
+        }
+    }
 }
