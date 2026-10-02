@@ -325,9 +325,11 @@ public abstract class SmileParserBase extends ParserMinimalBase
     /**
      * Overridden since we do not really have character-based locations,
      * but we do have byte offset to specify.
+     *<p>
+     * NOTE: not {@code final} since 2.23, to allow override by non-blocking parser.
      */
     @Override
-    public final JsonLocation currentLocation()
+    public JsonLocation currentLocation()
     {
         final long offset = _currInputProcessed + _inputPtr;
         return new JsonLocation(_ioContext.contentReference(),
@@ -338,9 +340,11 @@ public abstract class SmileParserBase extends ParserMinimalBase
     /**
      * Overridden since we do not really have character-based locations,
      * but we do have byte offset to specify.
+     *<p>
+     * NOTE: not {@code final} since 2.23, to allow override by non-blocking parser.
      */
     @Override
-    public final JsonLocation currentTokenLocation()
+    public JsonLocation currentTokenLocation()
     {
         // token location is correctly managed...
         long total = _currInputProcessed + _tokenOffsetForTotal;

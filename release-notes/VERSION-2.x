@@ -23,6 +23,9 @@ Active maintainers:
 #800: (ion) Upgrade `ion-java` dependency to 1.12.1 (from 1.11.11, which has
   binary-write corruption bug)
  (fix by @cowtowncoder, w/ Claude code)
+#831: (smile) Non-blocking Smile parser reports wrong `currentLocation()` /
+  `currentTokenLocation()` byte offsets
+ (fix by @cowtowncoder, w/ Claude code)
 
 2.22.4 (not yet released)
 
