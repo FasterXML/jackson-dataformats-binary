@@ -1917,9 +1917,8 @@ public class ProtobufParser extends ParserMinimalBase
     @Override // since 2.8
     public int getString(Writer writer) throws JacksonException
     {
-        try {
-            JsonToken t = _currToken;
-            if (t == JsonToken.VALUE_STRING) {
+        if (_currToken == JsonToken.VALUE_STRING) {
+            try {
                 if (_tokenIncomplete) {
                     // inlined '_finishToken()`
                     final int len = _decodedLength;
@@ -1932,24 +1931,14 @@ public class ProtobufParser extends ParserMinimalBase
                     }
                 }
                 return _textBuffer.contentsToWriter(writer);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
             }
-            if (t == JsonToken.PROPERTY_NAME) {
-                String n = _streamReadContext.currentName();
-                writer.write(n);
-                return n.length();
-            }
-            if (t != null) {
-                if (t.isNumeric()) {
-                    return _textBuffer.contentsToWriter(writer);
-                }
-                char[] ch = t.asCharArray();
-                writer.write(ch);
-                return ch.length;
-            }
-        } catch (IOException e) {
-            throw _wrapIOFailure(e);
         }
-        return 0;
+        // [dataformats-binary#846]: numbers are not decoded into `_textBuffer`,
+        // and binary values have no textual representation: so defer to
+        // default implementation that goes through `getString()`
+        return super.getString(writer);
     }
 
     /*

@@ -77,6 +77,9 @@ implementations)
  (fix by @cowtowncoder, w/ Claude code)
 #842: (cbor) `CBORGenerator` writes wrong exponent for `BigDecimal` with scale `Integer.MIN_VALUE`
  (fix by @cowtowncoder, w/ Claude code)
+#846: (protobuf) `ProtobufParser.getString(Writer)` writes stale text for numeric tokens,
+  NPE for binary
+ (fix by @cowtowncoder, w/ Claude code)
 
 3.2.3 (21-Sep-2026)
 
@@ -170,6 +173,9 @@ No changes since 3.2.0
 #835: (smile) `SmileParser.getString(Writer)` writes stale text for numeric tokens
  (fix by @cowtowncoder, w/ Claude code)
 #842: (cbor) `CBORGenerator` writes wrong exponent for `BigDecimal` with scale `Integer.MIN_VALUE`
+ (fix by @cowtowncoder, w/ Claude code)
+#846: (protobuf) `ProtobufParser.getString(Writer)` writes stale text for numeric tokens,
+  NPE for binary
  (fix by @cowtowncoder, w/ Claude code)
 
 3.1.7 (21-Sep-2026)
