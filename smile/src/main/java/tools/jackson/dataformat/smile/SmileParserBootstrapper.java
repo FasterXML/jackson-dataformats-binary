@@ -47,19 +47,6 @@ public class SmileParserBootstrapper
     /**********************************************************************
      */
 
-    /**
-     * Current number of input units (bytes or chars) that were processed in
-     * previous blocks,
-     * before contents of current input buffer.
-     *<p>
-     * Note: includes possible BOMs, if those were part of the input.
-     *
-     * @deprecated Since 2.23 not used: never passed to {@link SmileParser}, which
-     *    accounts for input start offset itself.
-     */
-    @Deprecated
-    protected int _inputProcessed;
-
     /*
     /**********************************************************************
     /* Life-cycle
@@ -72,7 +59,6 @@ public class SmileParserBootstrapper
         _in = in;
         _inputBuffer = ctxt.allocReadIOBuffer();
         _inputEnd = _inputPtr = 0;
-        _inputProcessed = 0;
         _bufferRecyclable = true;
     }
 
@@ -83,8 +69,6 @@ public class SmileParserBootstrapper
         _inputBuffer = inputBuffer;
         _inputPtr = inputStart;
         _inputEnd = (inputStart + inputLen);
-        // NOTE: not used for location info; `SmileParser` offsets `inputStart` itself
-        _inputProcessed = -inputStart;
         _bufferRecyclable = false;
     }
 

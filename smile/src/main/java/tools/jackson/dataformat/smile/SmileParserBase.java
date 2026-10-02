@@ -110,15 +110,6 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected long _currInputProcessed;
 
     /**
-     * Offset within input buffer of the start of the current token.
-     *
-     * @deprecated Since 2.23 replaced by {@link #_tokenInputTotal} (no longer
-     *   used or updated)
-     */
-    @Deprecated
-    protected int _tokenOffsetForTotal;
-
-    /**
      * Absolute byte offset (from the beginning of the whole content) of the
      * start of the current token: absolute, as opposed to relative to current
      * input buffer, since a token may span multiple buffers.

@@ -38,15 +38,6 @@ public class NonBlockingByteArrayParser
      */
     protected byte[] _inputBuffer = NO_BYTES;
 
-    /**
-     * Number of bytes contained in the current input chunk.
-     *
-     * @deprecated Since 2.23 not used: location information is calculated
-     *    using {@code _currInputProcessed} (offset by chunk start) and {@code _inputPtr}.
-     */
-    @Deprecated
-    protected int _origBufferLen;
-
     // And from ParserBase:
 //    protected int _inputPtr;
 //    protected int _inputEnd;
@@ -112,7 +103,6 @@ public class NonBlockingByteArrayParser
         _inputBuffer = buf;
         _inputPtr = start;
         _inputEnd = end;
-        _origBufferLen = end - start;
     }
 
     @Override
