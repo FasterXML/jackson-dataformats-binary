@@ -1,6 +1,8 @@
 package com.fasterxml.jackson.dataformat.smile.async;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -8,21 +10,17 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 // [dataformats-binary#838]: non-blocking parser required header after
 // a root-level scalar value (rejecting end marker, header-less root values)
 public class AsyncRootScalar838Test extends AsyncTestBase
 {
-    private final SmileFactory F_REQ_HEADER = SmileFactory.builder()
-            .enable(SmileParser.Feature.REQUIRE_HEADER)
-            .build();
+    private final SmileFactory F_REQ_HEADER = smileFactory(true, false, false);
 
-    private final SmileFactory F_NO_REQ_HEADER = SmileFactory.builder()
-            .disable(SmileParser.Feature.REQUIRE_HEADER)
-            .build();
+    private final SmileFactory F_NO_REQ_HEADER = smileFactory(false, false, false);
 
     // int 1, end marker
     private final static byte[] DOC_INT_END_MARKER = _bytes(0x3A, 0x29, 0x0A, 0x01, 0xC2, 0xFF);
@@ -43,10 +41,48 @@ public class AsyncRootScalar838Test extends AsyncTestBase
     private final static byte[] DOC_INT_STRING_END_MARKER = _bytes(0x3A, 0x29, 0x0A, 0x01,
             0xC2, 0x40, 0x61, 0xFF);
 
+    // int, end marker, header, int
+    private final static byte[] DOC_INT_END_MARKER_HEADER_INT = _bytes(0x3A, 0x29, 0x0A, 0x01,
+            0xC2, 0xFF, 0x3A, 0x29, 0x0A, 0x01, 0xC4);
+
+    // [], end marker, header, []
+    private final static byte[] DOC_ARRAY_END_MARKER_HEADER_ARRAY = _bytes(0x3A, 0x29, 0x0A, 0x01,
+            0xF8, 0xF9, 0xFF, 0x3A, 0x29, 0x0A, 0x01, 0xF8, 0xF9);
+
+    // int, header, int (no end marker)
+    private final static byte[] DOC_INT_HEADER_INT = _bytes(0x3A, 0x29, 0x0A, 0x00,
+            0xC2, 0x3A, 0x29, 0x0A, 0x00, 0xC4);
+
+    // int, end marker, 3 headers, int
+    private final static byte[] DOC_INT_END_MARKER_HEADERS_INT = _bytes(0x3A, 0x29, 0x0A, 0x01,
+            0xC2, 0xFF, 0x3A, 0x29, 0x0A, 0x01, 0x3A, 0x29, 0x0A, 0x01, 0x3A, 0x29, 0x0A, 0x01,
+            0xC4);
+
+    // 2 initial headers, int
+    private final static byte[] DOC_HEADERS_INT = _bytes(0x3A, 0x29, 0x0A, 0x00,
+            0x3A, 0x29, 0x0A, 0x00, 0xC2);
+
     @Test
     public void testRootScalarWithEndMarker() throws Exception {
         _verifyMatchesBlocking(DOC_INT_END_MARKER);
         _verifyMatchesBlocking(DOC_INT_STRING_END_MARKER);
+    }
+
+    // End marker followed by header should only produce a single `null` token
+    @Test
+    public void testEndMarkerFollowedByHeader() throws Exception {
+        _verifyMatchesBlocking(DOC_INT_END_MARKER_HEADER_INT);
+        _verifyMatchesBlocking(DOC_ARRAY_END_MARKER_HEADER_ARRAY);
+        _verifyMatchesBlocking(DOC_INT_END_MARKER_HEADERS_INT);
+        // and verify expected sequence explicitly too
+        assertEquals(Arrays.asList(JsonToken.VALUE_NUMBER_INT, null, JsonToken.VALUE_NUMBER_INT),
+                _asyncTokens(F_REQ_HEADER, DOC_INT_END_MARKER_HEADER_INT, 1, 0));
+    }
+
+    @Test
+    public void testRootScalarFollowedByHeader() throws Exception {
+        _verifyMatchesBlocking(DOC_INT_HEADER_INT);
+        _verifyMatchesBlocking(DOC_HEADERS_INT);
     }
 
     @Test
@@ -86,10 +122,7 @@ public class AsyncRootScalar838Test extends AsyncTestBase
     {
         List<JsonToken> tokens = new ArrayList<>();
         try (JsonParser p = f.createParser(doc)) {
-            JsonToken t;
-            while ((t = p.nextToken()) != null) {
-                tokens.add(t);
-            }
+            _collectTokens(p, doc, tokens, p::nextToken);
         }
         return tokens;
     }
@@ -99,12 +132,30 @@ public class AsyncRootScalar838Test extends AsyncTestBase
     {
         List<JsonToken> tokens = new ArrayList<>();
         AsyncReaderWrapper r = asyncForBytes(f, chunk, doc, padding);
-        JsonToken t;
-        while ((t = r.nextToken()) != null) {
-            tokens.add(t);
-        }
+        _collectTokens(r.parser(), doc, tokens, r::nextToken);
         r.close();
         return tokens;
+    }
+
+    interface TokenSource {
+        JsonToken nextToken() throws IOException;
+    }
+
+    // Collects all tokens, including `null` tokens from end markers / in-line
+    // headers: stops only when all content has been consumed
+    private void _collectTokens(JsonParser p, byte[] doc, List<JsonToken> tokens,
+            TokenSource src) throws IOException
+    {
+        while (true) {
+            JsonToken t = src.nextToken();
+            if (t == null && p.currentLocation().getByteOffset() >= doc.length) {
+                break;
+            }
+            tokens.add(t);
+            if (tokens.size() > 100) {
+                fail("Too many tokens: "+tokens);
+            }
+        }
     }
 
     private static byte[] _bytes(int... values) {

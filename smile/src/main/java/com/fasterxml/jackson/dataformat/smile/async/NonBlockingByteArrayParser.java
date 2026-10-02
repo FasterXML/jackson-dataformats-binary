@@ -60,6 +60,15 @@ public class NonBlockingByteArrayParser
     /**********************************************************************
      */
 
+    /**
+     * Flag set when an in-line header is encountered right after a `null` token
+     * (end marker, or another header): if so, header is not reported as a separate
+     * `null` token (same as with blocking parser).
+     *
+     * @since 2.23
+     */
+    private boolean _collapseInlineHeader;
+
     public NonBlockingByteArrayParser(IOContext ctxt, int parserFeatures, int smileFeatures,
             ByteQuadsCanonicalizer sym)
     {
@@ -161,7 +170,8 @@ public class NonBlockingByteArrayParser
             if (_endOfInput) { // except for this special case
                 // [dataformats-binary#830]: end-of-input in the middle of a token
                 // is never valid (no Smile token can end at end-of-input)
-                if ((_currToken == JsonToken.NOT_AVAILABLE) && !_skipCompleted()) {
+                if ((_currToken == JsonToken.NOT_AVAILABLE) && !_skipCompleted()
+                        && !_inlineHeaderCompleted()) {
                     _reportEOFInToken();
                 }
                 return _eofAsNextToken();
@@ -185,9 +195,6 @@ public class NonBlockingByteArrayParser
             if (SmileConstants.HEADER_BYTE_1 == ch) { // yes, initial header; should be good
                 // minor state as 0, which is fine
                 _majorState = MAJOR_ROOT;
-                // [dataformats-binary#838]: root-level scalars must be followed by
-                // root-level content, not by (required) header
-                _majorStateAfterValue = MAJOR_ROOT;
                 _minorState = MINOR_HEADER_INITIAL;
                 return _finishHeader(0);
             }
@@ -197,12 +204,14 @@ public class NonBlockingByteArrayParser
             // otherwise fine, just drop through to next state
             // (NOTE: it double-checks header; fine, won't match; just need the rest)
             _majorState = MAJOR_ROOT;
-            _majorStateAfterValue = MAJOR_ROOT; // [dataformats-binary#838]
             return _startValue(ch);
 
         case MAJOR_ROOT: //
             if (SmileConstants.HEADER_BYTE_1 == ch) { // looks like a header
                 _minorState = MINOR_HEADER_INLINE;
+                // [dataformats-binary#838]: if preceded by `null` token (end marker,
+                // or another header), header is not reported separately
+                _collapseInlineHeader = (_currToken == null);
                 return _finishHeader(0);
             }
             return _startValue(ch);
@@ -420,6 +429,12 @@ public class NonBlockingByteArrayParser
         return (_minorState == MINOR_VALUE_SKIP_7BIT_BODY) && (_pending64 == 0L);
     }
 
+    // [dataformats-binary#838]: collapsed in-line header fully decoded,
+    // only waiting to see the following byte
+    private final boolean _inlineHeaderCompleted() {
+        return (_minorState == MINOR_HEADER_INLINE) && (_pending32 == 3);
+    }
+
     /*
     /**********************************************************************
     /* Second-level decoding
@@ -491,6 +506,30 @@ public class NonBlockingByteArrayParser
             // ones need to be reported as `null` tokens as they are logical document end
             // markers (although should be collated with actual end markers)
             if (_minorState == MINOR_HEADER_INLINE) {
+                if (!_collapseInlineHeader) {
+                    return null;
+                }
+                // [dataformats-binary#838]: collapsed with preceding `null` token, but
+                // to avoid deep recursion for long sequences of headers, only recurse
+                // if next byte is not another header (same as blocking parser):
+                // so need to see that byte first
+                state = 3;
+            } else {
+                // [dataformats-binary#831]: if no more content available, token location
+                // should still point to after the header (recursive call will update
+                // otherwise)
+                _tokenInputTotal = _currInputProcessed + _inputPtr;
+                // Ok to use recursion in case of initial header, as well:
+                return nextToken();
+            }
+            // fall through
+        case 3: // [dataformats-binary#838]: collapsed in-line header, check next byte
+            if (_inputPtr >= _inputEnd) {
+                _pending32 = state;
+                return _updateTokenToNA();
+            }
+            _updateTokenToNull();
+            if (_inputBuffer[_inputPtr] == SmileConstants.HEADER_BYTE_1) {
                 return null;
             }
             // [dataformats-binary#831]: if no more content available, token location
