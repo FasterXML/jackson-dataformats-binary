@@ -2102,6 +2102,12 @@ versionBits));
 
     protected final void _finishNumberToken(int tb) throws IOException
     {
+        // If declared length failed validation earlier, fail again: content
+        // not read, token remains incomplete (to be skipped by nextToken())
+        if (_numberLengthFailure != null) {
+            _tokenIncomplete = true;
+            throw _numberLengthFailureAgain();
+        }
         switch (tb & 0x1F) {
         case 4:
             _finishInt(); // vint
@@ -2297,7 +2303,6 @@ versionBits));
 
     private final void _finishBigInteger() throws IOException
     {
-        _checkNumberLengthFailure();
         // Validate declared length before reading (and buffering) content
         final int byteLen = _readUnsignedVInt();
         try {
@@ -2351,7 +2356,6 @@ versionBits));
 
     private final void _finishBigDecimal() throws IOException
     {
-        _checkNumberLengthFailure();
         final int scale = SmileUtil.zigzagDecode(_readUnsignedVInt());
         // Validate declared length before reading (and buffering) content
         final int byteLen = _readUnsignedVInt();
@@ -3023,13 +3027,13 @@ currentToken(), firstCh);
         return fail;
     }
 
-    // Rethrows earlier failure of current token, if any
-    private void _checkNumberLengthFailure() throws StreamConstraintsException
+    // New exception (same message and location) for repeated access to a value
+    // whose length failed validation: not the same instance, so that its stack
+    // trace is for this access, and changes to the earlier one are not carried
+    private StreamConstraintsException _numberLengthFailureAgain()
     {
-        if (_numberLengthFailure != null) {
-            _tokenIncomplete = true;
-            throw _numberLengthFailure;
-        }
+        return new StreamConstraintsException(_numberLengthFailure.getOriginalMessage(),
+                _numberLengthFailure.getLocation());
     }
 
     /*
@@ -3173,7 +3177,7 @@ currentToken(), firstCh);
         throws IOException
     {
         // Calculate number of bytes needed (1 encoded byte expresses 7 payload bits):
-        final long encodedLen = (7L + 8L * expLen) / 7L;
+        final long encodedLen = _encoded7BitLength(expLen);
         _reportInvalidEOF(String.format(
 " for Binary value (7-bit): expected %d payload bytes (from %d encoded), only decoded %d",
                 expLen, encodedLen, actLen), currentToken());

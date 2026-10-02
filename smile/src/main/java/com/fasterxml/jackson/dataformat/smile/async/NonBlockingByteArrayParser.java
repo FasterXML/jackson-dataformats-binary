@@ -85,12 +85,8 @@ public class NonBlockingByteArrayParser
         if (end < start) {
             _reportError("Input end (%d) may not be before start (%d)", end, start);
         }
-        if (_closed) {
+        if (_closed || _endOfInput) {
             _reportError("Parser closed, can not feed more input");
-        }
-        // and shouldn't have been marked as end-of-input
-        if (_endOfInput) {
-            _reportError("Already closed, can not feed more input");
         }
         // Validate (including content being fed) before updating any state,
         // to leave parser untouched if this throws
@@ -1443,11 +1439,15 @@ public class NonBlockingByteArrayParser
             StreamConstraintsException fail, JsonToken valueType)
         throws StreamConstraintsException
     {
+        _pending32 = len;
         _pending64 = _encoded7BitLength(len);
         _minorState = MINOR_VALUE_SKIP_7BIT_BODY;
         // Failed value still counts as a token (as with blocking parser)
         try {
             _updateToken(valueType);
+        } catch (StreamConstraintsException e) {
+            e.addSuppressed(fail);
+            throw e;
         } finally {
             _updateTokenToNA();
         }
@@ -1456,6 +1456,12 @@ public class NonBlockingByteArrayParser
 
     private final JsonToken _finishSkip7BitBody() throws IOException
     {
+        // Same limit as with blocking parser (which cannot skip more)
+        if (_pending64 > Integer.MAX_VALUE) {
+            _reportError(
+"Invalid content: invalid 7-bit binary encoded byte length (0x%X) exceeds maximum valid value",
+                    _pending32);
+        }
         final int count = (int) Math.min(_inputEnd - _inputPtr, _pending64);
         _inputPtr += count;
         _pending64 -= count;
