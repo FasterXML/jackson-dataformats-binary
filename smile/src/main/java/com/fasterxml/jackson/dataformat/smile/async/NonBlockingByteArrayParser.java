@@ -47,6 +47,12 @@ public class NonBlockingByteArrayParser
 //    protected int _inputPtr;
 //    protected int _inputEnd;
 
+    /**
+     * Type of value being skipped after its length failed validation, if any
+     * (used for error reporting)
+     */
+    private JsonToken _skippedValueType;
+
     /*
     /**********************************************************************
     /* Life-cycle
@@ -150,6 +156,11 @@ public class NonBlockingByteArrayParser
             }
             // note: if so, do not even bother changing state
             if (_endOfInput) { // except for this special case
+                // [dataformats-binary#830]: end-of-input in the middle of a token
+                // is never valid (no Smile token can end at end-of-input)
+                if ((_currToken == JsonToken.NOT_AVAILABLE) && !_skipCompleted()) {
+                    _reportEOFInToken();
+                }
                 return _eofAsNextToken();
             }
             return JsonToken.NOT_AVAILABLE;
@@ -326,6 +337,80 @@ public class NonBlockingByteArrayParser
         default:
         }
         throw new IllegalStateException("Illegal state when trying to complete token: majorState="+_majorState);
+    }
+
+    // [dataformats-binary#830]: Reports end-of-input encountered when decoding
+    // of a token is incomplete (current token is `NOT_AVAILABLE`)
+    private final void _reportEOFInToken() throws IOException
+    {
+        final String desc;
+        final JsonToken type;
+        switch (_minorState) {
+        case MINOR_HEADER_INITIAL:
+        case MINOR_HEADER_INLINE:
+            desc = "Smile header";
+            type = null;
+            break;
+        case MINOR_FIELD_NAME_2BYTE:
+        case MINOR_FIELD_NAME_LONG:
+        case MINOR_FIELD_NAME_SHORT_ASCII:
+        case MINOR_FIELD_NAME_SHORT_UNICODE:
+            desc = "Field name";
+            type = JsonToken.FIELD_NAME;
+            break;
+        case MINOR_VALUE_NUMBER_INT:
+        case MINOR_VALUE_NUMBER_LONG:
+        case MINOR_VALUE_NUMBER_BIGINT_LEN:
+        case MINOR_VALUE_NUMBER_BIGINT_BODY:
+            desc = "Number value";
+            type = JsonToken.VALUE_NUMBER_INT;
+            break;
+        case MINOR_VALUE_NUMBER_FLOAT:
+        case MINOR_VALUE_NUMBER_DOUBLE:
+        case MINOR_VALUE_NUMBER_BIGDEC_SCALE:
+        case MINOR_VALUE_NUMBER_BIGDEC_LEN:
+        case MINOR_VALUE_NUMBER_BIGDEC_BODY:
+            desc = "Number value";
+            type = JsonToken.VALUE_NUMBER_FLOAT;
+            break;
+        case MINOR_VALUE_SKIP_7BIT_BODY:
+            desc = "Number value (being skipped)";
+            type = _skippedValueType;
+            break;
+        case MINOR_VALUE_STRING_SHORT_ASCII:
+        case MINOR_VALUE_STRING_SHORT_UNICODE:
+        case MINOR_VALUE_STRING_LONG_ASCII:
+        case MINOR_VALUE_STRING_LONG_UNICODE:
+        case MINOR_VALUE_STRING_SHARED_2BYTE:
+            desc = "String value";
+            type = JsonToken.VALUE_STRING;
+            break;
+        case MINOR_VALUE_BINARY_RAW_LEN:
+        case MINOR_VALUE_BINARY_RAW_BODY:
+            desc = "Binary value (raw)";
+            type = JsonToken.VALUE_EMBEDDED_OBJECT;
+            break;
+        case MINOR_VALUE_BINARY_7BIT_LEN:
+        case MINOR_VALUE_BINARY_7BIT_BODY:
+            desc = "Binary value (7-bit)";
+            type = JsonToken.VALUE_EMBEDDED_OBJECT;
+            break;
+        default:
+            desc = "token (internal state: "+_minorState+")";
+            type = null;
+        }
+        // Nothing more can be decoded: close (releasing buffers) as with
+        // regular end-of-input, then report
+        _majorState = MAJOR_CLOSED;
+        close();
+        _updateTokenToNull();
+        _reportInvalidEOF(" in "+desc, type);
+    }
+
+    // Whether we are in the state of skipping content of a value that failed
+    // validation, but all of content has been skipped (value is complete)
+    private final boolean _skipCompleted() {
+        return (_minorState == MINOR_VALUE_SKIP_7BIT_BODY) && (_pending64 == 0L);
     }
 
     /*
@@ -1441,6 +1526,7 @@ public class NonBlockingByteArrayParser
     {
         _pending32 = len;
         _pending64 = _encoded7BitLength(len);
+        _skippedValueType = valueType;
         _minorState = MINOR_VALUE_SKIP_7BIT_BODY;
         // Failed value still counts as a token (as with blocking parser)
         try {

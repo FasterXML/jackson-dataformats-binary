@@ -27,6 +27,8 @@ Active maintainers:
 #825: (smile) Non-blocking Smile parser should validate raw binary length and not pre-allocate
   full buffer [CVE-2026-104895]
  (fix by @pjfanning, w/ Claude code)
+#830: (smile) Non-blocking parser silently drops truncated root-level value at end-of-input
+ (fix by @cowtowncoder, w/ Claude code)
 
 2.18.11 (20-Sep-2026)
 
