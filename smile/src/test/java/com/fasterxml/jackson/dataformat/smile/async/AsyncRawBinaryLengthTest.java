@@ -2,12 +2,16 @@ package com.fasterxml.jackson.dataformat.smile.async;
 
 import java.io.ByteArrayOutputStream;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.async.ByteArrayFeeder;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.dataformat.smile.SmileConstants;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // Checks handling of declared length of raw binary values by the
 // non-blocking parser: validated, and not used for allocation up front
@@ -17,6 +21,7 @@ public class AsyncRawBinaryLengthTest extends AsyncTestBase
 
     // Declared length (~2 GB) far exceeds content fed so far: should just
     // wait for more content
+    @Test
     public void testLongDeclaredLengthWithShortContent() throws Exception
     {
         // 2_000_000_000 as unsigned VInt: 4 x 7 bits, then last 6 bits
@@ -34,6 +39,7 @@ public class AsyncRawBinaryLengthTest extends AsyncTestBase
     }
 
     // 5-byte VInt whose value does not fit in 31 bits
+    @Test
     public void testInvalidDeclaredLength() throws Exception
     {
         byte[] doc = _rawBinaryDoc(new byte[] {
@@ -68,7 +74,7 @@ public class AsyncRawBinaryLengthTest extends AsyncTestBase
         for (int offset = 0; offset < doc.length; offset += chunk) {
             feeder.feedInput(doc, offset, Math.min(doc.length, offset + chunk));
             while ((t = p.nextToken()) != JsonToken.NOT_AVAILABLE) {
-                assertFalse("Should not get complete value", t == JsonToken.VALUE_EMBEDDED_OBJECT);
+                assertFalse(t == JsonToken.VALUE_EMBEDDED_OBJECT, "Should not get complete value");
             }
         }
         return t;
