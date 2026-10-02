@@ -84,6 +84,51 @@ public class BigDecimalScaleExtremes842Test extends CBORTestBase
                 (byte) 0xC4, (byte) 0x82, 0x3B, FF, FF, FF, FF, FF, FF, FF, FF, 0x01 });
     }
 
+    @Test
+    public void testReadBignumExponents() throws Exception
+    {
+        // exponent 5 as tagged bignum (tag 2): 1E+5
+        assertEquals(new BigDecimal(BigInteger.ONE, -5),
+                _read(new byte[] {
+                        (byte) 0xC4, (byte) 0x82, (byte) 0xC2, 0x41, 0x05, 0x01 }));
+        // exponent 2^31 as tagged bignum: 1E+2147483648
+        // (note: leading zero byte needed as CBORParser decodes bignum bytes as signed)
+        assertEquals(new BigDecimal(BigInteger.ONE, Integer.MIN_VALUE),
+                _read(new byte[] {
+                        (byte) 0xC4, (byte) 0x82, (byte) 0xC2, 0x45, 0, (byte) 0x80, 0, 0, 0, 0x01 }));
+        // exponent 2^63 as tagged bignum: out of range
+        _readFail(new byte[] {
+                (byte) 0xC4, (byte) 0x82, (byte) 0xC2, 0x49, 0, (byte) 0x80, 0, 0, 0, 0, 0, 0, 0, 0x01 });
+    }
+
+    @Test
+    public void testReadStringRefAsDecimalFractionPart() throws Exception
+    {
+        // stringref namespace with ["abc", 4([25(0), 1])]: exponent is a String, not number
+        _readStringRefFail(new byte[] {
+                (byte) 0xD9, 0x01, 0x00, (byte) 0x82, 0x63, 'a', 'b', 'c',
+                (byte) 0xC4, (byte) 0x82, (byte) 0xD8, 0x19, 0x00, 0x01 },
+                "first part of 'decimal fraction' value");
+        // and same for mantissa: ["abc", 4([1, 25(0)])]
+        _readStringRefFail(new byte[] {
+                (byte) 0xD9, 0x01, 0x00, (byte) 0x82, 0x63, 'a', 'b', 'c',
+                (byte) 0xC4, (byte) 0x82, 0x01, (byte) 0xD8, 0x19, 0x00 },
+                "second part of 'decimal fraction' value");
+    }
+
+    private void _readStringRefFail(byte[] doc, String expMsg) throws Exception
+    {
+        try (JsonParser p = cborParser(doc)) {
+            assertToken(JsonToken.START_ARRAY, p.nextToken());
+            assertToken(JsonToken.VALUE_STRING, p.nextToken());
+            assertEquals("abc", p.getText());
+            p.nextToken();
+            fail("Should not pass, got: "+p.currentToken());
+        } catch (StreamReadException e) {
+            verifyException(e, expMsg);
+        }
+    }
+
     private byte[] _write(BigDecimal value) throws Exception
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();

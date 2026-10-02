@@ -1344,14 +1344,12 @@ public class CBORGenerator extends GeneratorBase
 
         // 27-Nov-2019, tatu: As per [dataformats-binary#139] need to change sign here
         int scale = dec.scale();
-        // [dataformats-binary#842]: negating `Integer.MIN_VALUE` overflows, so
-        // need to write exponent of 2^31 as unsigned 32-bit int.
-        // NOTE: relies on `_writeIntMinimal()` treating negative `int` as unsigned
-        // 32-bit value (`_writeLengthMarker()` does NOT: would write corrupt marker)
-        if (scale == Integer.MIN_VALUE) {
-            _writeIntMinimal(PREFIX_TYPE_INT_POS, scale);
-        } else {
-            _writeIntValue(-scale);
+        // [dataformats-binary#842]: negating `Integer.MIN_VALUE` overflows, so encode
+        // exponent (-scale) by sign directly; `_writeIntMinimal()` takes unsigned 32-bit value
+        if (scale <= 0) { // exponent >= 0, up to 2^31
+            _writeIntMinimal(PREFIX_TYPE_INT_POS, -scale);
+        } else { // exponent < 0: CBOR negative int encodes (-1 - exponent) == (scale - 1)
+            _writeIntMinimal(PREFIX_TYPE_INT_NEG, scale - 1);
         }
         // Hmmmh. Specification suggest use of regular integer for mantissa. But
         // if it doesn't fit, use "bignum"

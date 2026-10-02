@@ -35,7 +35,7 @@ public class TagParsing185Test extends CBORTestBase
              fail("Should not pass, got token: "+t);
          } catch (JsonParseException e) {
              verifyException(e, "Unexpected token");
-             verifyException(e, "first part of 'bigfloat' value");
+             verifyException(e, "first part of 'decimal fraction' value");
          }
     }
 }
