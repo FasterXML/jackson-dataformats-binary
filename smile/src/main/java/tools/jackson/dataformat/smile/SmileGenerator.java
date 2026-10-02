@@ -68,6 +68,11 @@ public class SmileGenerator
     protected final static long MIN_INT_AS_LONG = (long) Integer.MIN_VALUE;
     protected final static long MAX_INT_AS_LONG = (long) Integer.MAX_VALUE;
 
+    // [dataformats-binary#834]: Range of `BigDecimal` scales that can be encoded:
+    // zigzag-encoded value must fit in 31 bits (unsigned VInt)
+    private final static int MIN_BIG_DECIMAL_SCALE = -(1 << 30);
+    private final static int MAX_BIG_DECIMAL_SCALE = (1 << 30) - 1;
+
     /**
      * The replacement character to use to fix invalid Unicode sequences
      * (mismatched surrogate pair).
@@ -1615,9 +1620,16 @@ public class SmileGenerator
         if (dec == null) {
             return writeNull();
         }
+        final int scale = dec.scale();
+        // [dataformats-binary#834]: zigzag-encoded scale must fit in 31 bits
+        // (as that is what parsers accept); check before writing anything
+        if ((scale < MIN_BIG_DECIMAL_SCALE) || (scale > MAX_BIG_DECIMAL_SCALE)) {
+            _reportError(String.format(
+"Cannot write `BigDecimal` with scale %d: Smile format only supports scales in range [%d, %d]",
+                    scale, MIN_BIG_DECIMAL_SCALE, MAX_BIG_DECIMAL_SCALE));
+        }
         _verifyValueWrite("write number");
         _writeByte(TOKEN_BYTE_BIG_DECIMAL);
-        int scale = dec.scale();
         // Ok, first output scale as VInt
         _writeSignedVInt(scale);
         BigInteger unscaled = dec.unscaledValue();

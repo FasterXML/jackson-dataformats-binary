@@ -23,6 +23,8 @@ Active maintainers:
 #800: (ion) Upgrade `ion-java` dependency to 1.12.1 (from 1.11.11, which has
   binary-write corruption bug)
  (fix by @cowtowncoder, w/ Claude code)
+#834: (smile) `SmileGenerator` silently writes wrong `BigDecimal` scale outside [-2^30, 2^30-1]
+ (fix by @cowtowncoder, w/ Claude code)
 
 2.22.4 (not yet released)
 
