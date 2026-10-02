@@ -1204,7 +1204,9 @@ public class CBORParser extends ParserMinimalBase
                     nr = new BigInteger(_binaryValue).negate();
                 }
             } else {
-                nr = new BigInteger(_binaryValue);
+                // Bignum content is unsigned magnitude, so must not decode as
+                // two's complement (high bit set would otherwise yield negative value)
+                nr = new BigInteger(1, _binaryValue);
             }
             _numberBigInt = nr;
         }

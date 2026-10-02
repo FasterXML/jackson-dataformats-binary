@@ -92,13 +92,12 @@ public class BigDecimalScaleExtremes842Test extends CBORTestBase
                 _read(new byte[] {
                         (byte) 0xC4, (byte) 0x82, (byte) 0xC2, 0x41, 0x05, 0x01 }));
         // exponent 2^31 as tagged bignum: 1E+2147483648
-        // (note: leading zero byte needed as CBORParser decodes bignum bytes as signed)
         assertEquals(new BigDecimal(BigInteger.ONE, Integer.MIN_VALUE),
                 _read(new byte[] {
-                        (byte) 0xC4, (byte) 0x82, (byte) 0xC2, 0x45, 0, (byte) 0x80, 0, 0, 0, 0x01 }));
+                        (byte) 0xC4, (byte) 0x82, (byte) 0xC2, 0x44, (byte) 0x80, 0, 0, 0, 0x01 }));
         // exponent 2^63 as tagged bignum: out of range
         _readFail(new byte[] {
-                (byte) 0xC4, (byte) 0x82, (byte) 0xC2, 0x49, 0, (byte) 0x80, 0, 0, 0, 0, 0, 0, 0, 0x01 });
+                (byte) 0xC4, (byte) 0x82, (byte) 0xC2, 0x48, (byte) 0x80, 0, 0, 0, 0, 0, 0, 0, 0x01 });
     }
 
     @Test
