@@ -1300,8 +1300,13 @@ public class NonBlockingByteArrayParser
     {
         if (_decode7BitEncoded()) { // got it all!
             final byte[] array = _byteArrayBuilder.toByteArray();
-            _streamReadConstraints.validateIntegerLength(array.length);
-            _numberBigInt = new BigInteger(array);
+            // [dataformats-binary#257]: 0-length special case to handle
+            if (array.length == 0) {
+                _numberBigInt = BigInteger.ZERO;
+            } else {
+                _streamReadConstraints.validateIntegerLength(array.length);
+                _numberBigInt = new BigInteger(array);
+            }
             _numberType = NumberType.BIG_INTEGER;
             _numTypesValid = NR_BIGINT;
             return _valueComplete(JsonToken.VALUE_NUMBER_INT);
@@ -1448,9 +1453,14 @@ public class NonBlockingByteArrayParser
             // note: scale value is signed, needs zigzag, so:
             final int scale = SmileUtil.zigzagDecode((int) _pending64);
             final byte[] array = _byteArrayBuilder.toByteArray();
-            _streamReadConstraints.validateFPLength(array.length);
-            BigInteger bigInt = new BigInteger(array);
-            _numberBigDecimal = new BigDecimal(bigInt, scale);
+            // [dataformats-binary#257]: 0-length special case to handle
+            if (array.length == 0) {
+                _numberBigDecimal = BigDecimal.ZERO;
+            } else {
+                _streamReadConstraints.validateFPLength(array.length);
+                BigInteger bigInt = new BigInteger(array);
+                _numberBigDecimal = new BigDecimal(bigInt, scale);
+            }
             _numberType = NumberType.BIG_DECIMAL;
             _numTypesValid = NR_BIGDECIMAL;
             return _valueComplete(JsonToken.VALUE_NUMBER_FLOAT);
