@@ -185,6 +185,9 @@ public class NonBlockingByteArrayParser
             if (SmileConstants.HEADER_BYTE_1 == ch) { // yes, initial header; should be good
                 // minor state as 0, which is fine
                 _majorState = MAJOR_ROOT;
+                // [dataformats-binary#838]: root-level scalars must be followed by
+                // root-level content, not by (required) header
+                _majorStateAfterValue = MAJOR_ROOT;
                 _minorState = MINOR_HEADER_INITIAL;
                 return _finishHeader(0);
             }
@@ -194,6 +197,7 @@ public class NonBlockingByteArrayParser
             // otherwise fine, just drop through to next state
             // (NOTE: it double-checks header; fine, won't match; just need the rest)
             _majorState = MAJOR_ROOT;
+            _majorStateAfterValue = MAJOR_ROOT; // [dataformats-binary#838]
             return _startValue(ch);
 
         case MAJOR_ROOT: //
