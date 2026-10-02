@@ -2288,12 +2288,14 @@ versionBits));
 
     private final void _finishBigInteger() throws IOException
     {
-        final byte[] raw = _read7BitBinaryWithLength();
+        // Validate declared length before reading (and buffering) content
+        final int byteLen = _readUnsignedVInt();
+        _streamReadConstraints.validateIntegerLength(byteLen);
+        final byte[] raw = _read7BitBinary(byteLen);
         // [dataformats-binary#257]: 0-length special case to handle
         if (raw.length == 0) {
             _numberBigInt = BigInteger.ZERO;
         } else {
-            _streamReadConstraints.validateIntegerLength(raw.length);
             _numberBigInt = new BigInteger(raw);
         }
         _numTypesValid = NR_BIGINT;
@@ -2336,12 +2338,14 @@ versionBits));
     private final void _finishBigDecimal() throws IOException
     {
         final int scale = SmileUtil.zigzagDecode(_readUnsignedVInt());
-        final byte[] raw = _read7BitBinaryWithLength();
+        // Validate declared length before reading (and buffering) content
+        final int byteLen = _readUnsignedVInt();
+        _streamReadConstraints.validateFPLength(byteLen);
+        final byte[] raw = _read7BitBinary(byteLen);
         // [dataformats-binary#257]: 0-length special case to handle
         if (raw.length == 0) {
             _numberBigDecimal = BigDecimal.ZERO;
         } else {
-            _streamReadConstraints.validateFPLength(raw.length);
             BigInteger unscaledValue = new BigInteger(raw);
             _numberBigDecimal = new BigDecimal(unscaledValue, scale);
         }
@@ -2709,8 +2713,11 @@ currentToken(), firstCh);
     // followed by encoded data
     private final byte[] _read7BitBinaryWithLength() throws IOException
     {
-        final int byteLen = _readUnsignedVInt();
+        return _read7BitBinary(_readUnsignedVInt());
+    }
 
+    private final byte[] _read7BitBinary(final int byteLen) throws IOException
+    {
         // 20-Mar-2021, tatu [dataformats-binary#260]: avoid eager allocation
         //   for very large content
         if (byteLen > LONGEST_NON_CHUNKED_BINARY) {

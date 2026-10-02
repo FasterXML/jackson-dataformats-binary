@@ -1273,9 +1273,7 @@ public class NonBlockingByteArrayParser
         if ((_inputPtr + 5) > _inputEnd) {
             return _finishBigIntLen(0, 0);
         }
-        _pending32 = _decodeUnsignedVInt(JsonToken.VALUE_NUMBER_INT);
-        _inputCopyLen = 0;
-        return _finishBigIntBody();
+        return _startBigIntBody(_decodeUnsignedVInt(JsonToken.VALUE_NUMBER_INT));
     }
 
     private final JsonToken _finishBigIntLen(int value, int bytesRead) throws IOException
@@ -1283,9 +1281,7 @@ public class NonBlockingByteArrayParser
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
             if (b < 0) { // got it all; these are last 6 bits
-                _pending32 = _lastVIntByte(value, bytesRead, b, JsonToken.VALUE_NUMBER_INT);
-                _inputCopyLen = 0;
-                return _finishBigIntBody();
+                return _startBigIntBody(_lastVIntByte(value, bytesRead, b, JsonToken.VALUE_NUMBER_INT));
             }
             // can't get too big; 5 bytes is max
             if (++bytesRead >= 5 ) {
@@ -1299,6 +1295,15 @@ public class NonBlockingByteArrayParser
         return _updateTokenToNA();
     }
 
+    private final JsonToken _startBigIntBody(int len) throws IOException
+    {
+        // Validate declared length before buffering content
+        _streamReadConstraints.validateIntegerLength(len);
+        _pending32 = len;
+        _inputCopyLen = 0;
+        return _finishBigIntBody();
+    }
+
     private final JsonToken _finishBigIntBody() throws IOException
     {
         if (_decode7BitEncoded()) { // got it all!
@@ -1307,7 +1312,6 @@ public class NonBlockingByteArrayParser
             if (array.length == 0) {
                 _numberBigInt = BigInteger.ZERO;
             } else {
-                _streamReadConstraints.validateIntegerLength(array.length);
                 _numberBigInt = new BigInteger(array);
             }
             _numberType = NumberType.BIG_INTEGER;
@@ -1434,7 +1438,10 @@ public class NonBlockingByteArrayParser
         while (_inputPtr < _inputEnd) {
             int b = _inputBuffer[_inputPtr++];
             if (b < 0) { // got it all; these are last 6 bits
-                _pending32 = _lastVIntByte(value, bytesRead, b, JsonToken.VALUE_NUMBER_FLOAT);
+                final int len = _lastVIntByte(value, bytesRead, b, JsonToken.VALUE_NUMBER_FLOAT);
+                // Validate declared length before buffering content
+                _streamReadConstraints.validateFPLength(len);
+                _pending32 = len;
                 _inputCopyLen = 0;
                 return _finishBigDecimalBody();
             }
@@ -1460,7 +1467,6 @@ public class NonBlockingByteArrayParser
             if (array.length == 0) {
                 _numberBigDecimal = BigDecimal.ZERO;
             } else {
-                _streamReadConstraints.validateFPLength(array.length);
                 BigInteger bigInt = new BigInteger(array);
                 _numberBigDecimal = new BigDecimal(bigInt, scale);
             }
