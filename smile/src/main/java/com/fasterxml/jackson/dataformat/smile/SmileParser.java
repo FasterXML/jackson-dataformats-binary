@@ -136,6 +136,14 @@ public class SmileParser extends SmileParserBase
      */
     protected boolean _tokenIncomplete = false;
 
+    /**
+     * If declared length of current (number) token failed validation, the
+     * failure (to rethrow on any further access), and declared length
+     * (for skipping content to get to the next token).
+     */
+    private StreamConstraintsException _numberLengthFailure;
+    private int _failedNumberByteLength;
+
     /*
     /**********************************************************
     /* Life-cycle
@@ -2289,12 +2297,13 @@ versionBits));
 
     private final void _finishBigInteger() throws IOException
     {
+        _checkNumberLengthFailure();
         // Validate declared length before reading (and buffering) content
         final int byteLen = _readUnsignedVInt();
         try {
             _streamReadConstraints.validateIntegerLength(byteLen);
         } catch (StreamConstraintsException e) {
-            throw _skip7BitBinaryAfterFailure(byteLen, e);
+            throw _recordNumberLengthFailure(byteLen, e);
         }
         final byte[] raw = _read7BitBinary(byteLen);
         // [dataformats-binary#257]: 0-length special case to handle
@@ -2342,13 +2351,14 @@ versionBits));
 
     private final void _finishBigDecimal() throws IOException
     {
+        _checkNumberLengthFailure();
         final int scale = SmileUtil.zigzagDecode(_readUnsignedVInt());
         // Validate declared length before reading (and buffering) content
         final int byteLen = _readUnsignedVInt();
         try {
             _streamReadConstraints.validateFPLength(byteLen);
         } catch (StreamConstraintsException e) {
-            throw _skip7BitBinaryAfterFailure(byteLen, e);
+            throw _recordNumberLengthFailure(byteLen, e);
         }
         final byte[] raw = _read7BitBinary(byteLen);
         // [dataformats-binary#257]: 0-length special case to handle
@@ -2866,6 +2876,12 @@ currentToken(), firstCh);
     protected void _skipIncomplete() throws IOException
     {
         _tokenIncomplete = false;
+        // Token that failed validation: skip its content (length already read)
+        if (_numberLengthFailure != null) {
+            _numberLengthFailure = null;
+            _skip7BitBinary(_failedNumberByteLength);
+            return;
+        }
         int tb = _typeAsInt;
         switch (tb >> 5) {
         case 1: // simple literals, numbers
@@ -2978,48 +2994,42 @@ currentToken(), firstCh);
      */
     protected void _skip7BitBinary() throws IOException
     {
-        int origBytes = _readUnsignedVInt();
-        // Ok; 8 encoded bytes for 7 payload bytes first
-        int chunks = origBytes / 7;
-        int encBytes = chunks * 8;
+        _skip7BitBinary(_readUnsignedVInt());
+    }
 
+    private void _skip7BitBinary(int origBytes) throws IOException
+    {
+        final long encBytes = _encoded7BitLength(origBytes);
         // sanity check: not all length markers valid; due to signed int(32)
         // calculations maximum length only 7/8 of 2^31
-        if (encBytes < 0) {
+        if (encBytes > Integer.MAX_VALUE) {
             throw _constructReadException(
                     "Invalid content: invalid 7-bit binary encoded byte length (0x%X) exceeds maximum valid value",
                     origBytes);
         }
-        
-        // and for last 0 - 6 bytes, last+1 (except none if no leftovers)
-        origBytes -= 7 * chunks;
-        if (origBytes > 0) {
-            encBytes += 1 + origBytes;
-        }
-        _skipBytes(encBytes);
+        _skipBytes((int) encBytes);
     }
 
-    // Called when declared length of 7-bit encoded content fails validation:
-    // skips content so that parsing may continue with the next token. Returns
-    // the validation failure for caller to throw (with any skipping failure
-    // added as suppressed)
-    private StreamConstraintsException _skip7BitBinaryAfterFailure(int byteLen,
+    // Called when declared length of current (number) token fails validation:
+    // content is not read but token is left incomplete so that content is skipped
+    // when moving to the next token (if caller continues). Returns the failure
+    // for caller to throw
+    private StreamConstraintsException _recordNumberLengthFailure(int byteLen,
             StreamConstraintsException fail)
     {
-        // 8 encoded bytes per 7 bytes; last 1 - 6 bytes need one more. Calculated
-        // as long since may exceed Integer.MAX_VALUE
-        final int leftover = byteLen % 7;
-        long encBytes = (byteLen / 7) * 8L + ((leftover == 0) ? 0 : leftover + 1);
-        try {
-            while (encBytes > 0) {
-                final int count = (int) Math.min(encBytes, Integer.MAX_VALUE);
-                _skipBytes(count);
-                encBytes -= count;
-            }
-        } catch (IOException e) {
-            fail.addSuppressed(e);
-        }
+        _tokenIncomplete = true;
+        _numberLengthFailure = fail;
+        _failedNumberByteLength = byteLen;
         return fail;
+    }
+
+    // Rethrows earlier failure of current token, if any
+    private void _checkNumberLengthFailure() throws StreamConstraintsException
+    {
+        if (_numberLengthFailure != null) {
+            _tokenIncomplete = true;
+            throw _numberLengthFailure;
+        }
     }
 
     /*

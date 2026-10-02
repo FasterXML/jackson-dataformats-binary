@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.core.async.ByteArrayFeeder;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
@@ -16,6 +17,7 @@ import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -68,6 +70,30 @@ public class LongDocumentSmileReadTest extends BaseTestForSmile
             final String msg = e.getMessage();
             assertTrue(msg.contains("Document length ("+doc.length+")"), msg);
             assertTrue(msg.contains("exceeds the maximum allowed (50000"), msg);
+        }
+    }
+
+    // Non-blocking: rejected feed should leave parser state untouched
+    @Test
+    public void testLongDocumentConstraintAsyncRejectedFeed() throws Exception
+    {
+        byte[] doc = createBigDoc(60_000);
+        try (JsonParser p = MAPPER_CONSTRAINED.getFactory().createNonBlockingByteArrayParser()) {
+            ByteArrayFeeder feeder = (ByteArrayFeeder) p.getNonBlockingInputFeeder();
+            feeder.feedInput(doc, 0, 30_000);
+            while (p.nextToken() != JsonToken.NOT_AVAILABLE) { }
+            final long offset = p.currentLocation().getByteOffset();
+            try {
+                feeder.feedInput(doc, 30_000, 60_000);
+                fail("expected StreamConstraintsException");
+            } catch (StreamConstraintsException e) {
+                assertTrue(e.getMessage().contains("Document length (60000)"), e.getMessage());
+            }
+            assertEquals(offset, p.currentLocation().getByteOffset());
+            // but smaller chunk is fine: total of 45000
+            feeder.feedInput(doc, 30_000, 45_000);
+            JsonToken t = p.nextToken();
+            assertTrue((t != null) && (t != JsonToken.NOT_AVAILABLE), "Unexpected token: "+t);
         }
     }
 

@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.smile.constraints;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -22,6 +23,8 @@ import com.fasterxml.jackson.dataformat.smile.async.AsyncReaderWrapper;
 import com.fasterxml.jackson.dataformat.smile.async.AsyncTestBase;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 // Declared length of BigInteger/BigDecimal values should be validated against
@@ -57,46 +60,168 @@ public class LongBigNumberSmileReadTest extends AsyncTestBase
                 LONG_LENGTH, SHORT_CONTENT), JsonToken.VALUE_NUMBER_FLOAT);
     }
 
+    private final SmileFactory F_CONSTRAINED = SmileFactory.builder()
+            .streamReadConstraints(StreamReadConstraints.builder()
+                    .maxNumberLength(10).build())
+            .build();
+
+    private final static BigInteger LONG_BIG_INTEGER =
+            new BigInteger("1234567890123456789012345678901234567890");
+    private final static BigDecimal LONG_BIG_DECIMAL =
+            new BigDecimal("12345678901234567890123456789012345678901.234");
+
     // Parsing should be able to continue after failure, with the next token
     @Test
-    public void testContinueAfterFailure() throws Exception
+    public void testContinueAfterFailureInArray() throws Exception
     {
-        final SmileFactory constrained = SmileFactory.builder()
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (JsonGenerator g = F.createGenerator(bytes)) {
+            g.writeStartArray();
+            g.writeNumber(LONG_BIG_INTEGER);
+            g.writeNumber(LONG_BIG_DECIMAL);
+            g.writeNumber(42);
+            g.writeEndArray();
+        }
+        _verifyContinueAfterFailure(F_CONSTRAINED, bytes.toByteArray(),
+                "START_ARRAY", "ERR", "ERR", "42", "END_ARRAY");
+    }
+
+    @Test
+    public void testContinueAfterFailureInObject() throws Exception
+    {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (JsonGenerator g = F.createGenerator(bytes)) {
+            g.writeStartObject();
+            g.writeNumberField("a", LONG_BIG_INTEGER);
+            g.writeNumberField("b", LONG_BIG_DECIMAL);
+            g.writeNumberField("c", 42);
+            g.writeEndObject();
+        }
+        _verifyContinueAfterFailure(F_CONSTRAINED, bytes.toByteArray(),
+                "START_OBJECT", "a", "ERR", "b", "ERR", "c", "42", "END_OBJECT");
+    }
+
+    // Failed value should count as a token with both blocking and non-blocking
+    @Test
+    public void testTokenCountWithFailure() throws Exception
+    {
+        final SmileFactory f = SmileFactory.builder()
                 .streamReadConstraints(StreamReadConstraints.builder()
-                        .maxNumberLength(10).build())
+                        .maxNumberLength(10).maxTokenCount(4).build())
                 .build();
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (JsonGenerator g = F.createGenerator(bytes)) {
             g.writeStartArray();
-            g.writeNumber(new BigInteger("1234567890123456789012345678901234567890"));
-            g.writeNumber(new BigDecimal("12345678901234567890123456789012345678901.234"));
-            g.writeNumber(42);
+            g.writeNumber(LONG_BIG_INTEGER);
+            g.writeNumber(1);
+            g.writeNumber(2);
             g.writeEndArray();
         }
-        final byte[] doc = bytes.toByteArray();
+        // 5 tokens: START_ARRAY, failed value, 1, 2, END_ARRAY
+        _verifyContinueAfterFailure(f, bytes.toByteArray(),
+                "START_ARRAY", "ERR", "1", "2", "ERR:Token count (5)");
+    }
 
+    // Blocking: failure should be rethrown on further access, not internal error
+    @Test
+    public void testRepeatedAccessAfterFailure() throws Exception
+    {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (JsonGenerator g = F.createGenerator(bytes)) {
+            g.writeNumber(LONG_BIG_INTEGER);
+        }
+        try (JsonParser p = F_CONSTRAINED.createParser(bytes.toByteArray())) {
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            for (int i = 0; i < 3; ++i) {
+                try {
+                    if (i == 1) {
+                        p.getText();
+                    } else {
+                        p.getNumberValue();
+                    }
+                    fail("Should not pass");
+                } catch (StreamConstraintsException e) {
+                    verifyException(e, "Number value length (17) exceeds the maximum allowed (10");
+                }
+            }
+            assertNull(p.nextToken());
+        }
+    }
+
+    // Blocking: should fail without reading declared content
+    @Test
+    public void testFailFastWithEndlessContent() throws Exception
+    {
+        final byte[] head = concat(HEADER,
+                new byte[] { SmileConstants.TOKEN_PREFIX_INTEGER + 2 },
+                new byte[] { 0x04, 0x00, 0x00, 0x00, (byte) 0x80 }); // 2^29
+        final long[] bytesRead = new long[1];
+        InputStream in = new InputStream() {
+            // header and type marker, then endless zero bytes
+            @Override
+            public int read() {
+                final long pos = bytesRead[0]++;
+                return (pos < head.length) ? (head[(int) pos] & 0xFF) : 0;
+            }
+
+            @Override
+            public int read(byte[] b, int off, int len) {
+                for (int i = 0; i < len; ++i) {
+                    b[off+i] = (byte) read();
+                }
+                return len;
+            }
+        };
+        try (JsonParser p = F.createParser(in)) {
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            p.getNumberValue();
+            fail("Should not pass");
+        } catch (StreamConstraintsException e) {
+            verifyException(e, "Number value length (536870912) exceeds the maximum allowed (1000");
+        }
+        assertTrue(bytesRead[0] < 100_000, "Should not read content; read "+bytesRead[0]+" bytes");
+    }
+
+    // Verifies tokens (and failures) returned by blocking and non-blocking parsers
+    private void _verifyContinueAfterFailure(SmileFactory f, byte[] doc, String... expTokens)
+        throws Exception
+    {
+        final List<String> exp = Arrays.asList(expTokens);
         // Blocking: numbers decoded lazily, on access
         List<String> tokens = new ArrayList<>();
-        try (JsonParser p = constrained.createParser(doc)) {
-            JsonToken t;
-            while ((t = p.nextToken()) != null) {
+        try (JsonParser p = f.createParser(doc)) {
+            while (tokens.size() <= exp.size()) {
+                JsonToken t;
+                try {
+                    t = p.nextToken();
+                } catch (StreamConstraintsException e) {
+                    tokens.add(_descFailure(e));
+                    break;
+                }
+                if (t == null) {
+                    break;
+                }
                 tokens.add(_desc(p, t));
             }
         }
-        assertEquals(Arrays.asList("START_ARRAY", "ERR", "ERR", "42", "END_ARRAY"), tokens);
+        assertEquals(exp, tokens, "blocking");
 
         // Non-blocking: fail on token itself
         for (int chunk : new int[] { doc.length, 1, 3 }) {
             tokens = new ArrayList<>();
-            try (JsonParser p = constrained.createNonBlockingByteArrayParser()) {
+            try (JsonParser p = f.createNonBlockingByteArrayParser()) {
                 ByteArrayFeeder feeder = (ByteArrayFeeder) p.getNonBlockingInputFeeder();
                 int offset = 0;
-                while (true) {
+                // Limit iterations to fail (not hang) if parser gets stuck
+                for (int round = 0; round < 2 * doc.length + 20; ++round) {
                     JsonToken t;
                     try {
                         t = p.nextToken();
                     } catch (StreamConstraintsException e) {
-                        tokens.add("ERR");
+                        tokens.add(_descFailure(e));
+                        if (tokens.size() > exp.size()) {
+                            break;
+                        }
                         continue;
                     }
                     if (t == JsonToken.NOT_AVAILABLE) {
@@ -114,21 +239,33 @@ public class LongBigNumberSmileReadTest extends AsyncTestBase
                     tokens.add(_desc(p, t));
                 }
             }
-            assertEquals(Arrays.asList("START_ARRAY", "ERR", "ERR", "42", "END_ARRAY"), tokens,
-                    "chunk size "+chunk);
+            assertEquals(exp, tokens, "non-blocking, chunk size "+chunk);
         }
     }
 
     private String _desc(JsonParser p, JsonToken t) throws Exception
     {
+        if (t == JsonToken.FIELD_NAME) {
+            return p.currentName();
+        }
         if (t.isNumeric()) {
             try {
                 return String.valueOf(p.getNumberValue());
             } catch (StreamConstraintsException e) {
-                return "ERR";
+                return _descFailure(e);
             }
         }
         return t.name();
+    }
+
+    private String _descFailure(StreamConstraintsException e)
+    {
+        // Number length failures as just "ERR"; others with message start
+        String msg = e.getMessage();
+        if (msg.startsWith("Number value length")) {
+            return "ERR";
+        }
+        return "ERR:" + msg.substring(0, msg.indexOf(')') + 1);
     }
 
     private void _verifyEarlyFailure(byte[] doc, JsonToken expToken) throws Exception

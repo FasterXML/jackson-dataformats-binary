@@ -92,10 +92,12 @@ public class NonBlockingByteArrayParser
         if (_endOfInput) {
             _reportError("Already closed, can not feed more input");
         }
+        // Validate (including content being fed) before updating any state,
+        // to leave parser untouched if this throws
+        _streamReadConstraints.validateDocumentLength(_currInputProcessed + _origBufferLen
+                + (end - start));
         // Time to update pointers first
         _currInputProcessed += _origBufferLen;
-        // Include content being fed, not just content fed before
-        _streamReadConstraints.validateDocumentLength(_currInputProcessed + (end - start));
 
         // And then update buffer settings
         _inputBuffer = buf;
@@ -1293,7 +1295,7 @@ public class NonBlockingByteArrayParser
         try {
             _streamReadConstraints.validateIntegerLength(len);
         } catch (StreamConstraintsException e) {
-            throw _skip7BitBodyAfterFailure(len, e);
+            throw _skip7BitBodyAfterFailure(len, e, JsonToken.VALUE_NUMBER_INT);
         }
         _pending32 = len;
         _inputCopyLen = 0;
@@ -1426,7 +1428,7 @@ public class NonBlockingByteArrayParser
         try {
             _streamReadConstraints.validateFPLength(len);
         } catch (StreamConstraintsException e) {
-            throw _skip7BitBodyAfterFailure(len, e);
+            throw _skip7BitBodyAfterFailure(len, e, JsonToken.VALUE_NUMBER_FLOAT);
         }
         _pending32 = len;
         _inputCopyLen = 0;
@@ -1438,13 +1440,17 @@ public class NonBlockingByteArrayParser
     // parsing may continue with the next token. Returns the validation failure
     // for caller to throw
     private final StreamConstraintsException _skip7BitBodyAfterFailure(int len,
-            StreamConstraintsException fail)
+            StreamConstraintsException fail, JsonToken valueType)
+        throws StreamConstraintsException
     {
-        // 8 encoded bytes per 7 bytes; last 1 - 6 bytes need one more
-        final int leftover = len % 7;
-        _pending64 = (len / 7) * 8L + ((leftover == 0) ? 0 : leftover + 1);
+        _pending64 = _encoded7BitLength(len);
         _minorState = MINOR_VALUE_SKIP_7BIT_BODY;
-        _updateTokenToNA();
+        // Failed value still counts as a token (as with blocking parser)
+        try {
+            _updateToken(valueType);
+        } finally {
+            _updateTokenToNA();
+        }
         return fail;
     }
 
