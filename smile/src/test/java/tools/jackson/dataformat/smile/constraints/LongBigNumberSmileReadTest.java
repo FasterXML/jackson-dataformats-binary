@@ -144,7 +144,7 @@ public class LongBigNumberSmileReadTest extends AsyncTestBase
             for (int i = 0; i < 3; ++i) {
                 try {
                     if (i == 1) {
-                        p.getText();
+                        p.getString();
                     } else {
                         p.getNumberValue();
                     }

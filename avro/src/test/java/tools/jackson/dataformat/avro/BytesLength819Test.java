@@ -27,7 +27,7 @@ public class BytesLength819Test extends AvroTestBase
         public BytesWrapper(byte[] b) { this.b = b; }
     }
 
-    private final static String SCHEMA_JSON = aposToQuotes("{'type':'record','name':'BytesWrapper',"
+    private final static String SCHEMA_JSON = a2q("{'type':'record','name':'BytesWrapper',"
             +"'fields':[{'name':'b','type':'bytes'}]}");
 
     private final AvroMapper JACKSON_MAPPER = new AvroMapper();
@@ -120,7 +120,7 @@ public class BytesLength819Test extends AvroTestBase
     }
 
     private static String _fixedSchema(int size) {
-        return aposToQuotes("{'type':'record','name':'BytesWrapper','fields':[{'name':'b',"
+        return a2q("{'type':'record','name':'BytesWrapper','fields':[{'name':'b',"
                 +"'type':{'type':'fixed','name':'Fix','size':"+size+"}}]}");
     }
 

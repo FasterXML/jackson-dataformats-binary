@@ -183,7 +183,7 @@ public class AsyncTruncatedUTF8Test extends AsyncTestBase
             JsonToken t;
             while ((t = p.nextToken()) != null) {
                 if (t == JsonToken.VALUE_STRING) {
-                    p.getText();
+                    p.getString();
                 }
             }
             fail("Should not pass (blocking)");

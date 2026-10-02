@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
+import tools.jackson.core.ObjectReadContext;
+import tools.jackson.core.ObjectWriteContext;
 import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.exc.StreamConstraintsException;
 
@@ -228,7 +230,7 @@ public class SmileGeneratorNumbersTest
 
         for (String num : new String[] { tooLongInt, tooLongNegInt, tooLongDec }) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            try (SmileGenerator gen = (SmileGenerator) f.createGenerator(out)) {
+            try (SmileGenerator gen = (SmileGenerator) f.createGenerator(ObjectWriteContext.empty(), out)) {
                 gen.writeNumber(num);
                 fail("Should not pass for: "+num);
             } catch (StreamConstraintsException e) {
@@ -240,10 +242,10 @@ public class SmileGeneratorNumbersTest
         // And conversely, one at the limit is fine
         final String atLimit = "1".repeat(maxLen);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try (SmileGenerator gen = (SmileGenerator) f.createGenerator(out)) {
+        try (SmileGenerator gen = (SmileGenerator) f.createGenerator(ObjectWriteContext.empty(), out)) {
             gen.writeNumber(atLimit);
         }
-        try (JsonParser p = f.createParser(out.toByteArray())) {
+        try (JsonParser p = f.createParser(ObjectReadContext.empty(), out.toByteArray())) {
             assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
             assertEquals(new BigInteger(atLimit), p.getBigIntegerValue());
         }
@@ -254,19 +256,19 @@ public class SmileGeneratorNumbersTest
         final String decAtLimit = "1." + "1".repeat(maxLen - 1);
 
         out = new ByteArrayOutputStream();
-        try (SmileGenerator gen = (SmileGenerator) f.createGenerator(out)) {
+        try (SmileGenerator gen = (SmileGenerator) f.createGenerator(ObjectWriteContext.empty(), out)) {
             gen.writeNumber(negAtLimit);
         }
-        try (JsonParser p = f.createParser(out.toByteArray())) {
+        try (JsonParser p = f.createParser(ObjectReadContext.empty(), out.toByteArray())) {
             assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
             assertEquals(new BigInteger(negAtLimit), p.getBigIntegerValue());
         }
 
         out = new ByteArrayOutputStream();
-        try (SmileGenerator gen = (SmileGenerator) f.createGenerator(out)) {
+        try (SmileGenerator gen = (SmileGenerator) f.createGenerator(ObjectWriteContext.empty(), out)) {
             gen.writeNumber(decAtLimit);
         }
-        try (JsonParser p = f.createParser(out.toByteArray())) {
+        try (JsonParser p = f.createParser(ObjectReadContext.empty(), out.toByteArray())) {
             assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
             assertEquals(new BigDecimal(decAtLimit), p.getDecimalValue());
         }
@@ -287,19 +289,19 @@ public class SmileGeneratorNumbersTest
         final String longDec = "1." + "1".repeat(1499);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try (SmileGenerator gen = (SmileGenerator) f.createGenerator(out)) {
+        try (SmileGenerator gen = (SmileGenerator) f.createGenerator(ObjectWriteContext.empty(), out)) {
             gen.writeNumber(longInt);
         }
-        try (JsonParser p = f.createParser(out.toByteArray())) {
+        try (JsonParser p = f.createParser(ObjectReadContext.empty(), out.toByteArray())) {
             assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
             assertEquals(new BigInteger(longInt), p.getBigIntegerValue());
         }
 
         out = new ByteArrayOutputStream();
-        try (SmileGenerator gen = (SmileGenerator) f.createGenerator(out)) {
+        try (SmileGenerator gen = (SmileGenerator) f.createGenerator(ObjectWriteContext.empty(), out)) {
             gen.writeNumber(longDec);
         }
-        try (JsonParser p = f.createParser(out.toByteArray())) {
+        try (JsonParser p = f.createParser(ObjectReadContext.empty(), out.toByteArray())) {
             assertEquals(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
             assertEquals(new BigDecimal(longDec), p.getDecimalValue());
         }

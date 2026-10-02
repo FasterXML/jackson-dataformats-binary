@@ -38,7 +38,7 @@ public class LongDocumentAvroReadTest extends AvroTestBase
     }
 
     // NOTE: Avro requires named types to match, hence same record name for both
-    final static String BLOB_SCHEMA_JSON = aposToQuotes("{\n"+
+    final static String BLOB_SCHEMA_JSON = a2q("{\n"+
             " 'type':'record',\n"+
             " 'name':'Blob',\n"+
             " 'fields':[\n"+
@@ -48,7 +48,7 @@ public class LongDocumentAvroReadTest extends AvroTestBase
             "}\n");
 
     // Reader-side schema without `data`: forces writer-side `bytes` value to be skipped
-    final static String BLOB_NO_DATA_SCHEMA_JSON = aposToQuotes("{\n"+
+    final static String BLOB_NO_DATA_SCHEMA_JSON = a2q("{\n"+
             " 'type':'record',\n"+
             " 'name':'Blob',\n"+
             " 'fields':[\n"+
@@ -56,7 +56,7 @@ public class LongDocumentAvroReadTest extends AvroTestBase
             " ]\n"+
             "}\n");
 
-    final static String TINY_SCHEMA_JSON = aposToQuotes("{\n"+
+    final static String TINY_SCHEMA_JSON = a2q("{\n"+
             " 'type':'record',\n"+
             " 'name':'Tiny',\n"+
             " 'fields':[\n"+
