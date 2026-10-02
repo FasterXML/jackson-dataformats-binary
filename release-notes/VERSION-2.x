@@ -30,6 +30,9 @@ Active maintainers:
  (fix by @cowtowncoder, w/ Claude code)
 #835: (smile) `SmileParser.getText(Writer)` writes stale text for numeric tokens
  (fix by @cowtowncoder, w/ Claude code)
+#846: (protobuf) `ProtobufParser.getText(Writer)` writes stale text for numeric tokens,
+  NPE for binary
+ (fix by @cowtowncoder, w/ Claude code)
 
 2.22.4 (not yet released)
 
