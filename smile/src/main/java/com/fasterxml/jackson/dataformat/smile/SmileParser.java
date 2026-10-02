@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
@@ -2290,7 +2291,11 @@ versionBits));
     {
         // Validate declared length before reading (and buffering) content
         final int byteLen = _readUnsignedVInt();
-        _streamReadConstraints.validateIntegerLength(byteLen);
+        try {
+            _streamReadConstraints.validateIntegerLength(byteLen);
+        } catch (StreamConstraintsException e) {
+            throw _skip7BitBinaryAfterFailure(byteLen, e);
+        }
         final byte[] raw = _read7BitBinary(byteLen);
         // [dataformats-binary#257]: 0-length special case to handle
         if (raw.length == 0) {
@@ -2340,7 +2345,11 @@ versionBits));
         final int scale = SmileUtil.zigzagDecode(_readUnsignedVInt());
         // Validate declared length before reading (and buffering) content
         final int byteLen = _readUnsignedVInt();
-        _streamReadConstraints.validateFPLength(byteLen);
+        try {
+            _streamReadConstraints.validateFPLength(byteLen);
+        } catch (StreamConstraintsException e) {
+            throw _skip7BitBinaryAfterFailure(byteLen, e);
+        }
         final byte[] raw = _read7BitBinary(byteLen);
         // [dataformats-binary#257]: 0-length special case to handle
         if (raw.length == 0) {
@@ -2439,11 +2448,11 @@ versionBits));
     {
         if (lastCh >= 0) {
             _reportError(
-"Overflow in VInt (current token %s): 5th byte (0x%2X) of 5-byte sequence must have its highest bit set to indicate end",
+"Overflow in VInt (current token %s): 5th byte (0x%02X) of 5-byte sequence must have its highest bit set to indicate end",
 currentToken(), lastCh);
         }
         _reportError(
-"Overflow in VInt (current token %s): 1st byte (0x%2X) of 5-byte sequence must have its top 4 bits zeroes",
+"Overflow in VInt (current token %s): 1st byte (0x%02X) of 5-byte sequence must have its top 4 bits zeroes",
 currentToken(), firstCh);
     }
 
@@ -2969,7 +2978,11 @@ currentToken(), firstCh);
      */
     protected void _skip7BitBinary() throws IOException
     {
-        int origBytes = _readUnsignedVInt();
+        _skip7BitBinary(_readUnsignedVInt());
+    }
+
+    private void _skip7BitBinary(int origBytes) throws IOException
+    {
         // Ok; 8 encoded bytes for 7 payload bytes first
         int chunks = origBytes / 7;
         int encBytes = chunks * 8;
@@ -2988,6 +3001,21 @@ currentToken(), firstCh);
             encBytes += 1 + origBytes;
         }
         _skipBytes(encBytes);
+    }
+
+    // Called when declared length of 7-bit encoded content fails validation:
+    // skips content so that parsing may continue with the next token. Returns
+    // the validation failure for caller to throw (with any skipping failure
+    // added as suppressed)
+    private StreamConstraintsException _skip7BitBinaryAfterFailure(int byteLen,
+            StreamConstraintsException fail)
+    {
+        try {
+            _skip7BitBinary(byteLen);
+        } catch (IOException e) {
+            fail.addSuppressed(e);
+        }
+        return fail;
     }
 
     /*

@@ -76,6 +76,9 @@ public abstract class NonBlockingParserBase
     protected final static int MINOR_VALUE_BINARY_7BIT_LEN = 23;
     protected final static int MINOR_VALUE_BINARY_7BIT_BODY = 24;
 
+    // @since 2.18.12: skipping 7-bit encoded content of a value that failed validation
+    protected final static int MINOR_VALUE_SKIP_7BIT_BODY = 25;
+
     /*
     /**********************************************************************
     /* Additional parsing state

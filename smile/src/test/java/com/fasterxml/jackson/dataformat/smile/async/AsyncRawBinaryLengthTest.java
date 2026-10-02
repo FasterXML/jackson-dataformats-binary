@@ -96,6 +96,7 @@ public class AsyncRawBinaryLengthTest extends AsyncTestBase
         feeder.feedInput(doc, 0, 50);
         assertEquals(JsonToken.NOT_AVAILABLE, p.nextToken());
         p.close();
+        assertFalse(feeder.needMoreInput());
         try {
             feeder.feedInput(doc, 50, doc.length);
             fail("Should not pass");

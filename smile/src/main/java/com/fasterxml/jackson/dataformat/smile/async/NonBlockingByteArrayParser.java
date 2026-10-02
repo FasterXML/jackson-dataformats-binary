@@ -9,6 +9,7 @@ import java.util.Arrays;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.async.ByteArrayFeeder;
 import com.fasterxml.jackson.core.async.NonBlockingInputFeeder;
+import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer;
 import com.fasterxml.jackson.core.util.VersionUtil;
@@ -71,7 +72,7 @@ public class NonBlockingByteArrayParser
 
     @Override
     public final boolean needMoreInput() {
-        return (_inputPtr >=_inputEnd) && !_endOfInput;
+        return (_inputPtr >=_inputEnd) && !_endOfInput && !_closed;
     }
 
     @Override
@@ -93,7 +94,8 @@ public class NonBlockingByteArrayParser
         }
         // Time to update pointers first
         _currInputProcessed += _origBufferLen;
-        _streamReadConstraints.validateDocumentLength(_currInputProcessed);
+        // Include content being fed, not just content fed before
+        _streamReadConstraints.validateDocumentLength(_currInputProcessed + (end - start));
 
         // And then update buffer settings
         _inputBuffer = buf;
@@ -321,6 +323,8 @@ public class NonBlockingByteArrayParser
             return _finish7BitBinaryLen(_pending32, _inputCopyLen);
         case MINOR_VALUE_BINARY_7BIT_BODY:
             return _finish7BitBinaryBody();
+        case MINOR_VALUE_SKIP_7BIT_BODY:
+            return _finishSkip7BitBody();
         default:
         }
         throw new IllegalStateException("Illegal state when trying to complete token: majorState="+_majorState);
@@ -1286,7 +1290,11 @@ public class NonBlockingByteArrayParser
     private final JsonToken _startBigIntBody(int len) throws IOException
     {
         // Validate declared length before buffering content
-        _streamReadConstraints.validateIntegerLength(len);
+        try {
+            _streamReadConstraints.validateIntegerLength(len);
+        } catch (StreamConstraintsException e) {
+            throw _skip7BitBodyAfterFailure(len, e);
+        }
         _pending32 = len;
         _inputCopyLen = 0;
         return _finishBigIntBody();
@@ -1415,10 +1423,43 @@ public class NonBlockingByteArrayParser
             return _updateTokenToNA();
         }
         // Validate declared length before buffering content
-        _streamReadConstraints.validateFPLength(len);
+        try {
+            _streamReadConstraints.validateFPLength(len);
+        } catch (StreamConstraintsException e) {
+            throw _skip7BitBodyAfterFailure(len, e);
+        }
         _pending32 = len;
         _inputCopyLen = 0;
         return _finishBigDecimalBody();
+    }
+
+    // Called when declared length of 7-bit encoded content fails validation:
+    // arranges for content to be skipped (on next call to nextToken()), so that
+    // parsing may continue with the next token. Returns the validation failure
+    // for caller to throw
+    private final StreamConstraintsException _skip7BitBodyAfterFailure(int len,
+            StreamConstraintsException fail)
+    {
+        // 8 encoded bytes per 7 bytes; last 1 - 6 bytes need one more
+        final int leftover = len % 7;
+        _pending64 = (len / 7) * 8L + ((leftover == 0) ? 0 : leftover + 1);
+        _minorState = MINOR_VALUE_SKIP_7BIT_BODY;
+        _updateTokenToNA();
+        return fail;
+    }
+
+    private final JsonToken _finishSkip7BitBody() throws IOException
+    {
+        final int count = (int) Math.min(_inputEnd - _inputPtr, _pending64);
+        _inputPtr += count;
+        _pending64 -= count;
+        if (_pending64 > 0) {
+            return _updateTokenToNA();
+        }
+        // All skipped: no value to return, so continue with the next token
+        _majorState = _majorStateAfterValue;
+        _currToken = null;
+        return nextToken();
     }
 
     private final JsonToken _finishBigDecimalBody() throws IOException

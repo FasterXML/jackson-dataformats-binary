@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.core.async.ByteArrayFeeder;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
@@ -54,6 +55,22 @@ public class LongDocumentSmileReadTest extends BaseTestForSmile
         }
     }
     
+    // Non-blocking: content being fed should count too, not just content
+    // fed earlier
+    @Test
+    public void testLongDocumentConstraintAsyncSingleFeed() throws Exception
+    {
+        byte[] doc = createBigDoc(60_000);
+        try (JsonParser p = MAPPER_CONSTRAINED.getFactory().createNonBlockingByteArrayParser()) {
+            ((ByteArrayFeeder) p.getNonBlockingInputFeeder()).feedInput(doc, 0, doc.length);
+            fail("expected StreamConstraintsException");
+        } catch (StreamConstraintsException e) {
+            final String msg = e.getMessage();
+            assertTrue(msg.contains("Document length ("+doc.length+")"), msg);
+            assertTrue(msg.contains("exceeds the maximum allowed (50000"), msg);
+        }
+    }
+
     private byte[] createBigDoc(final int size) throws Exception
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(size + 1000);
