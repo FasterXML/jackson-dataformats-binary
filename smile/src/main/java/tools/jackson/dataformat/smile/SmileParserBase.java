@@ -351,6 +351,19 @@ public abstract class SmileParserBase extends ParserMinimalBase
 
     protected abstract void _releaseBuffers2();
 
+    /**
+     * Helper method for calculating length of 7-bit encoded content, given
+     * length of raw (decoded) content: 8 encoded bytes for each full 7 bytes,
+     * and for last 1 - 6 bytes one more than the number of bytes.
+     * Calculated as {@code long} since may exceed {@code Integer.MAX_VALUE}.
+     *
+     * @since 2.18.12
+     */
+    protected static long _encoded7BitLength(int rawLength) {
+        final int leftover = rawLength % 7;
+        return (rawLength / 7) * 8L + ((leftover == 0) ? 0 : leftover + 1);
+    }
+
     /*
     /**********************************************************************
     /* Numeric accessors of public API

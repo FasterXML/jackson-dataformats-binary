@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import tools.jackson.core.*;
+import tools.jackson.core.exc.StreamConstraintsException;
 import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.core.io.IOContext;
 import tools.jackson.core.sym.ByteQuadsCanonicalizer;
@@ -81,6 +82,14 @@ public class SmileParser extends SmileParserBase
      * some access (or skipped to obtain the next token)
      */
     protected boolean _tokenIncomplete = false;
+
+    /**
+     * If declared length of current (number) token failed validation, the
+     * failure (to rethrow on any further access), and declared length
+     * (for skipping content to get to the next token).
+     */
+    private StreamConstraintsException _numberLengthFailure;
+    private int _failedNumberByteLength;
 
     /*
     /**********************************************************************
@@ -2382,6 +2391,12 @@ _typeAsInt);
 
     protected final void _finishNumberToken(int tb) throws JacksonException
     {
+        // If declared length failed validation earlier, fail again: content
+        // not read, token remains incomplete (to be skipped by nextToken())
+        if (_numberLengthFailure != null) {
+            _tokenIncomplete = true;
+            throw _numberLengthFailureAgain();
+        }
         switch (tb & 0x1F) {
         case 4:
             _finishInt(); // vint
@@ -2577,12 +2592,18 @@ _typeAsInt);
 
     private final void _finishBigInteger() throws JacksonException
     {
-        final byte[] raw = _read7BitBinaryWithLength();
+        // Validate declared length before reading (and buffering) content
+        final int byteLen = _readUnsignedVInt();
+        try {
+            _streamReadConstraints.validateIntegerLength(byteLen);
+        } catch (StreamConstraintsException e) {
+            throw _recordNumberLengthFailure(byteLen, e);
+        }
+        final byte[] raw = _read7BitBinary(byteLen);
         // [dataformats-binary#257]: 0-length special case to handle
         if (raw.length == 0) {
             _numberBigInt = BigInteger.ZERO;
         } else {
-            _streamReadConstraints.validateIntegerLength(raw.length);
             _numberBigInt = new BigInteger(raw);
         }
         _numTypesValid = NR_BIGINT;
@@ -2625,12 +2646,18 @@ _typeAsInt);
     private final void _finishBigDecimal() throws JacksonException
     {
         final int scale = SmileUtil.zigzagDecode(_readUnsignedVInt());
-        final byte[] raw = _read7BitBinaryWithLength();
+        // Validate declared length before reading (and buffering) content
+        final int byteLen = _readUnsignedVInt();
+        try {
+            _streamReadConstraints.validateFPLength(byteLen);
+        } catch (StreamConstraintsException e) {
+            throw _recordNumberLengthFailure(byteLen, e);
+        }
+        final byte[] raw = _read7BitBinary(byteLen);
         // [dataformats-binary#257]: 0-length special case to handle
         if (raw.length == 0) {
             _numberBigDecimal = BigDecimal.ZERO;
         } else {
-            _streamReadConstraints.validateFPLength(raw.length);
             BigInteger unscaledValue = new BigInteger(raw);
             _numberBigDecimal = new BigDecimal(unscaledValue, scale);
         }
@@ -2723,11 +2750,11 @@ _typeAsInt);
     {
         if (lastCh >= 0) {
             throw _constructReadException(
-"Overflow in VInt (current token %s): 5th byte (0x%2X) of 5-byte sequence must have its highest bit set to indicate end",
+"Overflow in VInt (current token %s): 5th byte (0x%02X) of 5-byte sequence must have its highest bit set to indicate end",
 currentToken(), lastCh);
         }
         throw _constructReadException(
-"Overflow in VInt (current token %s): 1st byte (0x%2X) of 5-byte sequence must have its top 4 bits zeroes",
+"Overflow in VInt (current token %s): 1st byte (0x%02X) of 5-byte sequence must have its top 4 bits zeroes",
 currentToken(), firstCh);
     }
 
@@ -2997,8 +3024,11 @@ currentToken(), firstCh);
     // followed by encoded data
     private final byte[] _read7BitBinaryWithLength() throws JacksonException
     {
-        final int byteLen = _readUnsignedVInt();
+        return _read7BitBinary(_readUnsignedVInt());
+    }
 
+    private final byte[] _read7BitBinary(final int byteLen) throws JacksonException
+    {
         // 20-Mar-2021, tatu [dataformats-binary#260]: avoid eager allocation
         //   for very large content
         if (byteLen > LONGEST_NON_CHUNKED_BINARY) {
@@ -3137,6 +3167,12 @@ currentToken(), firstCh);
     protected void _skipIncomplete() throws JacksonException
     {
         _tokenIncomplete = false;
+        // Token that failed validation: skip its content (length already read)
+        if (_numberLengthFailure != null) {
+            _numberLengthFailure = null;
+            _skip7BitBinary(_failedNumberByteLength);
+            return;
+        }
         int tb = _typeAsInt;
         switch (tb >> 5) {
         case 1: // simple literals, numbers
@@ -3249,25 +3285,44 @@ currentToken(), firstCh);
      */
     protected void _skip7BitBinary() throws JacksonException
     {
-        int origBytes = _readUnsignedVInt();
-        // Ok; 8 encoded bytes for 7 payload bytes first
-        int chunks = origBytes / 7;
-        int encBytes = chunks * 8;
+        _skip7BitBinary(_readUnsignedVInt());
+    }
 
+    private void _skip7BitBinary(int origBytes) throws JacksonException
+    {
+        final long encBytes = _encoded7BitLength(origBytes);
         // sanity check: not all length markers valid; due to signed int(32)
         // calculations maximum length only 7/8 of 2^31
-        if (encBytes < 0) {
+        if (encBytes > Integer.MAX_VALUE) {
             throw _constructReadException(
                     "Invalid content: invalid 7-bit binary encoded byte length (0x%X) exceeds maximum valid value",
                     origBytes);
         }
-        
-        // and for last 0 - 6 bytes, last+1 (except none if no leftovers)
-        origBytes -= 7 * chunks;
-        if (origBytes > 0) {
-            encBytes += 1 + origBytes;
-        }
-        _skipBytes(encBytes);
+        _skipBytes((int) encBytes);
+    }
+
+    // Called when declared length of current (number) token fails validation:
+    // content is not read but token is left incomplete so that content is skipped
+    // when moving to the next token (if caller continues). Returns the failure
+    // for caller to throw
+    private StreamConstraintsException _recordNumberLengthFailure(int byteLen,
+            StreamConstraintsException fail)
+    {
+        _tokenIncomplete = true;
+        _numberLengthFailure = fail;
+        _failedNumberByteLength = byteLen;
+        return fail;
+    }
+
+    // New exception (same message and location) for repeated access to a value
+    // whose length failed validation: not the same instance, so that its stack
+    // trace is for this access, and changes to the earlier one are not carried
+    private StreamConstraintsException _numberLengthFailureAgain()
+    {
+        final String msg = _numberLengthFailure.getOriginalMessage();
+        final TokenStreamLocation loc = _numberLengthFailure.getLocation();
+        return (loc == null) ? new StreamConstraintsException(msg)
+                : new StreamConstraintsException(msg, loc);
     }
 
     /*
@@ -3409,7 +3464,7 @@ currentToken(), firstCh);
     protected void _reportIncompleteBinaryRead7Bit(int expLen, int actLen) throws StreamReadException
     {
         // Calculate number of bytes needed (1 encoded byte expresses 7 payload bits):
-        final long encodedLen = (7L + 8L * expLen) / 7L;
+        final long encodedLen = _encoded7BitLength(expLen);
         _reportInvalidEOF(String.format(
 " for Binary value (7-bit): expected %d payload bytes (from %d encoded), only decoded %d",
                 expLen, encodedLen, actLen), currentToken());
