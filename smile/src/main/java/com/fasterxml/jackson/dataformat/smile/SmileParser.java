@@ -1212,18 +1212,12 @@ versionBits));
         return getText();
     }
 
-    @Override // since 2.8
-    public int getText(Writer writer) throws IOException
+    @Override // since 2.23
+    protected void _finishStringValue() throws IOException
     {
-        if (_currToken == JsonToken.VALUE_STRING) {
-            if (_tokenIncomplete) {
-                _finishToken();
-            }
-            return _textBuffer.contentsToWriter(writer);
+        if (_tokenIncomplete) {
+            _finishToken();
         }
-        // [dataformats-binary#835]: only String values are decoded into
-        // `_textBuffer`; others (numbers, binary) need to go via `getText()`
-        return super.getText(writer);
     }
 
     /*

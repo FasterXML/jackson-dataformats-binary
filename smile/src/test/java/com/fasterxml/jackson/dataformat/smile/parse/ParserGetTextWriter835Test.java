@@ -15,6 +15,7 @@ import com.fasterxml.jackson.core.async.ByteArrayFeeder;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -97,9 +98,13 @@ public class ParserGetTextWriter835Test extends BaseTestForSmile
         assertEquals("123456789012345678901234567890", _getTextWriter(p));
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals("12345.678901234567890", _getTextWriter(p));
-        // no textual representation for binary: nothing written
+        // no textual representation for binary: nothing written, and
+        // value must still be accessible afterwards
         assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
-        assertEquals("", _getTextWriter(p));
+        StringWriter w = new StringWriter();
+        assertEquals(0, p.getText(w));
+        assertEquals("", w.toString());
+        assertArrayEquals(new byte[] { 1, 2, 3 }, p.getBinaryValue());
         assertNull(p.getText());
         assertToken(JsonToken.VALUE_TRUE, p.nextToken());
         assertEquals("true", _getTextWriter(p));
