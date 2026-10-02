@@ -322,23 +322,6 @@ public abstract class NonBlockingParserBase
         return 0;
     }
 
-    @Override
-    public int getString(Writer w) throws JacksonException
-    {
-        if (_currToken == JsonToken.VALUE_STRING) {
-            try {
-                return _textBuffer.contentsToWriter(w);
-            } catch (IOException e) {
-                throw _wrapIOFailure(e);
-            }
-        }
-        if (_currToken == JsonToken.NOT_AVAILABLE) {
-            _reportError("Current token not available: can not call this method");
-        }
-        // otherwise default handling works fine
-        return super.getString(w);
-    }
-
     /*
     /**********************************************************************
     /* Public API, access to token information, binary

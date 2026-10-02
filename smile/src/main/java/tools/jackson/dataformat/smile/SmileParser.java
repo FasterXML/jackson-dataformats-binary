@@ -1341,6 +1341,10 @@ _typeAsInt);
     public String getString() throws JacksonException
     {
         if (_tokenIncomplete) {
+            // Binary values have no textual representation: avoid decoding them
+            if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT) {
+                return null;
+            }
             _tokenIncomplete = false;
             // Let's inline part of "_finishToken", common case
             int tb = _typeAsInt;
@@ -1374,7 +1378,8 @@ _typeAsInt);
     public char[] getStringCharacters() throws JacksonException
     {
         if (_currToken != null) { // null only before/after document
-            if (_tokenIncomplete) {
+            // Binary values have no textual representation: avoid decoding them
+            if (_tokenIncomplete && (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT)) {
                 _finishToken();
             }
             if (_currToken == JsonToken.VALUE_STRING) {
@@ -1395,7 +1400,8 @@ _typeAsInt);
     public int getStringLength() throws JacksonException
     {
         if (_currToken != null) { // null only before/after document
-            if (_tokenIncomplete) {
+            // Binary values have no textual representation: avoid decoding them
+            if (_tokenIncomplete && (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT)) {
                 _finishToken();
             }
             if (_currToken == JsonToken.VALUE_STRING) {
@@ -1465,33 +1471,11 @@ _typeAsInt);
     }
 
     @Override
-    public int getString(Writer writer) throws JacksonException
+    protected void _finishStringValue() throws JacksonException
     {
         if (_tokenIncomplete) {
             _finishToken();
         }
-        JsonToken t = _currToken;
-        try {
-            if (t == JsonToken.VALUE_STRING) {
-                return _textBuffer.contentsToWriter(writer);
-            }
-            if (t == JsonToken.PROPERTY_NAME) {
-                String n = _streamReadContext.currentName();
-                writer.write(n);
-                return n.length();
-            }
-            if (t != null) {
-                if (t.isNumeric()) {
-                    return _textBuffer.contentsToWriter(writer);
-                }
-                char[] ch = t.asCharArray();
-                writer.write(ch);
-                return ch.length;
-            }
-        } catch (IOException e) {
-            throw _wrapIOFailure(e);
-        }
-        return 0;
     }
 
     /*

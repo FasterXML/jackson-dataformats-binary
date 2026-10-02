@@ -1,5 +1,7 @@
 package tools.jackson.dataformat.smile;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -283,6 +285,15 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * @return {@code true} if current token is numeric; {@code false} otherwise
      */
     protected abstract boolean _parseNumericValueIfNumber() throws JacksonException;
+
+    /**
+     * Method called to ensure contents of current {@link JsonToken#VALUE_STRING}
+     * token are fully decoded into {@link #_textBuffer}. Default implementation
+     * does nothing: only needed by parsers that decode values lazily.
+     *
+     * @since 3.1.8
+     */
+    protected void _finishStringValue() throws JacksonException { }
     
 //  public abstract int releaseBuffered(OutputStream out) throws JacksonException;
 //  public abstract Object getInputSource();
@@ -378,6 +389,36 @@ public abstract class SmileParserBase extends ParserMinimalBase
     protected static long _encoded7BitLength(int rawLength) {
         final int leftover = rawLength % 7;
         return (rawLength / 7) * 8L + ((leftover == 0) ? 0 : leftover + 1);
+    }
+
+    /*
+    /**********************************************************************
+    /* Text accessors of public API
+    /**********************************************************************
+     */
+
+    @Override
+    public int getString(Writer writer) throws JacksonException
+    {
+        final JsonToken t = _currToken;
+        if (t == JsonToken.VALUE_STRING) {
+            _finishStringValue();
+            try {
+                return _textBuffer.contentsToWriter(writer);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
+        }
+        // Binary values have no textual representation: avoid decoding them
+        if (t == JsonToken.VALUE_EMBEDDED_OBJECT) {
+            return 0;
+        }
+        if (t == JsonToken.NOT_AVAILABLE) {
+            _reportError("Current token not available: can not call this method");
+        }
+        // [dataformats-binary#835]: only String values are decoded into
+        // `_textBuffer`; others (numbers, names, markers) go via `getString()`
+        return super.getString(writer);
     }
 
     /*
