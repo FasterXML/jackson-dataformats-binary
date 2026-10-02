@@ -1344,7 +1344,13 @@ public class CBORGenerator extends GeneratorBase
 
         // 27-Nov-2019, tatu: As per [dataformats-binary#139] need to change sign here
         int scale = dec.scale();
-        _writeIntValue(-scale);
+        // [dataformats-binary#842]: negating `Integer.MIN_VALUE` overflows, so
+        // need to write exponent of 2^31 as unsigned 32-bit int
+        if (scale == Integer.MIN_VALUE) {
+            _writeIntMinimal(PREFIX_TYPE_INT_POS, scale);
+        } else {
+            _writeIntValue(-scale);
+        }
         // Hmmmh. Specification suggest use of regular integer for mantissa. But
         // if it doesn't fit, use "bignum"
         BigInteger unscaled = dec.unscaledValue();

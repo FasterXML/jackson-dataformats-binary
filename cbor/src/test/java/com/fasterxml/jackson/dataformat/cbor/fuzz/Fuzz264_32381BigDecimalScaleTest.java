@@ -21,10 +21,13 @@ public class Fuzz264_32381BigDecimalScaleTest extends CBORTestBase
     @Test
     public void testInvalidBigDecimal() throws Exception
     {
+        // 02-Oct-2026: [dataformats-binary#842] Original fuzz input had exponent of
+        //   -2^31, which is out of range (needs scale of 2^31); use exponent of +2^31
+        //   instead, for the same extreme scale (Integer.MIN_VALUE)
         final byte[] input = new byte[] {
                 (byte) 0xC4, // tag
-                (byte) 0x82, 0x3A, 0x7F,
-                (byte) 0xFF, (byte) 0xFF, (byte)  0xFF, 0x0A
+                (byte) 0x82, 0x1A, (byte) 0x80,
+                0, 0, 0, 0x0A
         };
         BigDecimal streamingValue;
         // Access via regular read worked already

@@ -1236,7 +1236,14 @@ public class CBORParser extends ParserMinimalBase
             _reportError("Unexpected token ("+currentToken()+") as the first part of 'bigfloat' value: should get VALUE_NUMBER_INT");
         }
         // 27-Nov-2019, tatu: As per [dataformats-binary#139] need to change sign here
-        int exp = -getIntValue();
+        // [dataformats-binary#842]: exponent of 2^31 is valid (scale of Integer.MIN_VALUE),
+        // but -2^31 is not (would need scale of 2^31), so need to read as long
+        final long exp64 = getLongValue();
+        if ((exp64 < -Integer.MAX_VALUE) || (exp64 > -((long) Integer.MIN_VALUE))) {
+            _reportError("Exponent ("+exp64+") of 'bigfloat' value out of range for `BigDecimal`: must be within ["
+                    +(-Integer.MAX_VALUE)+", "+(-((long) Integer.MIN_VALUE))+"]");
+        }
+        final int exp = (int) -exp64;
 
         // Should get an integer value; int/long/BigInteger
         if (!_checkNextIsIntInArray("bigfloat")) {
