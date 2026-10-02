@@ -11,31 +11,43 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.async.ByteArrayFeeder;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 // [dataformats-binary#835]: blocking parser's getText(Writer) wrote
 // stale text buffer contents for numeric tokens
 public class ParserGetTextWriter835Test extends BaseTestForSmile
 {
-    private final SmileFactory F = new SmileFactory();
+    private final SmileFactory F = smileFactory(false, true, false);
 
     @Test
-    public void testGetTextWriterForNumbersFromBytes() throws Exception
+    public void testGetTextWriterFromBytes() throws Exception
     {
-        byte[] doc = _doc();
-        try (JsonParser p = F.createParser(doc)) {
+        try (JsonParser p = F.createParser(_doc())) {
             _verify(p);
         }
     }
 
     @Test
-    public void testGetTextWriterForNumbersFromStream() throws Exception
+    public void testGetTextWriterFromStream() throws Exception
+    {
+        try (JsonParser p = F.createParser(new ByteArrayInputStream(_doc()))) {
+            _verify(p);
+        }
+    }
+
+    @Test
+    public void testGetTextWriterNonBlocking() throws Exception
     {
         byte[] doc = _doc();
-        try (JsonParser p = F.createParser(new ByteArrayInputStream(doc))) {
+        try (JsonParser p = F.createNonBlockingByteArrayParser()) {
+            ByteArrayFeeder feeder = (ByteArrayFeeder) p.getNonBlockingInputFeeder();
+            feeder.feedInput(doc, 0, doc.length);
+            feeder.endOfInput();
             _verify(p);
         }
     }
@@ -44,6 +56,8 @@ public class ParserGetTextWriter835Test extends BaseTestForSmile
     {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
         try (JsonGenerator g = F.createGenerator(bo)) {
+            g.writeStartObject();
+            g.writeFieldName("values");
             g.writeStartArray();
             g.writeString("abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789");
             g.writeNumber(42);
@@ -52,17 +66,25 @@ public class ParserGetTextWriter835Test extends BaseTestForSmile
             g.writeNumber(1.25);
             g.writeNumber(new BigInteger("123456789012345678901234567890"));
             g.writeNumber(new BigDecimal("12345.678901234567890"));
+            g.writeBinary(new byte[] { 1, 2, 3 });
             g.writeBoolean(true);
+            g.writeNull();
             g.writeEndArray();
+            g.writeEndObject();
         }
         return bo.toByteArray();
     }
 
     private void _verify(JsonParser p) throws Exception
     {
+        assertToken(JsonToken.START_OBJECT, p.nextToken());
+        assertEquals("{", _getTextWriter(p));
+        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+        assertEquals("values", _getTextWriter(p));
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         assertToken(JsonToken.VALUE_STRING, p.nextToken());
-        _getTextWriter(p);
+        assertEquals("abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789",
+                _getTextWriter(p));
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
         assertEquals("42", _getTextWriter(p));
         assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
@@ -75,9 +97,17 @@ public class ParserGetTextWriter835Test extends BaseTestForSmile
         assertEquals("123456789012345678901234567890", _getTextWriter(p));
         assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
         assertEquals("12345.678901234567890", _getTextWriter(p));
+        // no textual representation for binary: nothing written
+        assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
+        assertEquals("", _getTextWriter(p));
+        assertNull(p.getText());
         assertToken(JsonToken.VALUE_TRUE, p.nextToken());
-        _getTextWriter(p);
+        assertEquals("true", _getTextWriter(p));
+        assertToken(JsonToken.VALUE_NULL, p.nextToken());
+        assertEquals("null", _getTextWriter(p));
         assertToken(JsonToken.END_ARRAY, p.nextToken());
+        assertToken(JsonToken.END_OBJECT, p.nextToken());
+        assertNull(p.nextToken());
     }
 
     // Verifies getText(Writer) matches getText(); called first so that
@@ -88,7 +118,8 @@ public class ParserGetTextWriter835Test extends BaseTestForSmile
         int len = p.getText(w);
         String str = w.toString();
         assertEquals(str.length(), len);
-        assertEquals(p.getText(), str);
+        String text = p.getText();
+        assertEquals((text == null) ? "" : text, str);
         return str;
     }
 }

@@ -1215,31 +1215,15 @@ versionBits));
     @Override // since 2.8
     public int getText(Writer writer) throws IOException
     {
-        if (_tokenIncomplete) {
-            _finishToken();
-        }
-        JsonToken t = _currToken;
-        if (t == JsonToken.VALUE_STRING) {
+        if (_currToken == JsonToken.VALUE_STRING) {
+            if (_tokenIncomplete) {
+                _finishToken();
+            }
             return _textBuffer.contentsToWriter(writer);
         }
-        if (t == JsonToken.FIELD_NAME) {
-            String n = _streamReadContext.getCurrentName();
-            writer.write(n);
-            return n.length();
-        }
-        if (t != null) {
-            // [dataformats-binary#835]: numbers are not decoded into
-            // `_textBuffer`, so must convert from number value
-            if (t.isNumeric()) {
-                String str = getNumberValue().toString();
-                writer.write(str);
-                return str.length();
-            }
-            char[] ch = t.asCharArray();
-            writer.write(ch);
-            return ch.length;
-        }
-        return 0;
+        // [dataformats-binary#835]: only String values are decoded into
+        // `_textBuffer`; others (numbers, binary) need to go via `getText()`
+        return super.getText(writer);
     }
 
     /*
