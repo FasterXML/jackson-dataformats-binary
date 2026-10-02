@@ -246,7 +246,7 @@ public class NonBlockingByteArrayParser
                     if (name == null) {
                         name = (_minorState == MINOR_FIELD_NAME_SHORT_ASCII)
                                 ? _decodeASCIIText(_inputCopy, 0, fullLen)
-                                : _decodeShortUnicodeText(_inputCopy, 0, fullLen)
+                                : _decodeShortUnicodeText(_inputCopy, 0, fullLen, true)
                                 ;
                         name = _addDecodedToSymbols(fullLen, name);
                     }
@@ -301,7 +301,7 @@ public class NonBlockingByteArrayParser
                     _inputPtr += needed;
                     String text = (_minorState == MINOR_VALUE_STRING_SHORT_ASCII)
                             ? _decodeASCIIText(_inputCopy, 0, fullLen)
-                            : _decodeShortUnicodeText(_inputCopy, 0, fullLen);
+                            : _decodeShortUnicodeText(_inputCopy, 0, fullLen, false);
                     if (_seenStringValueCount >= 0) { // shared text values enabled
                         _addSeenStringValue(text);
                     }
@@ -691,7 +691,7 @@ public class NonBlockingByteArrayParser
                     _inputPtr = inputPtr + len;
                     String name = _findDecodedFromSymbols(_inputBuffer, inputPtr, len);
                     if (name == null) {
-                        name = _decodeShortUnicodeText(_inputBuffer, inputPtr, len);
+                        name = _decodeShortUnicodeText(_inputBuffer, inputPtr, len, true);
                         name = _addDecodedToSymbols(len, name);
                     }
                     if (_seenNames != null) {
@@ -840,7 +840,7 @@ public class NonBlockingByteArrayParser
         final int left = _inputEnd - inPtr;
         if (len <= left) { // gotcha!
             _inputPtr = inPtr + len;
-            String text = _decodeShortUnicodeText(_inputBuffer, inPtr, len);
+            String text = _decodeShortUnicodeText(_inputBuffer, inPtr, len, false);
             if (_seenStringValueCount >= 0) { // shared text values enabled
                 _addSeenStringValue(text);
             }
@@ -1715,17 +1715,28 @@ public class NonBlockingByteArrayParser
      * length (in bytes) is known
      *
      * @param len Length between 1 and 64
+     * @param isName Whether text is a property name (for error reporting)
      */
-    private final String _decodeShortUnicodeText(byte[] inBuf, int inPtr, int len) throws IOException
+    private final String _decodeShortUnicodeText(byte[] inBuf, int inPtr, int len,
+            boolean isName) throws IOException
     {
         // note: caller ensures we have enough bytes available
         int outPtr = 0;
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         final int[] codes = SmileConstants.sUtf8UnitLengths;
-        for (int end = inPtr + len; inPtr < end; ) {
+        for (final int end = inPtr + len; inPtr < end; ) {
             int i = inBuf[inPtr++] & 0xFF;
             int code = codes[i];
             if (code != 0) {
+                // [dataformats-binary#833]: must not read past end of String
+                if ((inPtr + code) > end) {
+                    // Last -1 to compensate for byte that was read:
+                    final int firstCharOffset = len - (end - inPtr) - 1;
+                    if (isName) {
+                        _reportTruncatedUTF8InName(len, firstCharOffset, i, code);
+                    }
+                    _reportTruncatedUTF8InString(len, firstCharOffset, i, code);
+                }
                 // trickiest one, need surrogate handling
                 switch (code) {
                 case 1:
@@ -1771,10 +1782,14 @@ public class NonBlockingByteArrayParser
         // enough room for remaining bytes as all-ASCII
         int estSlack = outBuf.length - len - 8;
 
-        for (int end = inPtr + len; inPtr < end; ) {
+        for (final int end = inPtr + len; inPtr < end; ) {
             int i = inBuf[inPtr++] & 0xFF;
             int code = codes[i];
             if (code != 0) {
+                // [dataformats-binary#833]: must not read past end of name
+                if ((inPtr + code) > end) {
+                    _reportInvalidEOF(" in long field name", JsonToken.FIELD_NAME);
+                }
                 // trickiest one, need surrogate handling
                 switch (code) {
                 case 1:
