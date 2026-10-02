@@ -796,7 +796,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
                 (char) actCh, expCh, ctxt.typeDesc(), ctxt.startLocation(_sourceReference())));
     }
 
-    // @since 2.12.3 (moved from {@link SmileParser} in 2.18.12)
+    // @since 2.12.3 (moved from SmileParser in 2.18.12)
     protected String _reportTruncatedUTF8InString(int strLenBytes, int truncatedCharOffset,
             int firstUTFByteValue, int bytesExpected)
         throws IOException
@@ -807,7 +807,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
 strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
     }
 
-    // @since 2.12.3 (moved from {@link SmileParser} in 2.18.12)
+    // (moved from SmileParser in 2.18.12)
     protected String _reportTruncatedUTF8InName(int strLenBytes, int truncatedCharOffset,
             int firstUTFByteValue, int bytesExpected)
         throws IOException
