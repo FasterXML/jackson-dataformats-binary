@@ -40,6 +40,9 @@ Active maintainers:
  (fix by @pjfanning, w/ Claude code)
 #830: (smile) Non-blocking parser silently drops truncated root-level value at end-of-input
  (fix by @cowtowncoder, w/ Claude code)
+#833: (smile) Non-blocking `_decodeShortUnicodeText()` reads past declared String length
+  on truncated UTF-8 sequence
+ (fix by @cowtowncoder, w/ Claude code)
 
 2.22.3 (21-Sep-2026)
 
@@ -108,6 +111,9 @@ No changes since 2.21
   full buffer [CVE-2026-104895]
  (fix by @pjfanning, w/ Claude code)
 #830: (smile) Non-blocking parser silently drops truncated root-level value at end-of-input
+ (fix by @cowtowncoder, w/ Claude code)
+#833: (smile) Non-blocking `_decodeShortUnicodeText()` reads past declared String length
+  on truncated UTF-8 sequence
  (fix by @cowtowncoder, w/ Claude code)
 
 2.21.7 (21-Sep-2026)
@@ -300,6 +306,9 @@ No changes since 2.19.1
   full buffer [CVE-2026-104895]
  (fix by @pjfanning, w/ Claude code)
 #830: (smile) Non-blocking parser silently drops truncated root-level value at end-of-input
+ (fix by @cowtowncoder, w/ Claude code)
+#833: (smile) Non-blocking `_decodeShortUnicodeText()` reads past declared String length
+  on truncated UTF-8 sequence
  (fix by @cowtowncoder, w/ Claude code)
 
 2.18.11 (20-Sep-2026)

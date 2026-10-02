@@ -3181,27 +3181,6 @@ currentToken(), firstCh);
                 expLen, encodedLen, actLen), currentToken());
     }
 
-    // @since 2.12.3
-    protected String _reportTruncatedUTF8InString(int strLenBytes, int truncatedCharOffset,
-            int firstUTFByteValue, int bytesExpected)
-        throws IOException
-    {
-        throw _constructReadException(String.format(
-"Truncated UTF-8 character in Short Unicode String value (%d bytes): "
-+"byte 0x%02X at offset #%d indicated %d more bytes needed",
-strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
-    }
-
-    protected String _reportTruncatedUTF8InName(int strLenBytes, int truncatedCharOffset,
-            int firstUTFByteValue, int bytesExpected)
-        throws IOException
-    {
-        throw _constructReadException(String.format(
-"Truncated UTF-8 character in Short Unicode Name (%d bytes): "
-+"byte 0x%02X at offset #%d indicated %d more bytes needed",
-strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
-    }
-
     /*
     /**********************************************************
     /* Internal methods, other
