@@ -2978,11 +2978,7 @@ currentToken(), firstCh);
      */
     protected void _skip7BitBinary() throws IOException
     {
-        _skip7BitBinary(_readUnsignedVInt());
-    }
-
-    private void _skip7BitBinary(int origBytes) throws IOException
-    {
+        int origBytes = _readUnsignedVInt();
         // Ok; 8 encoded bytes for 7 payload bytes first
         int chunks = origBytes / 7;
         int encBytes = chunks * 8;
@@ -3010,8 +3006,16 @@ currentToken(), firstCh);
     private StreamConstraintsException _skip7BitBinaryAfterFailure(int byteLen,
             StreamConstraintsException fail)
     {
+        // 8 encoded bytes per 7 bytes; last 1 - 6 bytes need one more. Calculated
+        // as long since may exceed Integer.MAX_VALUE
+        final int leftover = byteLen % 7;
+        long encBytes = (byteLen / 7) * 8L + ((leftover == 0) ? 0 : leftover + 1);
         try {
-            _skip7BitBinary(byteLen);
+            while (encBytes > 0) {
+                final int count = (int) Math.min(encBytes, Integer.MAX_VALUE);
+                _skipBytes(count);
+                encBytes -= count;
+            }
         } catch (IOException e) {
             fail.addSuppressed(e);
         }
