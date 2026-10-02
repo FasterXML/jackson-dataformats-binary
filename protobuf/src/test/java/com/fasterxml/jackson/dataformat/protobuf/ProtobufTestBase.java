@@ -8,11 +8,13 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufField;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufMessage;
 
-import junit.framework.TestCase;
-
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-public abstract class ProtobufTestBase extends TestCase
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.fail;
+
+public abstract class ProtobufTestBase
 {
     /*
     /**********************************************************

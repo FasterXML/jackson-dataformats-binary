@@ -1,14 +1,16 @@
 package com.fasterxml.jackson.dataformat.ion.fuzz;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.ion.*;
 
+import org.junit.jupiter.api.Test;
+
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 // [dataformats-binary#469]: NegativeArraySizeException
 // https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=66141

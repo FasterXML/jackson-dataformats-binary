@@ -3,8 +3,6 @@ package com.fasterxml.jackson.dataformat.ion.dos;
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 
-import org.junit.Test;
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
@@ -12,9 +10,11 @@ import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.dataformat.ion.IonFactory;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Verifies that {@link StreamReadConstraints#getMaxDocumentLength()} is enforced
@@ -73,8 +73,8 @@ public class DocumentLengthIonReadTest
             _mapper(SMALL_LIMIT).readTree(doc);
             fail("Should not pass: document length should exceed limit");
         } catch (StreamConstraintsException e) {
-            assertTrue("Unexpected message: "+e.getMessage(),
-                    e.getMessage().contains("Document length"));
+            assertTrue(e.getMessage().contains("Document length"),
+                    "Unexpected message: "+e.getMessage());
         }
     }
 
@@ -113,17 +113,17 @@ public class DocumentLengthIonReadTest
             fail("Should not pass: document length should exceed limit");
         } catch (StreamConstraintsException e) {
             long reported = _reportedLength(e.getMessage());
-            assertTrue("Reported length "+reported+" should exceed limit "+limit,
-                    reported > limit);
-            assertTrue("Reported length "+reported+" should not exceed document size "+doc.length,
-                    reported <= doc.length);
+            assertTrue(reported > limit,
+                    "Reported length "+reported+" should exceed limit "+limit);
+            assertTrue(reported <= doc.length,
+                    "Reported length "+reported+" should not exceed document size "+doc.length);
         }
     }
 
     private long _reportedLength(String msg) {
         int start = msg.indexOf('(');
         int end = msg.indexOf(')', start);
-        assertTrue("Unexpected message: "+msg, start > 0 && end > start);
+        assertTrue(start > 0 && end > start, "Unexpected message: "+msg);
         return Long.parseLong(msg.substring(start+1, end));
     }
 
@@ -161,10 +161,10 @@ public class DocumentLengthIonReadTest
             fail("Should not pass: document length should exceed limit");
         } catch (StreamConstraintsException e) {
             final String msg = e.getMessage();
-            assertTrue("Unexpected message: "+msg, msg.contains("Document length"));
-            assertTrue("Unexpected message: "+msg,
-                    msg.contains("exceeds the maximum allowed ("+limit
-                            +", from `StreamReadConstraints.getMaxDocumentLength()`)"));
+            assertTrue(msg.contains("Document length"), "Unexpected message: "+msg);
+            assertTrue(msg.contains("exceeds the maximum allowed ("+limit
+                            +", from `StreamReadConstraints.getMaxDocumentLength()`)"),
+                    "Unexpected message: "+msg);
         } finally {
             if (p != null) {
                 p.close();

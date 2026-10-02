@@ -14,8 +14,6 @@
 
 package com.fasterxml.jackson.dataformat.ion;
 
-import org.junit.Test;
-import org.junit.Before;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -29,10 +27,14 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class IonGeneratorTest {
     private static final Map<String, String> testObject;
@@ -59,7 +61,7 @@ public class IonGeneratorTest {
     private IonValue testObjectIon;
     private JsonNode testObjectTree;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         final IonFactory factory = new IonFactory();
 

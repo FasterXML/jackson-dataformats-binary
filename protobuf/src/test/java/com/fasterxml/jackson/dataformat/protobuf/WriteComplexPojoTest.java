@@ -6,6 +6,11 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 public class WriteComplexPojoTest extends ProtobufTestBase
 {
     final ObjectMapper MAPPER = new ObjectMapper(new ProtobufFactory());
@@ -15,6 +20,8 @@ public class WriteComplexPojoTest extends ProtobufTestBase
     /* Test methods
     /**********************************************************
      */
+
+    @Test
 
     public void testMediaItemSimple() throws Exception
     {

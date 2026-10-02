@@ -10,6 +10,11 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
 {
     // [dataformats-binary#108]
@@ -127,6 +132,7 @@ public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
     private final ProtobufMapper MAPPER = new ProtobufMapper();
 
     // [dataformats-binary#108], [dataformats-binary#584]
+    @Test
     public void testMultipleUnknown() throws Exception
     {
         MoreNestedField moreNestedField = new MoreNestedField();
@@ -170,6 +176,7 @@ public class ReadNestedUnknownFieldsTest extends ProtobufTestBase
     }
 
     // [dataformats-binary#126]
+    @Test
     public void testCheckEndAfterSkip() throws Exception
     {
         ProtobufMapper mapper = new ProtobufMapper();

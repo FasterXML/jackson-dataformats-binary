@@ -6,6 +6,11 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufTestBase;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 public class DescriptorLoaderTest extends ProtobufTestBase
 {
     private final ProtobufMapper MAPPER = new ProtobufMapper();
@@ -46,6 +51,8 @@ public class DescriptorLoaderTest extends ProtobufTestBase
         + "message Other {\n"
         + "    required int32 f = 1;\n"
         + "}\n";
+
+    @Test
 
     public void testParsing() throws Exception
     {
