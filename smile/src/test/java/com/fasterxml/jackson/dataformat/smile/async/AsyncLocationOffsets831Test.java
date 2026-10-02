@@ -47,9 +47,11 @@ public class AsyncLocationOffsets831Test extends AsyncTestBase
             for (int padding : new int[] { 0, 1, 17 }) {
                 AsyncReaderWrapper r = asyncForBytes(F, chunk, doc, padding);
                 List<Long> act = new ArrayList<>();
-                while (r.nextToken() != null) {
+                JsonToken t;
+                do {
+                    t = r.nextToken();
                     act.add(r.parser().currentTokenLocation().getByteOffset());
-                }
+                } while (t != null);
                 assertEquals(exp, act, "chunk="+chunk+", padding="+padding);
                 // and at the end, should have consumed all content
                 assertEquals((long) doc.length, r.parser().currentLocation().getByteOffset(),
@@ -63,10 +65,14 @@ public class AsyncLocationOffsets831Test extends AsyncTestBase
     {
         List<Long> offsets = new ArrayList<>();
         try (JsonParser p = _smileParser(doc)) {
-            while (p.nextToken() != null) {
+            JsonToken t;
+            do {
+                t = p.nextToken();
                 offsets.add(p.currentTokenLocation().getByteOffset());
-            }
+            } while (t != null);
         }
+        // sanity check: end-of-input "token" located at the end of content
+        assertEquals(Long.valueOf(doc.length), offsets.get(offsets.size()-1));
         return offsets;
     }
 

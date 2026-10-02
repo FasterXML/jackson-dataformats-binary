@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 
-import com.fasterxml.jackson.core.JsonLocation;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.async.ByteArrayFeeder;
 import com.fasterxml.jackson.core.async.NonBlockingInputFeeder;
@@ -43,24 +42,6 @@ public class NonBlockingByteArrayParser
      * information when the block has been completed.
      */
     protected int _origBufferLen;
-
-    /**
-     * Offset within {@link #_inputBuffer} at which the current input chunk
-     * starts: needed since {@code _inputPtr} is an index into caller-provided
-     * buffer, and not relative to the chunk start.
-     *
-     * @since 2.23
-     */
-    protected int _currBufferStart;
-
-    /**
-     * Absolute byte offset (from the beginning of the whole content) of the
-     * start of the current token. Absolute, as opposed to relative to the
-     * current input chunk, since tokens may span multiple chunks.
-     *
-     * @since 2.23
-     */
-    protected long _tokenInputTotal;
 
     // And from ParserBase:
 //    protected int _inputPtr;
@@ -115,17 +96,18 @@ public class NonBlockingByteArrayParser
         }
         // Validate (including content being fed) before updating any state,
         // to leave parser untouched if this throws
-        _streamReadConstraints.validateDocumentLength(_currInputProcessed + _origBufferLen
+        // (note: `_currInputProcessed + _inputEnd` is the total fed so far)
+        _streamReadConstraints.validateDocumentLength(_currInputProcessed + _inputEnd
                 + (end - start));
-        // Time to update pointers first
-        _currInputProcessed += _origBufferLen;
+        // Time to update pointers first: [dataformats-binary#831] need to offset
+        // `start` so that `_currInputProcessed + _inputPtr` is the absolute offset
+        _currInputProcessed += _inputEnd - start;
 
         // And then update buffer settings
         _inputBuffer = buf;
         _inputPtr = start;
         _inputEnd = end;
         _origBufferLen = end - start;
-        _currBufferStart = start;
     }
 
     @Override
@@ -138,26 +120,6 @@ public class NonBlockingByteArrayParser
     /* Abstract methods/overrides from JsonParser
     /**********************************************************************
      */
-
-    // [dataformats-binary#831]: need to account for buffer start offset, and
-    // for tokens that span multiple input chunks
-    @Override
-    public JsonLocation currentLocation()
-    {
-        final long offset = _currInputProcessed + (_inputPtr - _currBufferStart);
-        return new JsonLocation(_ioContext.contentReference(),
-                offset, // bytes
-                -1, -1, (int) offset); // char offset, line, column
-    }
-
-    @Override
-    public JsonLocation currentTokenLocation()
-    {
-        final long total = _tokenInputTotal;
-        return new JsonLocation(_ioContext.contentReference(),
-                total, // bytes
-                -1, -1, (int) total); // char offset, line, column
-    }
 
     /* Implementing these methods efficiently for non-blocking cases would
      * be complicated; so for now let's just use the default non-optimized
@@ -212,7 +174,7 @@ public class NonBlockingByteArrayParser
 
         // No: fresh new token; may or may not have existing one
         _numTypesValid = NR_UNKNOWN;
-        _tokenInputTotal = _currInputProcessed + (_inputPtr - _currBufferStart);
+        _tokenInputTotal = _currInputProcessed + _inputPtr;
         // also: clear any data retained so far
         _binaryValue = null;
         int ch = _inputBuffer[_inputPtr++];
