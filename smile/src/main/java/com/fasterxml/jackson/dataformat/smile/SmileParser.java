@@ -1228,8 +1228,12 @@ versionBits));
             return n.length();
         }
         if (t != null) {
+            // [dataformats-binary#835]: numbers are not decoded into
+            // `_textBuffer`, so must convert from number value
             if (t.isNumeric()) {
-                return _textBuffer.contentsToWriter(writer);
+                String str = getNumberValue().toString();
+                writer.write(str);
+                return str.length();
             }
             char[] ch = t.asCharArray();
             writer.write(ch);
