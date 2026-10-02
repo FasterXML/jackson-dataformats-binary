@@ -345,19 +345,6 @@ public abstract class NonBlockingParserBase
         return 0;
     }
 
-    @Override
-    public int getText(Writer w) throws IOException
-    {
-        if (_currToken == JsonToken.VALUE_STRING) {
-            return _textBuffer.contentsToWriter(w);
-        }
-        if (_currToken == JsonToken.NOT_AVAILABLE) {
-            _reportError("Current token not available: can not call this method");
-        }
-        // otherwise default handling works fine
-        return super.getText(w);
-    }
-
     /*
     /**********************************************************************
     /* Public API, access to token information, binary
