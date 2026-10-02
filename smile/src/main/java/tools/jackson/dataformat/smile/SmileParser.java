@@ -108,6 +108,8 @@ public class SmileParser extends SmileParserBase
         _inputBuffer = inputBuffer;
         _inputPtr = start;
         _inputEnd = end;
+        // [dataformats-binary#831]: need to offset start, for correct locations
+        _currInputProcessed = -start;
         _bufferRecyclable = bufferRecyclable;
     }
 
@@ -382,8 +384,7 @@ versionBits);
         if (_tokenIncomplete) {
             _skipIncomplete();
         }
-        _tokenOffsetForTotal = _inputPtr;
-//        _tokenInputTotal = _currInputProcessed + _inputPtr;
+        _tokenInputTotal = _currInputProcessed + _inputPtr;
         // also: clear any data retained so far
         _binaryValue = null;
         // Two main modes: values, and property names.
@@ -632,7 +633,7 @@ versionBits);
         }
         // first, clear up state
         _numTypesValid = NR_UNKNOWN;
-        _tokenOffsetForTotal = _inputPtr;
+        _tokenInputTotal = _currInputProcessed + _inputPtr;
         _binaryValue = null;
 
         if (_inputPtr >= _inputEnd) {
@@ -744,7 +745,7 @@ _typeAsInt);
             if (_tokenIncomplete) {
                 _skipIncomplete();
             }
-            _tokenOffsetForTotal = _inputPtr;
+            _tokenInputTotal = _currInputProcessed + _inputPtr;
             _binaryValue = null;
 
             byte[] nameBytes = str.asQuotedUTF8();
@@ -889,7 +890,7 @@ _typeAsInt);
         }
         // first, clear up state
         _numTypesValid = NR_UNKNOWN;
-        _tokenOffsetForTotal = _inputPtr;
+        _tokenInputTotal = _currInputProcessed + _inputPtr;
         _binaryValue = null;
 
         if (_inputPtr >= _inputEnd) {
@@ -1210,6 +1211,8 @@ _typeAsInt);
                 _skipIncomplete();
             }
             int ptr = _inputPtr;
+            // (note: absolute offset, so fine to set before possibly loading more)
+            _tokenInputTotal = _currInputProcessed + ptr;
             if (ptr >= _inputEnd) {
                 if (!_loadMore()) {
                 	_eofAsNextToken();
@@ -1217,8 +1220,6 @@ _typeAsInt);
                 }
                 ptr = _inputPtr;
             }
-            _tokenOffsetForTotal = ptr;
-//          _tokenInputTotal = _currInputProcessed + _inputPtr;
             int ch = _inputBuffer[ptr++] & 0xFF;
             _typeAsInt = ch;
 

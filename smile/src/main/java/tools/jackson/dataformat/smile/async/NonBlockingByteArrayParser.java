@@ -38,11 +38,12 @@ public class NonBlockingByteArrayParser
     protected byte[] _inputBuffer = NO_BYTES;
 
     /**
-     * In addition to current buffer pointer, and end pointer,
-     * we will also need to know number of bytes originally
-     * contained. This is needed to correctly update location
-     * information when the block has been completed.
+     * Number of bytes contained in the current input chunk.
+     *
+     * @deprecated Since 2.23 not used: location information is calculated
+     *    using {@code _currInputProcessed} (offset by chunk start) and {@code _inputPtr}.
      */
+    @Deprecated
     protected int _origBufferLen;
 
     // And from ParserBase:
@@ -99,10 +100,12 @@ public class NonBlockingByteArrayParser
         }
         // Validate (including content being fed) before updating any state,
         // to leave parser untouched if this throws
-        _streamReadConstraints.validateDocumentLength(_currInputProcessed + _origBufferLen
+        // (note: `_currInputProcessed + _inputEnd` is the total fed so far)
+        _streamReadConstraints.validateDocumentLength(_currInputProcessed + _inputEnd
                 + (end - start));
-        // Time to update pointers first
-        _currInputProcessed += _origBufferLen;
+        // Time to update pointers first: [dataformats-binary#831] need to offset
+        // `start` so that `_currInputProcessed + _inputPtr` is the absolute offset
+        _currInputProcessed += _inputEnd - start;
 
         // And then update buffer settings
         _inputBuffer = buf;
@@ -180,7 +183,7 @@ public class NonBlockingByteArrayParser
 
         // No: fresh new token; may or may not have existing one
         _numTypesValid = NR_UNKNOWN;
-//            _tokenInputTotal = _currInputProcessed + _inputPtr;
+        _tokenInputTotal = _currInputProcessed + _inputPtr;
         // also: clear any data retained so far
         _binaryValue = null;
         int ch = _inputBuffer[_inputPtr++];
@@ -494,6 +497,10 @@ public class NonBlockingByteArrayParser
             if (_minorState == MINOR_HEADER_INLINE) {
                 return null;
             }
+            // [dataformats-binary#831]: if no more content available, token location
+            // should still point to after the header (recursive call will update
+            // otherwise)
+            _tokenInputTotal = _currInputProcessed + _inputPtr;
             // Ok to use recursion in case of initial header, as well:
             return nextToken();
         default:
