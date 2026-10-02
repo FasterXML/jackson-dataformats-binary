@@ -47,6 +47,12 @@ public class NonBlockingByteArrayParser
 //    protected int _inputPtr;
 //    protected int _inputEnd;
 
+    /**
+     * Type of value being skipped after its length failed validation, if any
+     * (used for error reporting)
+     */
+    private JsonToken _skippedValueType;
+
     /*
     /**********************************************************************
     /* Life-cycle
@@ -152,7 +158,7 @@ public class NonBlockingByteArrayParser
             if (_endOfInput) { // except for this special case
                 // [dataformats-binary#830]: end-of-input in the middle of a token
                 // is never valid (no Smile token can end at end-of-input)
-                if (_currToken == JsonToken.NOT_AVAILABLE) {
+                if ((_currToken == JsonToken.NOT_AVAILABLE) && !_skipCompleted()) {
                     _reportEOFInToken();
                 }
                 return _eofAsNextToken();
@@ -369,7 +375,7 @@ public class NonBlockingByteArrayParser
             break;
         case MINOR_VALUE_SKIP_7BIT_BODY:
             desc = "Number value (being skipped)";
-            type = null;
+            type = _skippedValueType;
             break;
         case MINOR_VALUE_STRING_SHORT_ASCII:
         case MINOR_VALUE_STRING_SHORT_UNICODE:
@@ -393,7 +399,18 @@ public class NonBlockingByteArrayParser
             desc = "token (internal state: "+_minorState+")";
             type = null;
         }
+        // Nothing more can be decoded: close (releasing buffers) as with
+        // regular end-of-input, then report
+        _majorState = MAJOR_CLOSED;
+        close();
+        _updateTokenToNull();
         _reportInvalidEOF(" in "+desc, type);
+    }
+
+    // Whether we are in the state of skipping content of a value that failed
+    // validation, but all of content has been skipped (value is complete)
+    private final boolean _skipCompleted() {
+        return (_minorState == MINOR_VALUE_SKIP_7BIT_BODY) && (_pending64 == 0L);
     }
 
     /*
@@ -1509,6 +1526,7 @@ public class NonBlockingByteArrayParser
     {
         _pending32 = len;
         _pending64 = _encoded7BitLength(len);
+        _skippedValueType = valueType;
         _minorState = MINOR_VALUE_SKIP_7BIT_BODY;
         // Failed value still counts as a token (as with blocking parser)
         try {
