@@ -71,6 +71,19 @@ public class BigDecimalScaleExtremes842Test extends CBORTestBase
                 (byte) 0xC4, (byte) 0x82, 0x1A, (byte) 0x80, 0, 0, 0x01, 0x01 });
     }
 
+    @Test
+    public void testReadBigIntegerExponents() throws Exception
+    {
+        // exponents that do not fit in `long` should fail the same way
+        final byte FF = (byte) 0xFF;
+        // 2^64 - 1
+        _readFail(new byte[] {
+                (byte) 0xC4, (byte) 0x82, 0x1B, FF, FF, FF, FF, FF, FF, FF, FF, 0x01 });
+        // -2^64
+        _readFail(new byte[] {
+                (byte) 0xC4, (byte) 0x82, 0x3B, FF, FF, FF, FF, FF, FF, FF, FF, 0x01 });
+    }
+
     private byte[] _write(BigDecimal value) throws Exception
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();

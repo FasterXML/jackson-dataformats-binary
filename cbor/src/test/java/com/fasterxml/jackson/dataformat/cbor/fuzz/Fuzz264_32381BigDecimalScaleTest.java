@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
@@ -46,5 +47,30 @@ public class Fuzz264_32381BigDecimalScaleTest extends CBORTestBase
         BigDecimal treeValue = root.decimalValue();
 
         assertEquals(streamingValue, treeValue);
+    }
+
+    // [dataformats-binary#842]: original fuzz input (exponent of -2^31) must now
+    // fail cleanly, for both streaming and databind access
+    @Test
+    public void testOriginalFuzzInputFails() throws Exception
+    {
+        final byte[] input = new byte[] {
+                (byte) 0xC4, // tag
+                (byte) 0x82, 0x3A, 0x7F,
+                (byte) 0xFF, (byte) 0xFF, (byte)  0xFF, 0x0A
+        };
+        try (JsonParser p = MAPPER.createParser(input)) {
+            p.nextToken();
+            fail("Should not pass, got: "+p.getDecimalValue());
+        } catch (StreamReadException e) {
+            verifyException(e, "out of range for `BigDecimal`");
+        }
+
+        try {
+            JsonNode root = MAPPER.readTree(input);
+            fail("Should not pass, got: "+root);
+        } catch (StreamReadException e) {
+            verifyException(e, "out of range for `BigDecimal`");
+        }
     }
 }

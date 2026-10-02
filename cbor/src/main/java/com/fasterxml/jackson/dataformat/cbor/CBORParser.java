@@ -1237,13 +1237,15 @@ public class CBORParser extends ParserMinimalBase
         }
         // 27-Nov-2019, tatu: As per [dataformats-binary#139] need to change sign here
         // [dataformats-binary#842]: exponent of 2^31 is valid (scale of Integer.MIN_VALUE),
-        // but -2^31 is not (would need scale of 2^31), so need to read as long
-        final long exp64 = getLongValue();
-        if ((exp64 < -Integer.MAX_VALUE) || (exp64 > -((long) Integer.MIN_VALUE))) {
-            _reportError("Exponent ("+exp64+") of 'bigfloat' value out of range for `BigDecimal`: must be within ["
-                    +(-Integer.MAX_VALUE)+", "+(-((long) Integer.MIN_VALUE))+"]");
+        // but -2^31 is not (would need scale of 2^31), so need to negate as long
+        if (getNumberType() == NumberType.BIG_INTEGER) {
+            _reportBigFloatExponentOutOfRange(getBigIntegerValue());
         }
-        final int exp = (int) -exp64;
+        final long scale64 = -getLongValue();
+        if ((scale64 < Integer.MIN_VALUE) || (scale64 > Integer.MAX_VALUE)) {
+            _reportBigFloatExponentOutOfRange(-scale64);
+        }
+        final int exp = (int) scale64;
 
         // Should get an integer value; int/long/BigInteger
         if (!_checkNextIsIntInArray("bigfloat")) {
@@ -1268,6 +1270,13 @@ public class CBORParser extends ParserMinimalBase
         _numberBigDecimal = dec;
         _numTypesValid = NR_BIGDECIMAL;
         return _updateToken(JsonToken.VALUE_NUMBER_FLOAT);
+    }
+
+    // @since 2.23
+    private void _reportBigFloatExponentOutOfRange(Object exp) throws IOException
+    {
+        _reportError("Exponent ("+exp+") of 'bigfloat' value out of range for `BigDecimal`: must be within ["
+                +(-(long) Integer.MAX_VALUE)+", "+(-(long) Integer.MIN_VALUE)+"]");
     }
 
     /**
