@@ -23,8 +23,27 @@ public class ParserGetTextWriter846Test extends ProtobufTestBase
             +" optional float f = 4;\n"
             +" optional double d = 5;\n"
             +" optional bytes b = 6;\n"
+            +" optional bool t = 7;\n"
+            +" optional bool fl = 8;\n"
+            +" optional StdEnum se = 9;\n"
+            +" optional SparseEnum xe = 10;\n"
+            +"}\n"
+            // indexes 0..N-1: exposed as VALUE_NUMBER_INT
+            +"enum StdEnum {\n"
+            +" A = 0;\n"
+            +" B = 1;\n"
+            +" C = 2;\n"
+            +"}\n"
+            // non-standard indexes: exposed as VALUE_STRING
+            +"enum SparseEnum {\n"
+            +" X = 1;\n"
+            +" Y = 5;\n"
             +"}\n"
     ;
+
+    enum StdEnum { A, B, C; }
+
+    enum SparseEnum { X, Y; }
 
     public static class Bean {
         public String s = "abcdefghijklmnopqrstuvwxyz0123456789";
@@ -33,6 +52,10 @@ public class ParserGetTextWriter846Test extends ProtobufTestBase
         public float f = 1.25f;
         public double d = 1.25;
         public byte[] b = new byte[] { 1, 2, 3 };
+        public boolean t = true;
+        public boolean fl = false;
+        public StdEnum se = StdEnum.C;
+        public SparseEnum xe = SparseEnum.Y;
     }
 
     private final ProtobufMapper MAPPER = newObjectMapper();
@@ -80,6 +103,26 @@ public class ParserGetTextWriter846Test extends ProtobufTestBase
             assertEquals(0, p.getText(w));
             assertEquals("", w.toString());
             assertArrayEquals(new byte[] { 1, 2, 3 }, p.getBinaryValue());
+
+            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            _verifyText(p, "t");
+            assertToken(JsonToken.VALUE_TRUE, p.nextToken());
+            _verifyText(p, "true");
+
+            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            _verifyText(p, "fl");
+            assertToken(JsonToken.VALUE_FALSE, p.nextToken());
+            _verifyText(p, "false");
+
+            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            _verifyText(p, "se");
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            _verifyText(p, "2");
+
+            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            _verifyText(p, "xe");
+            assertToken(JsonToken.VALUE_STRING, p.nextToken());
+            _verifyText(p, "Y");
 
             assertToken(JsonToken.END_OBJECT, p.nextToken());
             _verifyText(p, "}");
