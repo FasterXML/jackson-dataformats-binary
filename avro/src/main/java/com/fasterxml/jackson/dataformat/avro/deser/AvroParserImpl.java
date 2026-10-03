@@ -589,6 +589,20 @@ public abstract class AvroParserImpl
     public abstract int decodeIndex() throws IOException;
     public abstract int decodeEnum() throws IOException;
 
+    // Called when index returned by `decodeIndex()` is out of range for the union:
+    // clears the stored (invalid) index and returns exception to throw
+    final JsonParseException _invalidBranchIndex(String msg) {
+        _branchIndex = -1;
+        return new JsonParseException(this, msg);
+    }
+
+    // Called when index returned by `decodeEnum()` is out of range for the enum:
+    // clears the stored (invalid) index and returns exception to throw
+    final JsonParseException _invalidEnumIndex(String msg) {
+        _enumIndex = -1;
+        return new JsonParseException(this, msg);
+    }
+
     /*
     /**********************************************************
     /* Methods for AvroReadContext implementations: decimals

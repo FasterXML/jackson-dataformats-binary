@@ -2,7 +2,6 @@ package com.fasterxml.jackson.dataformat.avro.deser;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
 
 /**
@@ -35,7 +34,7 @@ final class UnionReader extends AvroStructureReader
     @Override
     public JsonToken nextToken() throws IOException
     {
-        int index = _decodeIndex(_parser.decodeIndex());
+        int index = _decodeIndex(_parser);
         // important: remember to create new instance
         // also: must pass our parent (not this instance)
         AvroStructureReader reader = _memberReaders[index].newReader(_parent, _parser);
@@ -44,7 +43,7 @@ final class UnionReader extends AvroStructureReader
 
     @Override
     public void skipValue(AvroParserImpl parser) throws IOException {
-        int index = _decodeIndex(parser.decodeIndex());
+        int index = _decodeIndex(parser);
         // NOTE: no need to create new instance since it's stateless call and
         // we pass decoder to use
         _memberReaders[index].skipValue(parser);
@@ -61,9 +60,10 @@ final class UnionReader extends AvroStructureReader
         sb.append('?');
     }
 
-    private final int _decodeIndex(int index) throws IOException {
+    private final int _decodeIndex(AvroParserImpl parser) throws IOException {
+        final int index = parser.decodeIndex();
         if (index < 0 || index >= _memberReaders.length) {
-            throw new JsonParseException(_parser, String.format
+            throw parser._invalidBranchIndex(String.format
                     ("Invalid index (%s); union only has %d types", index, _memberReaders.length));
         }
         return index;

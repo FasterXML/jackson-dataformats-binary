@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 
@@ -385,7 +384,7 @@ public abstract class ScalarDecoder
 
         private ScalarDecoder _checkIndex(AvroParserImpl parser, int index) throws IOException {
             if (index < 0 || index >= _readers.length) {
-                throw new JsonParseException(parser, String.format(
+                throw parser._invalidBranchIndex(String.format(
                         "Invalid Union index (%s); union only has %d types", index, _readers.length));
             }
             return _readers[index];
@@ -421,7 +420,7 @@ public abstract class ScalarDecoder
 
             private ScalarDecoder _checkIndex(AvroParserImpl parser, int index) throws IOException {
                 if (index < 0 || index >= _readers.length) {
-                    throw new JsonParseException(parser, String.format(
+                    throw parser._invalidBranchIndex(String.format(
                             "Invalid Union index (%s); union only has %d types", index, _readers.length));
                 }
                 return _readers[index];
@@ -452,7 +451,7 @@ public abstract class ScalarDecoder
 
         private final String _checkIndex(AvroParserImpl parser, int index) throws IOException {
             if (index < 0 || index >= _values.length) {
-                throw new JsonParseException(parser, String.format(
+                throw parser._invalidEnumIndex(String.format(
                         "Invalid Enum index (%s); enum '%s' only has %d types",
                         index, _name, _values.length));
             }
@@ -470,10 +469,12 @@ public abstract class ScalarDecoder
         }
 
         private final static class FR extends AvroFieldReader {
+            protected final String _enumName;
             protected final String[] _values;
 
             public FR(String name, boolean skipper, EnumDecoder base, String typeId) {
                 super(name, skipper, typeId);
+                _enumName = base._name;
                 _values = base._values;
             }
 
@@ -489,9 +490,9 @@ public abstract class ScalarDecoder
 
             private final String _checkIndex(AvroParserImpl parser, int index) throws IOException {
                 if (index < 0 || index >= _values.length) {
-                    throw new JsonParseException(parser, String.format(
+                    throw parser._invalidEnumIndex(String.format(
                             "Invalid Enum index (%s); enum '%s' only has %d types",
-                            index, _name, _values.length));
+                            index, _enumName, _values.length));
                 }
                 return _values[index];
             }
