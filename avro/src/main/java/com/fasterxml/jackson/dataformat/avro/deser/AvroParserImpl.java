@@ -593,14 +593,14 @@ public abstract class AvroParserImpl
     // clears the stored (invalid) index and returns exception to throw
     final JsonParseException _invalidBranchIndex(String msg) {
         _branchIndex = -1;
-        return new JsonParseException(this, msg);
+        return _constructError(msg);
     }
 
     // Called when index returned by `decodeEnum()` is out of range for the enum:
     // clears the stored (invalid) index and returns exception to throw
     final JsonParseException _invalidEnumIndex(String msg) {
         _enumIndex = -1;
-        return new JsonParseException(this, msg);
+        return _constructError(msg);
     }
 
     /*
