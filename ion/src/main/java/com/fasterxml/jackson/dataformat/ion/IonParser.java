@@ -285,11 +285,20 @@ public class IonParser
             case FIELD_NAME:
                 return currentName();
             case VALUE_STRING:
+                final String str;
                 try {
-                    return _reader.stringValue();
+                    str = _reader.stringValue();
                 } catch (IonException e) {
                     return _reportCorruptContent(e);
                 }
+                // Null values are exposed as VALUE_NULL, so non-null STRING/SYMBOL
+                // must have text: if not (like with corrupt Symbol), fail
+                if (str == null) {
+                    throw _constructError(String.format(
+                            "Corrupt content to decode; underlying `IonReader` returned `null` text for non-null %s value",
+                            _reader.getType()));
+                }
+                return str;
             case VALUE_NUMBER_INT:
             case VALUE_NUMBER_FLOAT:
                 Number n = getNumberValue();
