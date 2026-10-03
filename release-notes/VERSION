@@ -47,6 +47,9 @@ implementations)
 #781: (smile) `SmileGenerator.writeNumber(String)` should validate number length
   against configured `StreamReadConstraints`, not global defaults
  (contributed by @pjfanning)
+#823: (cbor) `maxStringLength` not consistently checked for chunked
+  (indefinite-length) text values
+ (fix by @pjfanning, w/ Claude code)
 - (avro) Generated `array` schemas missing `java-class` for `java.util.List`,
   breaking round-trip via Apache `ReflectDatumReader`
 

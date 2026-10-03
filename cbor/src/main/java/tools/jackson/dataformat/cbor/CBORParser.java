@@ -2826,6 +2826,11 @@ public class CBORParser extends ParserBase
         }
 
         _textBuffer.setCurrentLength(outPtr);
+        // [dataformats-binary#823]: `TextBuffer` only validates length when
+        //   finishing a segment, so need to check if all content fit in one
+        if (!isName) {
+            _streamReadConstraints.validateStringLength(_textBuffer.size());
+        }
     }
 
     /**
