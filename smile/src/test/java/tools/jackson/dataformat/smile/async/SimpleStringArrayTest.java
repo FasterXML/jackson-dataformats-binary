@@ -206,9 +206,10 @@ public class SimpleStringArrayTest extends AsyncTestBase
         // start with "no token"
         assertNull(r.currentToken());
         assertToken(JsonToken.START_ARRAY, r.nextToken());
-        assertToken(JsonToken.VALUE_STRING, r.nextToken());
+        // [dataformats-binary#824]: non-blocking parser decodes (and validates)
+        //   String values fully when token is completed
         try {
-            r.currentText();
+            r.nextToken();
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException ise) {
             assertTrue(ise.getMessage().startsWith("String value length (98) exceeds the maximum allowed"),
