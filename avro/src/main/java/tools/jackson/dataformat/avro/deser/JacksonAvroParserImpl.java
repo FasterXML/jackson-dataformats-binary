@@ -752,6 +752,9 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             outBuf[outPtr++] = (char) c;
         }
         _textBuffer.setCurrentLength(outPtr);
+        // [dataformats-binary#824]: `TextBuffer` only validates length when
+        //   finishing a segment, so need to check if all content fit in one
+        _streamReadConstraints.validateStringLength(_textBuffer.size());
     }
 
     private final int _decodeUTF8_3(int c1) throws IOException

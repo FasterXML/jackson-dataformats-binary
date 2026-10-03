@@ -965,6 +965,9 @@ public class NonBlockingByteArrayParser
                 if (b == SmileConstants.BYTE_MARKER_END_OF_STRING) {
                     _inputPtr = inPtr;
                     _textBuffer.setCurrentLength(outPtr);
+                    // [dataformats-binary#824]: `TextBuffer` only validates length when
+                    //   finishing a segment, so need to check if all content fit in one
+                    _streamReadConstraints.validateStringLength(_textBuffer.size());
                     return _valueComplete(JsonToken.VALUE_STRING);
                 }
                 outBuf[outPtr++] = (char) b;
@@ -995,6 +998,9 @@ public class NonBlockingByteArrayParser
                 if (b == SmileConstants.BYTE_MARKER_END_OF_STRING) {
                     _inputPtr = inPtr;
                     _textBuffer.setCurrentLength(outPtr);
+                    // [dataformats-binary#824]: `TextBuffer` only validates length when
+                    //   finishing a segment, so need to check if all content fit in one
+                    _streamReadConstraints.validateStringLength(_textBuffer.size());
                     return _valueComplete(JsonToken.VALUE_STRING);
                 }
                 outBuf[outPtr++] = (char) b;
@@ -1050,6 +1056,9 @@ public class NonBlockingByteArrayParser
             // Ok: end marker, escape or multi-byte?
             if (c == SmileConstants.INT_MARKER_END_OF_STRING) {
                 _textBuffer.setCurrentLength(outPtr);
+                // [dataformats-binary#824]: `TextBuffer` only validates length when
+                //   finishing a segment, so need to check if all content fit in one
+                _streamReadConstraints.validateStringLength(_textBuffer.size());
                 return _valueComplete(JsonToken.VALUE_STRING);
             }
 
@@ -1167,6 +1176,9 @@ public class NonBlockingByteArrayParser
             // Ok: end marker, escape or multi-byte?
             if (c == SmileConstants.INT_MARKER_END_OF_STRING) {
                 _textBuffer.setCurrentLength(outPtr);
+                // [dataformats-binary#824]: `TextBuffer` only validates length when
+                //   finishing a segment, so need to check if all content fit in one
+                _streamReadConstraints.validateStringLength(_textBuffer.size());
                 return _valueComplete(JsonToken.VALUE_STRING);
             }
 

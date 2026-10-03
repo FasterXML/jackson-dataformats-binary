@@ -2812,6 +2812,9 @@ currentToken(), firstCh);
             _inputPtr = inPtr;
         }
         _textBuffer.setCurrentLength(outPtr);
+        // [dataformats-binary#824]: `TextBuffer` only validates length when
+        //   finishing a segment, so need to check if all content fit in one
+        _streamReadConstraints.validateStringLength(_textBuffer.size());
     }
 
     private final void _decodeLongUnicodeValue() throws JacksonException
@@ -2900,6 +2903,9 @@ currentToken(), firstCh);
             outBuf[outPtr++] = (char) c;
         }
         _textBuffer.setCurrentLength(outPtr);
+        // [dataformats-binary#824]: `TextBuffer` only validates length when
+        //   finishing a segment, so need to check if all content fit in one
+        _streamReadConstraints.validateStringLength(_textBuffer.size());
     }
 
     /*
