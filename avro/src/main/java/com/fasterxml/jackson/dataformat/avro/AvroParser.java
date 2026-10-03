@@ -1,7 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro;
 
 import java.io.IOException;
-import java.io.Writer;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.base.ParserBase;
@@ -316,8 +315,8 @@ public abstract class AvroParser extends ParserBase
     @Override
     public abstract String getText() throws IOException;
 
-    @Override
-    public abstract int getText(Writer writer) throws IOException;
+    // NOTE: `getText(Writer)` not re-declared abstract (since 2.23): default
+    // implementation, which writes contents of `getText()`, works as fallback
 
     @Override
     public char[] getTextCharacters() throws IOException {

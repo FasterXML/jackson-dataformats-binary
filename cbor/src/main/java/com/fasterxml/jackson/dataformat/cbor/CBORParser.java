@@ -1786,7 +1786,8 @@ public class CBORParser extends ParserMinimalBase
     public char[] getTextCharacters() throws IOException
     {
         if (_currToken != null) { // null only before/after document
-            if (_tokenIncomplete) {
+            // Binary values have no textual representation: avoid decoding them
+            if (_tokenIncomplete && (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT)) {
                 _finishToken();
             }
             if (_currToken == JsonToken.VALUE_STRING) {
@@ -1808,7 +1809,8 @@ public class CBORParser extends ParserMinimalBase
     public int getTextLength() throws IOException
     {
         if (_currToken != null) { // null only before/after document
-            if (_tokenIncomplete) {
+            // Binary values have no textual representation: avoid decoding them
+            if (_tokenIncomplete && (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT)) {
                 _finishToken();
             }
             if (_currToken == JsonToken.VALUE_STRING) {
@@ -1872,37 +1874,21 @@ public class CBORParser extends ParserMinimalBase
     @Override // since 2.8
     public int getText(Writer writer) throws IOException
     {
-        if (_tokenIncomplete) {
-            _finishToken();
-        }
-        JsonToken t = _currToken;
+        final JsonToken t = _currToken;
         if (t == JsonToken.VALUE_STRING) {
+            if (_tokenIncomplete) {
+                _finishToken();
+            }
             if (_sharedString == null) {
                 return _textBuffer.contentsToWriter(writer);
-            } else {
-                writer.write(_sharedString);
-                return _sharedString.length();
             }
+            writer.write(_sharedString);
+            return _sharedString.length();
         }
-        if (t == JsonToken.FIELD_NAME) {
-            String n = _streamReadContext.getCurrentName();
-            writer.write(n);
-            return n.length();
-        }
-        if (t != null) {
-            if (t.isNumeric()) {
-                if (_sharedString == null) {
-                    return _textBuffer.contentsToWriter(writer);
-                } else {
-                    writer.write(_sharedString);
-                    return _sharedString.length();
-                }
-            }
-            char[] ch = t.asCharArray();
-            writer.write(ch);
-            return ch.length;
-        }
-        return 0;
+        // [dataformats-binary#844]: only String values are decoded into
+        // `_textBuffer`; others (numbers, names, markers) go via `getText()`
+        // (which returns `null` for binary values, without decoding them)
+        return super.getText(writer);
     }
 
     /*
