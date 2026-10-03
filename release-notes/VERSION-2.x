@@ -18,7 +18,7 @@ Active maintainers:
 
 #816: (avro) `UnionReader.nextToken()` does not validate union index, throws
   `ArrayIndexOutOfBoundsException` for out-of-range values
- (contributed by @pjfanning)
+ (fix by @pjfanning, w/ Claude code)
 #817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
   [CVE-2026-104016][CVE-2026-104017]
  (fix by @pjfanning, w/ Claude code)

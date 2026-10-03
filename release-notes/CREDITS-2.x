@@ -484,5 +484,5 @@ PJ Fanning (@pjfanning)
 * Contributed #776: (protobuf) `ProtobufGenerator.writeString(char[],int,int)`
   writes enum values twice
  (2.21.7)
-* Contributed #816: (avro) `UnionReader.nextToken()` does not validate union index
+* Fixed #816: (avro) `UnionReader.nextToken()` does not validate union index
  (2.21.8)
