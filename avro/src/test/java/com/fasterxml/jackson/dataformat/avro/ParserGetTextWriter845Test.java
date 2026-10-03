@@ -19,9 +19,11 @@ public class ParserGetTextWriter845Test extends AvroTestBase
     public static class Bean {
         public String a = "stale-text-from-previous-string";
         public byte[] b = new byte[] { 1, 2, 3 };
+        public Integer c = null;
         public double d = 1.25;
         public boolean e = true;
         public float f = 1.25f;
+        public boolean g = false;
         public int i = 42;
         public long l = -1234567890123L;
         public String s = "abcdefghijklmnopqrstuvwxyz0123456789";
@@ -64,7 +66,14 @@ public class ParserGetTextWriter845Test extends AvroTestBase
             assertEquals(0, p.getText(w));
             assertEquals("", w.toString());
             assertNull(p.getText());
+            assertNull(p.getTextCharacters());
+            assertEquals(0, p.getTextLength());
             assertArrayEquals(new byte[] { 1, 2, 3 }, p.getBinaryValue());
+
+            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertEquals("c", _getTextWriter(p));
+            assertToken(JsonToken.VALUE_NULL, p.nextToken());
+            assertEquals("null", _getTextWriter(p));
 
             assertToken(JsonToken.FIELD_NAME, p.nextToken());
             assertEquals("d", _getTextWriter(p));
@@ -80,6 +89,11 @@ public class ParserGetTextWriter845Test extends AvroTestBase
             assertEquals("f", _getTextWriter(p));
             assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
             assertEquals("1.25", _getTextWriter(p));
+
+            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertEquals("g", _getTextWriter(p));
+            assertToken(JsonToken.VALUE_FALSE, p.nextToken());
+            assertEquals("false", _getTextWriter(p));
 
             assertToken(JsonToken.FIELD_NAME, p.nextToken());
             assertEquals("i", _getTextWriter(p));

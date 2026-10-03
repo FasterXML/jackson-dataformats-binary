@@ -195,13 +195,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         }
         // [dataformats-binary#845]: only String values are held as-is;
         // others (numbers, names, markers) go via `getText()`
-        // (binary values have no textual representation: nothing written)
-        String str = getText();
-        if (str == null) {
-            return 0;
-        }
-        writer.write(str);
-        return str.length();
+        return super.getText(writer);
     }
 
     /*

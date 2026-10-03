@@ -104,6 +104,8 @@ public class ParserGetTextWriter844Test extends CBORTestBase
         assertEquals(0, p.getText(w));
         assertEquals("", w.toString());
         assertNull(p.getText());
+        assertNull(p.getTextCharacters());
+        assertEquals(0, p.getTextLength());
         assertArrayEquals(new byte[] { 1, 2, 3 }, p.getBinaryValue());
         assertToken(JsonToken.VALUE_TRUE, p.nextToken());
         assertEquals("true", _getTextWriter(p));

@@ -1786,7 +1786,8 @@ public class CBORParser extends ParserMinimalBase
     public char[] getTextCharacters() throws IOException
     {
         if (_currToken != null) { // null only before/after document
-            if (_tokenIncomplete) {
+            // Binary values have no textual representation: avoid decoding them
+            if (_tokenIncomplete && (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT)) {
                 _finishToken();
             }
             if (_currToken == JsonToken.VALUE_STRING) {
@@ -1808,7 +1809,8 @@ public class CBORParser extends ParserMinimalBase
     public int getTextLength() throws IOException
     {
         if (_currToken != null) { // null only before/after document
-            if (_tokenIncomplete) {
+            // Binary values have no textual representation: avoid decoding them
+            if (_tokenIncomplete && (_currToken != JsonToken.VALUE_EMBEDDED_OBJECT)) {
                 _finishToken();
             }
             if (_currToken == JsonToken.VALUE_STRING) {
@@ -1883,12 +1885,9 @@ public class CBORParser extends ParserMinimalBase
             writer.write(_sharedString);
             return _sharedString.length();
         }
-        // Binary values have no textual representation: avoid decoding them
-        if (t == JsonToken.VALUE_EMBEDDED_OBJECT) {
-            return 0;
-        }
         // [dataformats-binary#844]: only String values are decoded into
         // `_textBuffer`; others (numbers, names, markers) go via `getText()`
+        // (which returns `null` for binary values, without decoding them)
         return super.getText(writer);
     }
 
