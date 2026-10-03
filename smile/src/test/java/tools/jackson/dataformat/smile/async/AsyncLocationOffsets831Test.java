@@ -13,6 +13,7 @@ import tools.jackson.dataformat.smile.SmileConstants;
 import tools.jackson.dataformat.smile.SmileMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 // [dataformats-binary#831]: non-blocking parser reported wrong byte offsets
 // for both current location and current token location
@@ -85,6 +86,36 @@ public class AsyncLocationOffsets831Test extends AsyncTestBase
         }
     }
 
+    // [dataformats-binary#838]: same for in-line header right after end marker
+    // (not reported as separate `null` token) ending at chunk boundary
+    @Test
+    public void testInlineHeaderAfterEndMarkerAtChunkBoundary() throws Exception
+    {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        bytes.write(_smileDoc("12")); // header (4 bytes), int (1 byte)
+        bytes.write(SmileConstants.BYTE_MARKER_END_OF_CONTENT);
+        bytes.write(_smileDoc("[1]")); // header (4 bytes), START_ARRAY, int, END_ARRAY
+        byte[] doc = bytes.toByteArray();
+
+        try (JsonParser p = MAPPER.createNonBlockingByteArrayParser()) {
+            ByteArrayFeeder feeder = (ByteArrayFeeder) p.nonBlockingInputFeeder();
+            byte[] buf = new byte[10 + doc.length];
+            System.arraycopy(doc, 0, buf, 10, doc.length);
+            feeder.feedInput(buf, 10, 20); // up to and including second header
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            _assertOffsets(p, 4L, 5L);
+            assertNull(p.nextToken()); // end marker
+            _assertOffsets(p, 5L, 6L);
+            assertToken(JsonToken.NOT_AVAILABLE, p.nextToken());
+            _assertOffsets(p, 10L, 10L);
+            feeder.feedInput(buf, 20, buf.length);
+            assertToken(JsonToken.START_ARRAY, p.nextToken());
+            _assertOffsets(p, 10L, 11L);
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            _assertOffsets(p, 11L, 12L);
+        }
+    }
+
     // Multiple documents, separated by in-line headers (and with end marker
     // at the end): compare against blocking parser
     @Test
@@ -96,9 +127,8 @@ public class AsyncLocationOffsets831Test extends AsyncTestBase
         bytes.write(_smileDoc(a2q("'"+UNICODE_SEGMENT+"'")));
         bytes.write(_smileDoc("[true,false]"));
         bytes.write(_smileDoc(a2q("{'x':{'y':null}}")));
-        // NOTE: end marker only at the end: blocking and non-blocking parsers differ
-        // in whether end marker followed by in-line header produces one or two
-        // `null` tokens
+        // NOTE: end marker only at the end; see
+        // `testEndMarkersAndHeadersMatchBlocking()` for end markers between documents
         bytes.write(SmileConstants.BYTE_MARKER_END_OF_CONTENT);
         byte[] doc = bytes.toByteArray();
 
@@ -117,6 +147,50 @@ public class AsyncLocationOffsets831Test extends AsyncTestBase
                 AsyncReaderWrapper r = asyncForBytes(MAPPER, chunk, doc, padding);
                 List<String> act = new ArrayList<>();
                 // `AsyncReaderWrapper` handles NOT_AVAILABLE (feeding more)
+                JsonToken t;
+                do {
+                    t = r.nextToken();
+                    act.add(t+"@"+r.parser().currentTokenLocation().getByteOffset());
+                } while ((t != null) || !r.parser().isClosed());
+                assertEquals(exp, act, "chunk="+chunk+", padding="+padding);
+                r.close();
+            }
+        }
+    }
+
+    // [dataformats-binary#838]: end markers followed by (possibly repeated)
+    // in-line headers, after root-level scalars and Arrays: token locations
+    // (including `null` tokens) should match blocking parser
+    @Test
+    public void testEndMarkersAndHeadersMatchBlocking() throws Exception
+    {
+        final byte[] header = _smileDoc("[]");
+        final int headerLen = 4;
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        bytes.write(_smileDoc("12"));
+        bytes.write(SmileConstants.BYTE_MARKER_END_OF_CONTENT);
+        bytes.write(_smileDoc(a2q("'abc'")));
+        bytes.write(SmileConstants.BYTE_MARKER_END_OF_CONTENT);
+        // repeated headers
+        bytes.write(header, 0, headerLen);
+        bytes.write(header, 0, headerLen);
+        bytes.write(_smileDoc("[1,2]"));
+        bytes.write(SmileConstants.BYTE_MARKER_END_OF_CONTENT);
+        bytes.write(_smileDoc("true"));
+        bytes.write(_smileDoc("-1234567"));
+        bytes.write(SmileConstants.BYTE_MARKER_END_OF_CONTENT);
+        byte[] doc = bytes.toByteArray();
+
+        List<String> exp = new ArrayList<>();
+        try (JsonParser p = _smileParser(doc)) {
+            _collectTokens(p, exp);
+        }
+        assertEquals("null@"+doc.length, exp.get(exp.size()-1));
+
+        for (int chunk : new int[] { 1, 2, 3, 5, 7, 1000 }) {
+            for (int padding : new int[] { 0, 1, 17 }) {
+                AsyncReaderWrapper r = asyncForBytes(MAPPER, chunk, doc, padding);
+                List<String> act = new ArrayList<>();
                 JsonToken t;
                 do {
                     t = r.nextToken();
