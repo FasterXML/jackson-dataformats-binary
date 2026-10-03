@@ -30,6 +30,9 @@ Active maintainers:
  (fix by @cowtowncoder, w/ Claude code)
 #835: (smile) `SmileParser.getText(Writer)` writes stale text for numeric tokens
  (fix by @cowtowncoder, w/ Claude code)
+#838: (smile) Non-blocking Smile parser requires a header after a root-level scalar
+  value (rejects end marker, following root values)
+ (fix by @cowtowncoder, w/ Claude code)
 #842: (cbor) `CBORGenerator` writes wrong exponent for `BigDecimal` with scale `Integer.MIN_VALUE`
  (fix by @cowtowncoder, w/ Claude code)
 #846: (protobuf) `ProtobufParser.getText(Writer)` writes stale text for numeric tokens,
