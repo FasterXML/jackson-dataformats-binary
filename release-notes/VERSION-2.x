@@ -20,6 +20,9 @@ No changes since 2.22
 
 2.22.4 (not yet released)
 
+#816: (avro) `UnionReader.nextToken()` does not validate union index, throws
+  `ArrayIndexOutOfBoundsException` for out-of-range values
+ (fix by @pjfanning, w/ Claude code)
 #817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
   [CVE-2026-104016][CVE-2026-104017]
  (fix by @pjfanning, w/ Claude code)
@@ -92,6 +95,9 @@ No changes since 2.21
 
 2.21.8 (not yet released)
 
+#816: (avro) `UnionReader.nextToken()` does not validate union index, throws
+  `ArrayIndexOutOfBoundsException` for out-of-range values
+ (fix by @pjfanning, w/ Claude code)
 #817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
   [CVE-2026-104016][CVE-2026-104017]
  (fix by @pjfanning, w/ Claude code)
