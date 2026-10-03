@@ -13,6 +13,7 @@ import com.fasterxml.jackson.dataformat.smile.SmileConstants;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 // [dataformats-binary#831]: non-blocking parser reported wrong byte offsets
 // for both current location and current token location
@@ -82,6 +83,36 @@ public class AsyncLocationOffsets831Test extends AsyncTestBase
             _assertOffsets(p, 4L, 5L);
             assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
             _assertOffsets(p, 5L, 6L);
+        }
+    }
+
+    // [dataformats-binary#838]: same for in-line header right after end marker
+    // (not reported as separate `null` token) ending at chunk boundary
+    @Test
+    public void testInlineHeaderAfterEndMarkerAtChunkBoundary() throws Exception
+    {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        bytes.write(_smileDoc("12")); // header (4 bytes), int (1 byte)
+        bytes.write(SmileConstants.BYTE_MARKER_END_OF_CONTENT);
+        bytes.write(_smileDoc("[1]")); // header (4 bytes), START_ARRAY, int, END_ARRAY
+        byte[] doc = bytes.toByteArray();
+
+        try (JsonParser p = F.createNonBlockingByteArrayParser()) {
+            ByteArrayFeeder feeder = (ByteArrayFeeder) p.getNonBlockingInputFeeder();
+            byte[] buf = new byte[10 + doc.length];
+            System.arraycopy(doc, 0, buf, 10, doc.length);
+            feeder.feedInput(buf, 10, 20); // up to and including second header
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            _assertOffsets(p, 4L, 5L);
+            assertNull(p.nextToken()); // end marker
+            _assertOffsets(p, 5L, 6L);
+            assertToken(JsonToken.NOT_AVAILABLE, p.nextToken());
+            _assertOffsets(p, 10L, 10L);
+            feeder.feedInput(buf, 20, buf.length);
+            assertToken(JsonToken.START_ARRAY, p.nextToken());
+            _assertOffsets(p, 10L, 11L);
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            _assertOffsets(p, 11L, 12L);
         }
     }
 

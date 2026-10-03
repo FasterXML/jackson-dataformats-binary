@@ -70,49 +70,49 @@ public class AsyncRootScalar838Test extends AsyncTestBase
     private final static byte[] DOC_HEADERS_INT = _bytes(0x3A, 0x29, 0x0A, 0x00,
             0x3A, 0x29, 0x0A, 0x00, 0xC2);
 
-    // NOTE: trailing `null` token (end marker at the end of content) is not
-    // included in expected tokens
+    // NOTE: expected tokens include `null` for end-of-content, as well as
+    // preceding `null` for end marker (if any)
 
     @Test
     public void testRootScalarWithEndMarker() throws Exception {
-        _verify(DOC_INT_END_MARKER, INT);
-        _verify(DOC_INT_STRING_END_MARKER, INT, STRING);
+        _verify(DOC_INT_END_MARKER, INT, null, null);
+        _verify(DOC_INT_STRING_END_MARKER, INT, STRING, null, null);
     }
 
     // End marker followed by header should only produce a single `null` token
     @Test
     public void testEndMarkerFollowedByHeader() throws Exception {
-        _verify(DOC_INT_END_MARKER_HEADER_INT, INT, null, INT);
+        _verify(DOC_INT_END_MARKER_HEADER_INT, INT, null, INT, null);
         _verify(DOC_ARRAY_END_MARKER_HEADER_ARRAY,
-                START_ARRAY, END_ARRAY, null, START_ARRAY, END_ARRAY);
+                START_ARRAY, END_ARRAY, null, START_ARRAY, END_ARRAY, null);
         // repeated headers: only collapsed if not followed by another header
         // (to limit recursion), same as with blocking parser
-        _verify(DOC_INT_END_MARKER_HEADERS_INT, INT, null, null, null, INT);
+        _verify(DOC_INT_END_MARKER_HEADERS_INT, INT, null, null, null, INT, null);
     }
 
     @Test
     public void testRootScalarFollowedByHeader() throws Exception {
-        _verify(DOC_INT_HEADER_INT, INT, null, INT);
-        _verify(DOC_HEADERS_INT, INT);
+        _verify(DOC_INT_HEADER_INT, INT, null, INT, null);
+        _verify(DOC_HEADERS_INT, INT, null);
     }
 
     @Test
     public void testRootArrayWithEndMarker() throws Exception {
-        _verify(DOC_ARRAY_END_MARKER, START_ARRAY, INT, END_ARRAY);
+        _verify(DOC_ARRAY_END_MARKER, START_ARRAY, INT, END_ARRAY, null, null);
     }
 
     @Test
     public void testRootScalarFollowedByValues() throws Exception {
-        _verify(DOC_TWO_INTS, INT, INT);
-        _verify(DOC_INT_ARRAY, INT, START_ARRAY, END_ARRAY);
-        _verify(DOC_ARRAY_INT, START_ARRAY, END_ARRAY, INT);
+        _verify(DOC_TWO_INTS, INT, INT, null);
+        _verify(DOC_INT_ARRAY, INT, START_ARRAY, END_ARRAY, null);
+        _verify(DOC_ARRAY_INT, START_ARRAY, END_ARRAY, INT, null);
     }
 
     // Also verify header-less content when header is not required
     @Test
     public void testRootScalarsWithoutHeader() throws Exception {
         byte[] doc = _bytes(0xC2, 0xC4, 0xF8, 0xF9, 0xC2, 0xFF);
-        _verify(F_NO_REQ_HEADER, doc, INT, INT, START_ARRAY, END_ARRAY, INT);
+        _verify(F_NO_REQ_HEADER, doc, INT, INT, START_ARRAY, END_ARRAY, INT, null, null);
     }
 
     private void _verify(byte[] doc, JsonToken... expTokens) throws Exception
@@ -138,7 +138,7 @@ public class AsyncRootScalar838Test extends AsyncTestBase
     {
         List<JsonToken> tokens = new ArrayList<>();
         try (JsonParser p = f.createParser(doc)) {
-            _collectTokens(p, doc, tokens, p::nextToken);
+            _collectTokens(p, tokens, p::nextToken);
         }
         return tokens;
     }
@@ -148,7 +148,7 @@ public class AsyncRootScalar838Test extends AsyncTestBase
     {
         List<JsonToken> tokens = new ArrayList<>();
         AsyncReaderWrapper r = asyncForBytes(f, chunk, doc, padding);
-        _collectTokens(r.parser(), doc, tokens, r::nextToken);
+        _collectTokens(r.parser(), tokens, r::nextToken);
         r.close();
         return tokens;
     }
@@ -158,20 +158,18 @@ public class AsyncRootScalar838Test extends AsyncTestBase
     }
 
     // Collects all tokens, including `null` tokens from end markers / in-line
-    // headers: stops only when all content has been consumed
-    private void _collectTokens(JsonParser p, byte[] doc, List<JsonToken> tokens,
+    // headers: stops only when parser is closed (end of content)
+    private void _collectTokens(JsonParser p, List<JsonToken> tokens,
             TokenSource src) throws IOException
     {
-        while (true) {
-            JsonToken t = src.nextToken();
-            if (t == null && p.currentLocation().getByteOffset() >= doc.length) {
-                break;
-            }
+        JsonToken t;
+        do {
+            t = src.nextToken();
             tokens.add(t);
             if (tokens.size() > 100) {
                 fail("Too many tokens: "+tokens);
             }
-        }
+        } while ((t != null) || !p.isClosed());
     }
 
     private static byte[] _bytes(int... values) {

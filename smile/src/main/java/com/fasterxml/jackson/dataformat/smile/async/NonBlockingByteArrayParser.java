@@ -535,10 +535,16 @@ public class NonBlockingByteArrayParser
         case HEADER_STATE_AFTER_INLINE: // [dataformats-binary#838]: check next byte
             if (_inputPtr >= _inputEnd) {
                 _pending32 = state;
+                // [dataformats-binary#831]: while waiting for more content, token
+                // location should point to after the header
+                _tokenInputTotal = _currInputProcessed + _inputPtr;
                 return _updateTokenToNA();
             }
             _updateTokenToNull();
             if (_inputBuffer[_inputPtr] == SmileConstants.HEADER_BYTE_1) {
+                // `null` token located at the start of the (4-byte) header,
+                // same as with blocking parser
+                _tokenInputTotal = _currInputProcessed + _inputPtr - 4;
                 return null;
             }
             // [dataformats-binary#831]: if no more content available, token location
