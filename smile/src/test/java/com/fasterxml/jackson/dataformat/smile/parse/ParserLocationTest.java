@@ -2,14 +2,21 @@ package com.fasterxml.jackson.dataformat.smile.parse;
 
 import java.io.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 public class ParserLocationTest
     extends BaseTestForSmile
 {
+    @Test
     public void testSimpleOffsets() throws IOException
     {
         byte[] data = _smileDoc("[ true, null, false, 511 ]", true); // true -> write header
@@ -63,6 +70,7 @@ public class ParserLocationTest
     }
 
     // for [databind-smile#24]
+    @Test
     public void testAscendingOffsets() throws Exception
     {
         // need to create big enough document, say at least 64k

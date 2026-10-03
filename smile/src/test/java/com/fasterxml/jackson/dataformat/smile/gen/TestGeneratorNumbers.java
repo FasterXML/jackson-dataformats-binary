@@ -2,13 +2,18 @@ package com.fasterxml.jackson.dataformat.smile.gen;
 
 import java.io.ByteArrayOutputStream;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileUtil;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class TestGeneratorNumbers
     extends BaseTestForSmile
 {
+    @Test
     public void testSmallInts() throws Exception
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -42,6 +47,7 @@ public class TestGeneratorNumbers
         _verifyBytes(out.toByteArray(), (byte) (0xC0 + SmileUtil.zigzagEncode(-16)));
     }
 
+    @Test
     public void testOtherInts() throws Exception
     {
     	// beyond tiny ints, 6-bit values take 2 bytes
@@ -109,6 +115,7 @@ public class TestGeneratorNumbers
         assertEquals(11, out.toByteArray().length);
     }
 
+    @Test
     public void testFloats() throws Exception
     {
         // float length is fixed, 6 bytes
@@ -119,6 +126,7 @@ public class TestGeneratorNumbers
         assertEquals(6, out.toByteArray().length);
     }
 
+    @Test
     public void testDoubles() throws Exception
     {
         // double length is fixed, 11 bytes
@@ -130,6 +138,7 @@ public class TestGeneratorNumbers
     }
 
     // #16: Problems with 'Stringified' numbers
+    @Test
     public void testNumbersAsString() throws Exception
     {
         ByteArrayOutputStream out;

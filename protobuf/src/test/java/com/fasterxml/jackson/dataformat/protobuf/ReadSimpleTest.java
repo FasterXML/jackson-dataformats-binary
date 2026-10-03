@@ -15,6 +15,15 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class ReadSimpleTest extends ProtobufTestBase
 {
     final protected static String PROTOC_STRINGS =
@@ -62,6 +71,8 @@ public class ReadSimpleTest extends ProtobufTestBase
 
     private final ObjectMapper MAPPER = newObjectMapper();
 
+    @Test
+
     public void testReadPointIntAsPOJO() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_BOX, "Point");
@@ -79,6 +90,8 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertEquals(input.x, result.x);
         assertEquals(input.y, result.y);
     }
+
+    @Test
 
     public void testReadPointIntStreaming() throws Exception
     {
@@ -111,6 +124,8 @@ public class ReadSimpleTest extends ProtobufTestBase
         p.close();
         assertNull(p.currentName());
     }
+
+    @Test
 
     public void testReadPointLong() throws Exception
     {
@@ -156,6 +171,8 @@ public class ReadSimpleTest extends ProtobufTestBase
         }
     }
 
+    @Test
+
     public void testReadName() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_NAME);
@@ -174,6 +191,8 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertEquals(input.first, result.first);
         assertEquals(input.last, result.last);
     }
+
+    @Test
 
     public void testReadBox() throws Exception
     {
@@ -243,6 +262,8 @@ public class ReadSimpleTest extends ProtobufTestBase
         }
     }
 
+    @Test
+
     public void testStringArraySimple() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_STRINGS);
@@ -310,6 +331,8 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertNull(p.nextToken());
     }
 
+    @Test
+
     public void testStringArrayPacked() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_STRINGS_PACKED);
@@ -329,6 +352,8 @@ public class ReadSimpleTest extends ProtobufTestBase
             assertEquals(input.values[i], result.values[i]);
         }
     }
+
+    @Test
 
     public void testStringArrayWithName() throws Exception
     {
@@ -392,6 +417,8 @@ public class ReadSimpleTest extends ProtobufTestBase
         p.close();
     }
 
+    @Test
+
     public void testSearchMessage() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_SEARCH_REQUEST);
@@ -416,6 +443,8 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertEquals(input.corpus, result.corpus);
     }
 
+    @Test
+
     public void testSkipUnknown() throws Exception
     {
         ProtobufSchema pointSchema = ProtobufSchemaLoader.std.parse(PROTOC_POINT);
@@ -436,6 +465,8 @@ public class ReadSimpleTest extends ProtobufTestBase
         assertEquals(input.y, result.y);
     }
 
+    @Test
+
     public void testStringArraySimpleLowLimit() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_STRINGS);
@@ -455,8 +486,8 @@ public class ReadSimpleTest extends ProtobufTestBase
             fail("Expected DatabindException");
         } catch (DatabindException jme) {
             String message = jme.getMessage();
-            assertTrue("unexpected message: " + message,
-                    message.startsWith("String value length (4) exceeds the maximum allowed"));
+            assertTrue(message.startsWith("String value length (4) exceeds the maximum allowed"),
+                    "unexpected message: " + message);
         }
     }
 }

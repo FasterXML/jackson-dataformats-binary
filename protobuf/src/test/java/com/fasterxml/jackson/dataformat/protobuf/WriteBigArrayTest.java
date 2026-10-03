@@ -8,6 +8,11 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class WriteBigArrayTest extends ProtobufTestBase
 {
     final protected static String PROTOC_STRING_ARRAY_SPARSE = "message Strings {\n"
@@ -61,6 +66,8 @@ public class WriteBigArrayTest extends ProtobufTestBase
     /**********************************************************
      */
 
+    @Test
+
     public void testStringArraySparseWithLongValues() throws Exception
     {
         final ObjectMapper mapper = new ObjectMapper(new ProtobufFactory());
@@ -98,6 +105,7 @@ public class WriteBigArrayTest extends ProtobufTestBase
     }
 
     // and then do something bit more sizable
+    @Test
     public void testStringArraySparseLong() throws Exception
     {
         final int COUNT = 35000;
@@ -124,6 +132,8 @@ public class WriteBigArrayTest extends ProtobufTestBase
         }
         assertEquals(bytes.length, ptr);
     }
+
+    @Test
 
     public void testStringArrayPackedLong() throws Exception
     {
@@ -157,6 +167,8 @@ public class WriteBigArrayTest extends ProtobufTestBase
         }
         assertEquals(bytes.length, ptr);
     }
+
+    @Test
 
     public void testWrappedStringArray() throws Exception
     {

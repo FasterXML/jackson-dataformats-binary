@@ -3,8 +3,6 @@ package com.fasterxml.jackson.dataformat.protobuf;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import org.junit.Assert;
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
@@ -13,6 +11,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class WritePrimitiveArrayTest extends ProtobufTestBase
 {
@@ -125,6 +131,8 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
 
     final ObjectMapper MAPPER = newObjectMapper();
 
+    @Test
+
     public void testVIntArraySparse() throws Exception
     {
         final ObjectWriter w = MAPPER.writer(ProtobufSchemaLoader.std.parse(PROTOC_INT_ARRAY_SPARSE));
@@ -139,6 +147,8 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
         assertEquals(0x4, bytes[5]); // zig-zagged value for 2
     }
 
+    @Test
+
     public void testVIntArrayPacked() throws Exception
     {
         final ObjectWriter w = MAPPER.writer(ProtobufSchemaLoader.std.parse(PROTOC_INT_ARRAY_PACKED));
@@ -152,6 +162,8 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
         assertEquals(0x4, bytes[4]); // zig-zagged value for 2
     }
 
+    @Test
+
     public void testInt32ArraySparse() throws Exception
     {
         final ObjectWriter w = MAPPER.writer(ProtobufSchemaLoader.std.parse
@@ -160,6 +172,8 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
         // 3 x 5 bytes per value (typed tag, value) -> 18
         assertEquals(15, bytes.length);
     }
+
+    @Test
 
     public void testInt32ArrayPacked() throws Exception
     {
@@ -178,6 +192,8 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
 
     // // // First as ints:
 
+    @Test
+
     public void testIntAsLongArraySparse() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_INT64_ARRAY_SPARSE);
@@ -188,8 +204,10 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
 
         IntArray result = MAPPER.readerFor(IntArray.class).with(schema)
                 .readValue(bytes);
-        Assert.assertArrayEquals(input.values, result.values);
+        assertArrayEquals(input.values, result.values);
     }
+
+    @Test
 
     public void testIntAsLongArrayPacked() throws Exception
     {
@@ -202,10 +220,12 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
 
         IntArray result = MAPPER.readerFor(IntArray.class).with(schema)
                 .readValue(bytes);
-        Assert.assertArrayEquals(input.values, result.values);
+        assertArrayEquals(input.values, result.values);
     }
 
     // // // But then as regular longs
+
+    @Test
 
     public void testLongArraySparse() throws Exception
     {
@@ -217,10 +237,12 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
 
         LongArray result = MAPPER.readerFor(LongArray.class).with(schema)
                 .readValue(bytes);
-        Assert.assertArrayEquals(input.values, result.values);
+        assertArrayEquals(input.values, result.values);
 
         _verifyLongArray(bytes, schema, input.values);
     }
+
+    @Test
 
     public void testLongArrayPacked() throws Exception
     {
@@ -232,7 +254,7 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
 
         LongArray result = MAPPER.readerFor(LongArray.class).with(schema)
                 .readValue(bytes);
-        Assert.assertArrayEquals(input.values, result.values);
+        assertArrayEquals(input.values, result.values);
 
         _verifyLongArray(bytes, schema, input.values);
     }
@@ -278,6 +300,8 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
     /**********************************************************
      */
 
+    @Test
+
     public void testDoubleArraySparse() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_DOUBLE_ARRAY_SPARSE);
@@ -292,6 +316,8 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
 
         _verifyDoubleArray(bytes, schema, input.values);
     }
+
+    @Test
 
     public void testDoubleArrayPacked() throws Exception
     {
@@ -352,6 +378,8 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
         p.close();
     }
 
+    @Test
+
     public void testFloatArraySparse() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_FLOAT_ARRAY_SPARSE);
@@ -366,6 +394,8 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
 
         _verifyFloatArray(bytes, schema, input.values);
     }
+
+    @Test
 
     public void testFloatArrayPacked() throws Exception
     {
@@ -430,6 +460,8 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
     /**********************************************************
      */
 
+    @Test
+
     public void testStringArraySparse() throws Exception
     {
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_STRING_ARRAY_SPARSE);
@@ -440,8 +472,10 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
 
         StringArray result = MAPPER.readerFor(StringArray.class).with(schema)
                 .readValue(bytes);
-        Assert.assertArrayEquals(input.values, result.values);
+        assertArrayEquals(input.values, result.values);
     }
+
+    @Test
 
     public void testStringArrayPacked() throws Exception
     {
@@ -453,6 +487,6 @@ public class WritePrimitiveArrayTest extends ProtobufTestBase
 
         StringArray result = MAPPER.readerFor(StringArray.class).with(schema)
                 .readValue(bytes);
-        Assert.assertArrayEquals(input.values, result.values);
+        assertArrayEquals(input.values, result.values);
     }
 }

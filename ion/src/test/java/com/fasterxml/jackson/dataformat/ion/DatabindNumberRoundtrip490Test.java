@@ -1,11 +1,12 @@
 package com.fasterxml.jackson.dataformat.ion;
 
 import java.util.*;
-import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 // for [dataformats-binary#490]
 public class DatabindNumberRoundtrip490Test

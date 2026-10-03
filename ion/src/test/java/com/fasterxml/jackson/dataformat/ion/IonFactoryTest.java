@@ -2,13 +2,14 @@ package com.fasterxml.jackson.dataformat.ion;
 
 import com.amazon.ion.IonReader;
 import com.fasterxml.jackson.core.JsonParser;
-import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class IonFactoryTest {
 

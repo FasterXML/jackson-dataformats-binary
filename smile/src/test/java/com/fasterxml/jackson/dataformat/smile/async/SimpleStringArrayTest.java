@@ -3,6 +3,8 @@ package com.fasterxml.jackson.dataformat.smile.async;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.StreamReadConstraints;
@@ -10,6 +12,11 @@ import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class SimpleStringArrayTest extends AsyncTestBase
 {
@@ -34,6 +41,7 @@ public class SimpleStringArrayTest extends AsyncTestBase
         return f;
     }
 
+    @Test
     public void testShortAsciiStrings() throws IOException
     {
 
@@ -60,6 +68,46 @@ public class SimpleStringArrayTest extends AsyncTestBase
         _testStrings(f, input, data, 1, 1);
     }
 
+    // [dataformats-binary#770]: short ASCII value split across input feeds must
+    // decode the same as one fed contiguously (used to take the Unicode path instead)
+    @Test
+    public void testShortAsciiValueChunkIndependence() throws IOException
+    {
+        SmileFactory f = new SmileFactory();
+        f.enable(SmileParser.Feature.REQUIRE_HEADER);
+        byte[] data = _stringDoc(f, new String[] { "abcd" });
+        // Corrupt one content byte so that ASCII and Unicode decoding disagree
+        int ix = _lastIndexOf(data, (byte) 'b');
+        assertTrue(ix > 0, "Should find content byte to corrupt");
+        data[ix] = (byte) 0xC5;
+
+        String contiguous = _readSingleString(f, data, data.length + 1);
+        assertEquals(contiguous, _readSingleString(f, data, 3));
+        assertEquals(contiguous, _readSingleString(f, data, 1));
+    }
+
+    private String _readSingleString(SmileFactory f, byte[] data, int readSize) throws IOException
+    {
+        AsyncReaderWrapper r = asyncForBytes(f, readSize, data, 0);
+        assertToken(JsonToken.START_ARRAY, r.nextToken());
+        assertToken(JsonToken.VALUE_STRING, r.nextToken());
+        String text = r.currentText();
+        assertToken(JsonToken.END_ARRAY, r.nextToken());
+        r.close();
+        return text;
+    }
+
+    private int _lastIndexOf(byte[] data, byte b)
+    {
+        for (int i = data.length; --i >= 0; ) {
+            if (data[i] == b) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    @Test
     public void testShortUnicodeStrings() throws IOException
     {
         final String repeat = "Test: "+UNICODE_2BYTES;
@@ -88,6 +136,7 @@ public class SimpleStringArrayTest extends AsyncTestBase
         _testStrings(f, input, data, 1, 1);
     }
 
+    @Test
     public void testLongAsciiStrings() throws IOException
     {
         final String[] input = new String[] {
@@ -111,6 +160,7 @@ public class SimpleStringArrayTest extends AsyncTestBase
         _testStrings(f, input, data, 1, 1);
     }
 
+    @Test
     public void testLongAsciiStringsLowStringLimit() throws IOException
     {
         final String[] input = new String[] {
@@ -137,11 +187,11 @@ public class SimpleStringArrayTest extends AsyncTestBase
             r.currentText();
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException ise) {
-            assertTrue("unexpected exception message: " + ise.getMessage(),
-                    ise.getMessage().startsWith("String value length (98) exceeds the maximum allowed"));
+            assertTrue(ise.getMessage().startsWith("String value length (98) exceeds the maximum allowed"), "unexpected exception message: " + ise.getMessage());
         }
     }
 
+    @Test
     public void testLongUnicodeStrings() throws IOException
     {
         // ~100 chars for long(er) content

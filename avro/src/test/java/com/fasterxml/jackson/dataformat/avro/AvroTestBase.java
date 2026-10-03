@@ -6,15 +6,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import junit.framework.TestCase;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public abstract class AvroTestBase extends TestCase
-{
+import static org.junit.jupiter.api.Assertions.fail;
+
+public abstract class AvroTestBase {
     /*
     /**********************************************************
     /* Test schemas
@@ -78,8 +78,7 @@ public abstract class AvroTestBase extends TestCase
     /**********************************************************
      */
 
-    public static class PointLong
-    {
+    public static class PointLong {
         public long x, y;
 
         protected PointLong() { }
@@ -90,8 +89,7 @@ public abstract class AvroTestBase extends TestCase
         }
     }
 
-    public static class PointDouble
-    {
+    public static class PointDouble {
         public double x, y;
 
         protected PointDouble() { }
@@ -102,8 +100,7 @@ public abstract class AvroTestBase extends TestCase
         }
     }
 
-    public static class Employee
-    {
+    public static class Employee {
         public Employee() { }
 
         public Employee(String n,  int a, String[] e, Employee b) {
@@ -124,8 +121,7 @@ public abstract class AvroTestBase extends TestCase
     }
 
     @JsonPropertyOrder({"content", "images"})
-    static class MediaItem
-    {
+    static class MediaItem {
         private MediaContent _content;
         private List<Image> _images;
 
@@ -151,8 +147,7 @@ public abstract class AvroTestBase extends TestCase
 
     @JsonPropertyOrder(alphabetic=true, value = {
             "uri","title","width","height","format","duration","size","bitrate","persons","player","copyright"})
-    static class MediaContent
-    {
+    static class MediaContent {
         public enum Player { JAVA, FLASH;  }
 
         private Player _player;
@@ -216,8 +211,7 @@ public abstract class AvroTestBase extends TestCase
     }
 
     @JsonPropertyOrder({"uri","title","width","height","size"})
-    static class Image
-    {
+    static class Image {
         private String _uri;
         private String _title;
         private int _width;

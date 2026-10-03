@@ -2,15 +2,22 @@ package com.fasterxml.jackson.dataformat.smile.gen;
 
 import java.io.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class TestGeneratorLongSharedRefs extends BaseTestForSmile
 {
     // [smile#18]: problems encoding long shared-string references
+    @Test
     public void testIssue18EndOfDocByteViaFields() throws Exception
     {
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
@@ -84,6 +91,7 @@ public class TestGeneratorLongSharedRefs extends BaseTestForSmile
         }
     }
 
+    @Test
     public void testIssue18EndOfDocByteViaStringValues() throws Exception
     {
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();

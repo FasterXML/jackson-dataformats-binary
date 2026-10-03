@@ -8,6 +8,10 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class WriteStringsTest extends ProtobufTestBase
 {
 
@@ -27,6 +31,8 @@ public class WriteStringsTest extends ProtobufTestBase
             throw new RuntimeException(e);
         }
     }
+
+    @Test
 
     public void testSimpleShort() throws Exception
     {
@@ -53,12 +59,16 @@ public class WriteStringsTest extends ProtobufTestBase
         assertEquals((byte) 'r', bytes[12]);
     }
 
+    @Test
+
     public void testSimpleLongAscii() throws Exception
     {
         _testSimpleLong(129, "Bob");
         _testSimpleLong(2007, "Bill");
         _testSimpleLong(9000, "Emily");
     }
+
+    @Test
 
     public void testSimpleLongTwoByteUTF8() throws Exception
     {
@@ -67,6 +77,8 @@ public class WriteStringsTest extends ProtobufTestBase
         _testSimpleLong(2007, "\u00E8\u00EC");
         _testSimpleLong(7000, "\u00A8xy");
     }
+
+    @Test
 
     public void testSimpleLongThreeByteUTF8() throws Exception
     {

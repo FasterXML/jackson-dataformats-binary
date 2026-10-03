@@ -2,11 +2,18 @@ package com.fasterxml.jackson.dataformat.avro;
 
 import java.io.ByteArrayOutputStream;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.avro.testsupport.ThrottledInputStream;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests to ensure that it is possible to read a sequence of root-level
@@ -16,6 +23,7 @@ public class RootSequenceTest extends AvroTestBase
 {
     private final AvroMapper MAPPER = getMapper();
 
+    @Test
     public void testReadWriteIntSequence() throws Exception
     {
         AvroSchema schema = MAPPER.schemaFrom(quote("int"));
@@ -43,6 +51,7 @@ public class RootSequenceTest extends AvroTestBase
         it.close();
     }
 
+    @Test
     public void testReadWriteStringSequence() throws Exception
     {
         AvroSchema schema = MAPPER.schemaFrom(quote("string"));
@@ -72,6 +81,7 @@ public class RootSequenceTest extends AvroTestBase
         it.close();
     }
 
+    @Test
     public void testReadWriteEmployeeSequence() throws Exception
     {
         // Just for fun, use throttled input to force boundary reads...

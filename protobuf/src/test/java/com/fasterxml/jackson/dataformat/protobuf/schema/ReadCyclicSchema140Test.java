@@ -4,6 +4,11 @@ import java.util.List;
 
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufTestBase;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 public class ReadCyclicSchema140Test extends ProtobufTestBase
 {
     final protected static String PROTOC_CYCLIC =
@@ -17,6 +22,8 @@ public class ReadCyclicSchema140Test extends ProtobufTestBase
             +" optional Front next = 3;\n"
             +"}\n"
     ;
+
+    @Test
 
     public void testCyclicDefinition() throws Exception
     {

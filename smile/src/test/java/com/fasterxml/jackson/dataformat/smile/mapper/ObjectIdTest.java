@@ -1,8 +1,13 @@
 package com.fasterxml.jackson.dataformat.smile.mapper;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 public class ObjectIdTest extends BaseTestForSmile
 {
@@ -12,6 +17,7 @@ public class ObjectIdTest extends BaseTestForSmile
     }
 
     // [smile#19]
+    @Test
     public void testObjectIdAsUUID() throws Exception
     {
         ObjectMapper mapper = smileMapper();

@@ -1,11 +1,14 @@
 package com.fasterxml.jackson.dataformat.protobuf;
 
-import org.junit.Assert;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class WriteArrayTest extends ProtobufTestBase
 {
@@ -63,23 +66,27 @@ public class WriteArrayTest extends ProtobufTestBase
     /**********************************************************
      */
 
+    @Test
+
     public void testStringArraySparse() throws Exception
     {
         final ObjectWriter w = MAPPER.writer(SPARSE_STRING_SCHEMA);
         byte[] bytes = w.writeValueAsBytes(new StringArray("Foo", "Bar"));
         assertEquals(10, bytes.length);
-        Assert.assertArrayEquals(new byte[] {
+        assertArrayEquals(new byte[] {
                 0xA, 3, 'F', 'o', 'o',
                 0xA, 3, 'B', 'a', 'r',
         }, bytes);
     }
+
+    @Test
 
     public void testStringArrayPacked() throws Exception
     {
         final ObjectWriter w = MAPPER.writer(PACKED_STRING_SCHEMA);
         byte[] bytes = w.writeValueAsBytes(new StringArray("A", "B", "C"));
         assertEquals(8, bytes.length);
-        Assert.assertArrayEquals(new byte[] {
+        assertArrayEquals(new byte[] {
                 0xA, 6,
                 1, 'A',
                 1, 'B',
@@ -92,6 +99,8 @@ public class WriteArrayTest extends ProtobufTestBase
     /* Test methods, POJO arrays
     /**********************************************************
      */
+
+    @Test
 
     public void testPointArraySparse() throws Exception
     {
@@ -115,6 +124,8 @@ public class WriteArrayTest extends ProtobufTestBase
         assertEquals(0x10, bytes[10]);
         assertEquals(8, bytes[11]); // Point (, 4)
     }
+
+    @Test
 
     public void testPointArrayPacked() throws Exception
     {

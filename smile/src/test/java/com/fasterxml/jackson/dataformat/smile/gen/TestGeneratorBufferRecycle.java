@@ -3,6 +3,8 @@ package com.fasterxml.jackson.dataformat.smile.gen;
 import java.io.*;
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
@@ -12,6 +14,7 @@ import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
  */
 public class TestGeneratorBufferRecycle extends BaseTestForSmile
 {
+    @Test
     public void testMaps() throws Exception
     {
         SmileFactory factory = new SmileFactory();

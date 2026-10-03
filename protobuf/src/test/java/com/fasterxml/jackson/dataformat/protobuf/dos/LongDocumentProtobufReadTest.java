@@ -15,6 +15,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.protobuf.*;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 // [dataformats-binary#783]: `StreamReadConstraints.maxDocumentLength` for Protobuf
 public class LongDocumentProtobufReadTest extends ProtobufTestBase
 {
@@ -48,6 +53,8 @@ public class LongDocumentProtobufReadTest extends ProtobufTestBase
         }
     }
 
+    @Test
+
     public void testLongDocumentConstraint() throws Exception
     {
         // Need a bit longer than minimum since checking is approximate, not exact
@@ -55,6 +62,8 @@ public class LongDocumentProtobufReadTest extends ProtobufTestBase
         _testLongDocumentConstraint(doc, true);
         _testLongDocumentConstraint(doc, false);
     }
+
+    @Test
 
     public void testLongDocumentNoConstraint() throws Exception
     {
@@ -76,9 +85,9 @@ public class LongDocumentProtobufReadTest extends ProtobufTestBase
             fail("expected StreamConstraintsException");
         } catch (StreamConstraintsException e) {
             final String msg = e.getMessage();
-            assertTrue("unexpected message: "+msg, msg.contains("Document length ("));
-            assertTrue("unexpected message: "+msg,
-                    msg.contains("exceeds the maximum allowed ("+MAX_DOC_LEN));
+            assertTrue(msg.contains("Document length ("), "unexpected message: "+msg);
+            assertTrue(msg.contains("exceeds the maximum allowed ("+MAX_DOC_LEN),
+                    "unexpected message: "+msg);
         }
     }
 
@@ -94,7 +103,7 @@ public class LongDocumentProtobufReadTest extends ProtobufTestBase
             items.items.add(item);
         }
         byte[] doc = MAPPER_VANILLA.writer(ITEMS_SCHEMA).writeValueAsBytes(items);
-        assertTrue("doc.length="+doc.length, doc.length > size);
+        assertTrue(doc.length > size, "doc.length="+doc.length);
         return doc;
     }
 

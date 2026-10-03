@@ -9,6 +9,10 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 // [dataformats-binary#202]
 public class ReadUnknownFields202Test extends ProtobufTestBase
 {
@@ -108,6 +112,7 @@ public class ReadUnknownFields202Test extends ProtobufTestBase
      */
 
     // [dataformats-binary#202]
+    @Test
     public void testV1toV0() throws Exception {
         final ProtobufMapper MAPPER = newMapperBuilder()
                 .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)

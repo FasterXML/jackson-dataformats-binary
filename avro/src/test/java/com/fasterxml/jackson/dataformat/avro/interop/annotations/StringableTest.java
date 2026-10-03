@@ -14,13 +14,13 @@ import java.util.Objects;
 
 import org.apache.avro.reflect.AvroSchema;
 import org.apache.avro.reflect.Stringable;
-import org.junit.Test;
+import org.junit.jupiter.api.TestTemplate;
 
 import com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUtil;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Tests support for using classes marked {@link Stringable @Stringable} as map keys. These classes must have a constructor which accepts a
@@ -85,7 +85,7 @@ public class StringableTest extends InteropTestBase {
         }
     }
 
-    @Test
+    @TestTemplate
     public void testBigDecimalWithDoubleSchema() throws IOException {
         // Apache impl can't do coercion
         assumeTrue(serializeFunctor != ApacheAvroInteropUtil.apacheSerializer);
@@ -99,7 +99,7 @@ public class StringableTest extends InteropTestBase {
         assertThat(result.bigDecimal.doubleValue()).isEqualTo(value);
     }
 
-    @Test
+    @TestTemplate
     public void testBigIntegerWithDoubleSchema() throws IOException {
         // Apache impl can't do coercion
         assumeTrue(serializeFunctor != ApacheAvroInteropUtil.apacheSerializer);
@@ -113,7 +113,7 @@ public class StringableTest extends InteropTestBase {
         assertThat(result.bigInteger.longValue()).isEqualTo(value);
     }
 
-    @Test
+    @TestTemplate
     public void testBigDecimal() throws IOException {
         BigDecimal original = new BigDecimal("0.7193789624775822761924891294139324921");
         //
@@ -122,7 +122,7 @@ public class StringableTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testBigDecimalArray() throws IOException {
         ArrayList<BigDecimal> array = new ArrayList<>();
         array.add(new BigDecimal("32165498701061140.034501381101601018405251061"));
@@ -133,7 +133,7 @@ public class StringableTest extends InteropTestBase {
         assertThat(result).isEqualTo(array);
     }
 
-    @Test
+    @TestTemplate
     public void testBigDecimalKeys() throws IOException {
         Map<BigDecimal, String> map = new HashMap<>();
         map.put(new BigDecimal("32165498701061140.034501381101601018405251061"), "one");
@@ -144,7 +144,7 @@ public class StringableTest extends InteropTestBase {
         assertThat(result).isEqualTo(map);
     }
 
-    @Test
+    @TestTemplate
     public void testBigInteger() throws IOException {
         BigInteger original = new BigInteger("1236549816934246813682843621431493681279364198");
         //
@@ -153,7 +153,7 @@ public class StringableTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testBigIntegerArray() throws IOException {
         ArrayList<BigInteger> array = new ArrayList<>();
         array.add(new BigInteger("32165498701061140034501381101601018405251061"));
@@ -164,7 +164,7 @@ public class StringableTest extends InteropTestBase {
         assertThat(result).isEqualTo(array);
     }
 
-    @Test
+    @TestTemplate
     public void testBigIntegerKeys() throws IOException {
         Map<BigInteger, String> map = new HashMap<>();
         map.put(new BigInteger("32165498701061140034501381101601018405251061"), "one");
@@ -175,7 +175,7 @@ public class StringableTest extends InteropTestBase {
         assertThat(result).isEqualTo(map);
     }
 
-    @Test
+    @TestTemplate
     public void testCustomStringable() throws IOException {
         CustomStringableKey original = new CustomStringableKey("one");
         //
@@ -184,7 +184,7 @@ public class StringableTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testCustomStringableArray() throws IOException {
         ArrayList<CustomStringableKey> array = new ArrayList<>();
         array.add(new CustomStringableKey("one"));
@@ -195,7 +195,7 @@ public class StringableTest extends InteropTestBase {
         assertThat(result).isEqualTo(array);
     }
 
-    @Test
+    @TestTemplate
     public void testCustomStringableKeyWithScalarValue() throws IOException {
         Map<CustomStringableKey, String> object = new HashMap<>();
         object.put(new CustomStringableKey("one"), "two");
@@ -206,7 +206,7 @@ public class StringableTest extends InteropTestBase {
         assertThat(result).isEqualTo(object);
     }
 
-    @Test
+    @TestTemplate
     public void testFile() throws IOException {
         File original = new File("/a/cool/file");
         //
@@ -215,7 +215,7 @@ public class StringableTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testFileArray() throws IOException {
         ArrayList<File> array = new ArrayList<>();
         array.add(new File("/some/path"));
@@ -226,7 +226,7 @@ public class StringableTest extends InteropTestBase {
         assertThat(result).isEqualTo(array);
     }
 
-    @Test
+    @TestTemplate
     public void testFileKeys() throws IOException {
         Map<File, String> object = new HashMap<>();
         object.put(new File("/some/path"), "one");
@@ -237,7 +237,7 @@ public class StringableTest extends InteropTestBase {
         assertThat(result).isEqualTo(object);
     }
 
-    @Test
+    @TestTemplate
     public void testURI() throws URISyntaxException, IOException {
         URI original = new URI("https://github.com");
         //
@@ -246,7 +246,7 @@ public class StringableTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testURIArray() throws URISyntaxException, IOException {
         ArrayList<URI> array = new ArrayList<>();
         array.add(new URI("http://fasterxml.com"));
@@ -257,7 +257,7 @@ public class StringableTest extends InteropTestBase {
         assertThat(result).isEqualTo(array);
     }
 
-    @Test
+    @TestTemplate
     public void testURIKeys() throws URISyntaxException, IOException {
         Map<URI, String> object = new HashMap<>();
         object.put(new URI("http://fasterxml.com"), "one");
@@ -268,7 +268,7 @@ public class StringableTest extends InteropTestBase {
         assertThat(result).isEqualTo(object);
     }
 
-    @Test
+    @TestTemplate
     public void testURL() throws IOException {
         URL original = new URL("https://github.com");
         //
@@ -277,7 +277,7 @@ public class StringableTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testURLArray() throws IOException {
         ArrayList<URL> array = new ArrayList<>();
         array.add(new URL("http://fasterxml.com"));
@@ -288,7 +288,7 @@ public class StringableTest extends InteropTestBase {
         assertThat(result).isEqualTo(array);
     }
 
-    @Test
+    @TestTemplate
     public void testURLKeys() throws IOException {
         Map<URL, String> map = new HashMap<>();
         map.put(new URL("http://fasterxml.com"), "one");

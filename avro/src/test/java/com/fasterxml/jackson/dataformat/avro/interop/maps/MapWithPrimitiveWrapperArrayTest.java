@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.TestTemplate;
 
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * are used as the value type
  */
 public class MapWithPrimitiveWrapperArrayTest extends InteropTestBase {
-    @Test
+    @TestTemplate
     public void testMapWithBytes() throws IOException {
         Map<String, Byte[]> original = new HashMap<>();
         original.put("one", new Byte[]{(byte) 1});
@@ -29,7 +29,7 @@ public class MapWithPrimitiveWrapperArrayTest extends InteropTestBase {
         assertThat(result).containsAllEntriesOf(original);
     }
 
-    @Test
+    @TestTemplate
     public void testMapWithCharacters() throws IOException {
         Map<String, Character[]> original = new HashMap<>();
         original.put("one", new Character[]{(char) 1});
@@ -43,7 +43,7 @@ public class MapWithPrimitiveWrapperArrayTest extends InteropTestBase {
         assertThat(result).containsAllEntriesOf(original);
     }
 
-    @Test
+    @TestTemplate
     public void testMapWithDoubles() throws IOException {
         Map<String, Double[]> original = new HashMap<>();
         original.put("one", new Double[]{(double) 1});
@@ -57,7 +57,7 @@ public class MapWithPrimitiveWrapperArrayTest extends InteropTestBase {
         assertThat(result).containsAllEntriesOf(original);
     }
 
-    @Test
+    @TestTemplate
     public void testMapWithFloats() throws IOException {
         Map<String, Float[]> original = new HashMap<>();
         original.put("one", new Float[]{(float) 1});
@@ -71,7 +71,7 @@ public class MapWithPrimitiveWrapperArrayTest extends InteropTestBase {
         assertThat(result).containsAllEntriesOf(original);
     }
 
-    @Test
+    @TestTemplate
     public void testMapWithIntegers() throws IOException {
         Map<String, Integer[]> original = new HashMap<>();
         original.put("one", new Integer[]{(int) 1});
@@ -85,7 +85,7 @@ public class MapWithPrimitiveWrapperArrayTest extends InteropTestBase {
         assertThat(result).containsAllEntriesOf(original);
     }
 
-    @Test
+    @TestTemplate
     public void testMapWithLongs() throws IOException {
         Map<String, Long[]> original = new HashMap<>();
         original.put("one", new Long[]{(long) 1});
@@ -99,7 +99,7 @@ public class MapWithPrimitiveWrapperArrayTest extends InteropTestBase {
         assertThat(result).containsAllEntriesOf(original);
     }
 
-    @Test
+    @TestTemplate
     public void testMapWithShorts() throws IOException {
         Map<String, Short[]> original = new HashMap<>();
         original.put("one", new Short[]{(short) 1});
@@ -113,7 +113,7 @@ public class MapWithPrimitiveWrapperArrayTest extends InteropTestBase {
         assertThat(result).containsAllEntriesOf(original);
     }
 
-    @Test
+    @TestTemplate
     public void testMapWithStrings() throws IOException {
         Map<String, String[]> original = new HashMap<>();
         original.put("one", new String[]{"1"});
