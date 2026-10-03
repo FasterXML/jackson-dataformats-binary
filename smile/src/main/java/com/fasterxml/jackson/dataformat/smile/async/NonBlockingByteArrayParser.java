@@ -60,14 +60,26 @@ public class NonBlockingByteArrayParser
     /**********************************************************************
      */
 
-    /**
-     * State of header decoding (see {@link #_finishHeader}) when a collapsed
-     * in-line header has been fully decoded, but the following byte has not yet
-     * been seen.
-     *
-     * @since 2.23
-     */
+    // // States of header decoding (see "_finishHeader()"): first byte
+    // // (0x3A) has been read and then...
+
+    // ... expecting second byte (0x29)
+    private final static int HEADER_STATE_BYTE_2 = 0;
+
+    // ... expecting third byte (0x0A)
+    private final static int HEADER_STATE_BYTE_3 = 1;
+
+    // ... expecting fourth byte (version, flags)
+    private final static int HEADER_STATE_BYTE_4 = 2;
+
+    // ... [dataformats-binary#838] collapsed in-line header has been fully
+    // decoded, but the following byte has not yet been seen
     private final static int HEADER_STATE_AFTER_INLINE = 3;
+
+    /**
+     * Length of Smile header, in bytes.
+     */
+    private final static int HEADER_LENGTH = 4;
 
     /**
      * Flag set when an in-line header is encountered right after a `null` token
@@ -205,7 +217,7 @@ public class NonBlockingByteArrayParser
                 // minor state as 0, which is fine
                 _majorState = MAJOR_ROOT;
                 _minorState = MINOR_HEADER_INITIAL;
-                return _finishHeader(0);
+                return _finishHeader(HEADER_STATE_BYTE_2);
             }
             if (SmileParser.Feature.REQUIRE_HEADER.enabledIn(_formatFeatures)) {
                 _reportMissingHeader(ch);
@@ -221,7 +233,7 @@ public class NonBlockingByteArrayParser
                 // [dataformats-binary#838]: if preceded by `null` token (end marker,
                 // or another header), header is not reported separately
                 _collapseInlineHeader = (_currToken == null);
-                return _finishHeader(0);
+                return _finishHeader(HEADER_STATE_BYTE_2);
             }
             return _startValue(ch);
 
@@ -460,7 +472,7 @@ public class NonBlockingByteArrayParser
         String errorDesc = null;
 
         switch (state) {
-        case 0:
+        case HEADER_STATE_BYTE_2:
             if (_inputPtr >= _inputEnd) {
                 _pending32 = state;
                 return _updateTokenToNA();
@@ -470,9 +482,9 @@ public class NonBlockingByteArrayParser
                 errorDesc = "Malformed content: signature not valid, starts with 0x3a but followed by 0x%s, not 0x29";
                 break;
             }
-            state = 1;
+            state = HEADER_STATE_BYTE_3;
             // fall through
-        case 1:
+        case HEADER_STATE_BYTE_3:
             if (_inputPtr >= _inputEnd) {
                 _pending32 = state;
                 return _updateTokenToNA();
@@ -482,8 +494,9 @@ public class NonBlockingByteArrayParser
                 errorDesc = "Malformed content: signature not valid, starts with 0x3a, 0x29, but followed by 0x%s not 0x0A";
                 break;
             }
-            state = 2;
-        case 2:
+            state = HEADER_STATE_BYTE_4;
+            // fall through
+        case HEADER_STATE_BYTE_4:
             if (_inputPtr >= _inputEnd) {
                 _pending32 = state;
                 return _updateTokenToNA();
@@ -542,9 +555,9 @@ public class NonBlockingByteArrayParser
             }
             _updateTokenToNull();
             if (_inputBuffer[_inputPtr] == SmileConstants.HEADER_BYTE_1) {
-                // `null` token located at the start of the (4-byte) header,
+                // `null` token located at the start of the header,
                 // same as with blocking parser
-                _tokenInputTotal = _currInputProcessed + _inputPtr - 4;
+                _tokenInputTotal = _currInputProcessed + _inputPtr - HEADER_LENGTH;
                 return null;
             }
             // [dataformats-binary#831]: if no more content available, token location
