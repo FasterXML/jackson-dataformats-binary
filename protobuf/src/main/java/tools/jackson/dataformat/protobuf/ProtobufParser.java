@@ -1328,12 +1328,15 @@ public class ProtobufParser extends ParserMinimalBase
         if (len == 0) {
             return "";
         }
+        // [dataformats-binary#824]: map keys are exposed as property names, so
+        //   need to enforce `maxNameLength` (on encoded length, as with CBOR)
+        _streamReadConstraints.validateNameLength(len);
         // Compare against remaining input: `_inputPtr + len` may overflow
         if (len <= (_inputEnd - _inputPtr)) {
             return _finishShortText(len);
         }
         if (len >= _inputBuffer.length) {
-            _finishLongText(len);
+            _finishLongText(len, true);
             return _textBuffer.contentsAsString();
         }
         _loadToHaveAtLeast(len);
@@ -2357,7 +2360,7 @@ public class ProtobufParser extends ParserMinimalBase
                 // or if not, could we read?
                 if (len >= _inputBuffer.length) {
                     // If not enough space, need different handling
-                    _finishLongText(len);
+                    _finishLongText(len, false);
                     return;
                 }
                 _loadToHaveAtLeast(len);
@@ -2472,7 +2475,13 @@ public class ProtobufParser extends ParserMinimalBase
         return _textBuffer.setCurrentAndReturn(outPtr);
     }
 
-    private final void _finishLongText(final int expLen) throws JacksonException
+    /**
+     * @param isName Whether content being decoded is that of a property name
+     *   (map key) and not a String value: if so, caller is responsible for
+     *   validating length (against {@code maxNameLength})
+     */
+    private final void _finishLongText(final int expLen, final boolean isName)
+        throws JacksonException
     {
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         int outPtr = 0;
@@ -2513,13 +2522,14 @@ public class ProtobufParser extends ParserMinimalBase
                 break;
             case 3: // 4-byte UTF
                 c = _decodeUTF8_4(c);
-                // Let's add first part right away:
-                outBuf[outPtr++] = (char) (0xD800 | (c >> 10));
-                if (outPtr >= outBuf.length) {
+                // Let's add first part right away (but first ensure there's room;
+                // ASCII fast path may have filled the segment)
+                if (outPtr >= outEnd) {
                     outBuf = _textBuffer.finishCurrentSegment();
                     outPtr = 0;
                     outEnd = outBuf.length;
                 }
+                outBuf[outPtr++] = (char) (0xD800 | (c >> 10));
                 c = 0xDC00 | (c & 0x3FF);
                 // And let the other char output down below
                 break;
@@ -2539,7 +2549,9 @@ public class ProtobufParser extends ParserMinimalBase
         _textBuffer.setCurrentLength(outPtr);
         // [dataformats-binary#824]: `TextBuffer` only validates length when
         //   finishing a segment, so need to check if all content fit in one
-        _streamReadConstraints.validateStringLength(_textBuffer.size());
+        if (!isName) {
+            _streamReadConstraints.validateStringLength(_textBuffer.size());
+        }
     }
 
     private final int _decodeUTF8_3(int c1) throws JacksonException

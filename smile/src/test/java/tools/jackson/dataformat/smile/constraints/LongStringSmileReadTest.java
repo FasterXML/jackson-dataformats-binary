@@ -123,6 +123,31 @@ public class LongStringSmileReadTest extends AsyncTestBase
         }
     }
 
+    // If caller catches failure for too-long value and continues, parser must
+    // continue with the next value (and not with rest of rejected one)
+    @Test
+    public void testContinueAfterLongValueAsync() throws Exception
+    {
+        for (String value : LONG_VALUES) {
+            final byte[] doc = MAPPER_VANILLA.writeValueAsBytes(new String[] { value, "ok" });
+            for (int bytesPerFeed : BYTES_PER_FEED) {
+                AsyncReaderWrapper r = asyncForBytes(MAPPER_CONSTRAINED, bytesPerFeed, doc, 0);
+                assertToken(JsonToken.START_ARRAY, r.nextToken());
+                try {
+                    JsonToken t = r.nextToken();
+                    fail("Should not pass (bytesPerFeed "+bytesPerFeed+"), got: "+t);
+                } catch (StreamConstraintsException e) {
+                    verifyException(e, "String value length");
+                }
+                assertToken(JsonToken.VALUE_STRING, r.nextToken());
+                assertEquals("ok", r.currentText());
+                assertToken(JsonToken.END_ARRAY, r.nextToken());
+                assertNull(r.nextToken());
+                r.close();
+            }
+        }
+    }
+
     // Values within limit must still be accepted
     @Test
     public void testValueWithinLimit() throws Exception

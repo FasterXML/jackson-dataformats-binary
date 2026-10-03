@@ -1,8 +1,7 @@
 package tools.jackson.dataformat.avro.constraints;
 
 import java.io.ByteArrayInputStream;
-import java.io.StringWriter;
-import java.util.function.Function;
+import java.io.InputStream;
 
 import org.junit.jupiter.api.Test;
 
@@ -16,8 +15,9 @@ import tools.jackson.dataformat.avro.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 // [dataformats-binary#824]: `maxStringLength` must be enforced for long String
-// values (ones not fully contained in input buffer) regardless of accessor
-// used, even if value fits in a single (recycled) text buffer segment
+// values (ones not fully contained in input buffer) even if value fits in a
+// single (recycled) text buffer segment: otherwise accessors that do not
+// validate length, like `getString(Writer)`, would expose all of it
 public class LongStringAvroReadTest extends AvroTestBase
 {
     static class Value {
@@ -35,22 +35,20 @@ public class LongStringAvroReadTest extends AvroTestBase
             "{\"type\":\"record\",\"name\":\"Value\",\"fields\":["
             +"{\"name\":\"value\",\"type\":\"string\"}]}");
 
+    // NOTE: Avro parser decodes String values eagerly, when advancing to
+    // VALUE_STRING token, so that is where failure is expected (and not on
+    // accessing contents)
     @Test
-    public void testLongValueViaStringCharacters() throws Exception
+    public void testLongValue() throws Exception
     {
-        _verifyFails(p -> "char["+p.getStringCharacters().length+"]");
-    }
+        final AvroMapper mapper = _constrainedMapper();
+        // First: grow text buffer (to be recycled) by reading a value fully
+        // contained in input; rejected, but only after buffer was grown
+        _verifyFails(mapper, _doc("b".repeat(20_000)));
 
-    @Test
-    public void testLongValueViaStringLength() throws Exception
-    {
-        _verifyFails(p -> "length "+p.getStringLength());
-    }
-
-    @Test
-    public void testLongValueViaStringWriter() throws Exception
-    {
-        _verifyFails(p -> "chars written: "+p.getString(new StringWriter()));
+        // Then read value longer than input buffer, from stream: decoded
+        // using (recycled) segment big enough to contain all of it
+        _verifyFails(mapper, new ByteArrayInputStream(_doc("a".repeat(10_000))));
     }
 
     // Values within limit must still be accepted
@@ -70,31 +68,16 @@ public class LongStringAvroReadTest extends AvroTestBase
         }
     }
 
-    private void _verifyFails(Function<JsonParser, String> accessor) throws Exception
+    private void _verifyFails(AvroMapper mapper, Object input) throws Exception
     {
-        final AvroMapper mapper = _constrainedMapper();
-        // First: grow text buffer (to be recycled) by reading a value fully
-        // contained in input; rejected, but only after buffer was grown
-        try (JsonParser p = mapper.reader().with(SCHEMA)
-                .createParser(_doc("b".repeat(20_000)))) {
+        try (JsonParser p = (input instanceof byte[])
+                ? mapper.reader().with(SCHEMA).createParser((byte[]) input)
+                : mapper.reader().with(SCHEMA).createParser((InputStream) input)) {
             assertToken(JsonToken.START_OBJECT, p.nextToken());
             assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
-            assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            p.getString();
-            fail("Should not pass");
-        } catch (StreamConstraintsException e) {
-            _verifyStringLengthException(e);
-        }
-
-        // Then read value longer than input buffer, from stream: decoded
-        // using (recycled) segment big enough to contain all of it
-        try (JsonParser p = mapper.reader().with(SCHEMA)
-                .createParser(new ByteArrayInputStream(_doc("a".repeat(10_000))))) {
-            assertToken(JsonToken.START_OBJECT, p.nextToken());
-            assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
-            assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            String result = accessor.apply(p);
-            fail("Should not pass, got "+result);
+            JsonToken t = p.nextToken();
+            // (note: cannot use content accessors here, most of which validate length)
+            fail("Should not pass, got "+t);
         } catch (StreamConstraintsException e) {
             _verifyStringLengthException(e);
         }
