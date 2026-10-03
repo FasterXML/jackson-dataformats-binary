@@ -47,6 +47,9 @@ implementations)
 #781: (smile) `SmileGenerator.writeNumber(String)` should validate number length
   against configured `StreamReadConstraints`, not global defaults
  (contributed by @pjfanning)
+#823: (cbor) `maxStringLength` not consistently checked for chunked
+  (indefinite-length) text values
+ (fix by @pjfanning, w/ Claude code)
 - (avro) Generated `array` schemas missing `java-class` for `java.util.List`,
   breaking round-trip via Apache `ReflectDatumReader`
 
@@ -55,6 +58,40 @@ implementations)
 #797: (avro) Apache decoder fails with `UnsupportedOperationException` when
   `AvroReadFeature.AVRO_BUFFERING` disabled
  (contributed by @Dongnyoung)
+#817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
+ (fix by @pjfanning, w/ Claude code)
+#819: (avro) `bytes` value allocated to declared length before checking available content
+  [CVE-2026-104015]
+ (fix by @pjfanning, w/ Claude code)
+#825: (smile) Non-blocking Smile parser should validate raw binary length and not pre-allocate
+  full buffer [CVE-2026-104895]
+ (fix by @pjfanning, w/ Claude code)
+#830: (smile) Non-blocking parser silently drops truncated root-level value at end-of-input
+ (fix by @cowtowncoder, w/ Claude code)
+#831: (smile) Non-blocking Smile parser reports wrong `currentLocation()` /
+  `currentTokenLocation()` byte offsets
+ (fix by @cowtowncoder, w/ Claude code)
+#833: (smile) Non-blocking `_decodeShortUnicodeText()` reads past declared String length
+  on truncated UTF-8 sequence
+ (fix by @cowtowncoder, w/ Claude code)
+#834: (smile) `SmileGenerator` silently writes wrong `BigDecimal` scale outside [-2^30, 2^30-1]
+ (fix by @cowtowncoder, w/ Claude code)
+#835: (smile) `SmileParser.getString(Writer)` writes stale text for numeric tokens
+ (fix by @cowtowncoder, w/ Claude code)
+#838: (smile) Non-blocking Smile parser requires a header after a root-level scalar
+  value (rejects end marker, following root values)
+ (fix by @cowtowncoder, w/ Claude code)
+#842: (cbor) `CBORGenerator` writes wrong exponent for `BigDecimal` with scale `Integer.MIN_VALUE`
+ (fix by @cowtowncoder, w/ Claude code)
+#844: (cbor) `CBORParser.getString(Writer)` writes stale text for numeric tokens,
+  NPE for binary
+ (fix by @cowtowncoder, w/ Claude code)
+#845: (avro) Avro parsers' `getString(Writer)` write wrong text for numeric tokens,
+  NPE for binary; `ApacheAvroParserImpl.getString()` returns stale text for non-String scalars
+ (fix by @cowtowncoder, w/ Claude code)
+#846: (protobuf) `ProtobufParser.getString(Writer)` writes stale text for numeric tokens,
+  NPE for binary
+ (fix by @cowtowncoder, w/ Claude code)
 
 3.2.3 (21-Sep-2026)
 
@@ -127,6 +164,40 @@ No changes since 3.2.0
 #797: (avro) Apache decoder fails with `UnsupportedOperationException` when
   `AvroReadFeature.AVRO_BUFFERING` disabled
  (contributed by @Dongnyoung)
+#817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
+ (fix by @pjfanning, w/ Claude code)
+#819: (avro) `bytes` value allocated to declared length before checking available content
+  [CVE-2026-104015]
+ (fix by @pjfanning, w/ Claude code)
+#825: (smile) Non-blocking Smile parser should validate raw binary length and not pre-allocate
+  full buffer [CVE-2026-104895]
+ (fix by @pjfanning, w/ Claude code)
+#830: (smile) Non-blocking parser silently drops truncated root-level value at end-of-input
+ (fix by @cowtowncoder, w/ Claude code)
+#831: (smile) Non-blocking Smile parser reports wrong `currentLocation()` /
+  `currentTokenLocation()` byte offsets
+ (fix by @cowtowncoder, w/ Claude code)
+#833: (smile) Non-blocking `_decodeShortUnicodeText()` reads past declared String length
+  on truncated UTF-8 sequence
+ (fix by @cowtowncoder, w/ Claude code)
+#834: (smile) `SmileGenerator` silently writes wrong `BigDecimal` scale outside [-2^30, 2^30-1]
+ (fix by @cowtowncoder, w/ Claude code)
+#835: (smile) `SmileParser.getString(Writer)` writes stale text for numeric tokens
+ (fix by @cowtowncoder, w/ Claude code)
+#838: (smile) Non-blocking Smile parser requires a header after a root-level scalar
+  value (rejects end marker, following root values)
+ (fix by @cowtowncoder, w/ Claude code)
+#842: (cbor) `CBORGenerator` writes wrong exponent for `BigDecimal` with scale `Integer.MIN_VALUE`
+ (fix by @cowtowncoder, w/ Claude code)
+#844: (cbor) `CBORParser.getString(Writer)` writes stale text for numeric tokens,
+  NPE for binary
+ (fix by @cowtowncoder, w/ Claude code)
+#845: (avro) Avro parsers' `getString(Writer)` write wrong text for numeric tokens,
+  NPE for binary; `ApacheAvroParserImpl.getString()` returns stale text for non-String scalars
+ (fix by @cowtowncoder, w/ Claude code)
+#846: (protobuf) `ProtobufParser.getString(Writer)` writes stale text for numeric tokens,
+  NPE for binary
+ (fix by @cowtowncoder, w/ Claude code)
 
 3.1.7 (21-Sep-2026)
 

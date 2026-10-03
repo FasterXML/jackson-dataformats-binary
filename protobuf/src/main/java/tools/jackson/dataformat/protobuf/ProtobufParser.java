@@ -1328,7 +1328,8 @@ public class ProtobufParser extends ParserMinimalBase
         if (len == 0) {
             return "";
         }
-        if ((_inputPtr + len) <= _inputEnd) {
+        // Compare against remaining input: `_inputPtr + len` may overflow
+        if (len <= (_inputEnd - _inputPtr)) {
             return _finishShortText(len);
         }
         if (len >= _inputBuffer.length) {
@@ -1740,7 +1741,8 @@ public class ProtobufParser extends ParserMinimalBase
             _textBuffer.resetWithEmpty();
             return "";
         }
-        if ((_inputPtr + len) <= _inputEnd) {
+        // Compare against remaining input: `_inputPtr + len` may overflow
+        if (len <= (_inputEnd - _inputPtr)) {
             return _finishShortText(len);
         }
         _finishToken();
@@ -1795,7 +1797,8 @@ public class ProtobufParser extends ParserMinimalBase
             if (_tokenIncomplete) {
                 // inlined '_finishToken()`
                 final int len = _decodedLength;
-                if ((_inputPtr + len) <= _inputEnd) {
+                // Compare against remaining input: `_inputPtr + len` may overflow
+                if (len <= (_inputEnd - _inputPtr)) {
                     _tokenIncomplete = false;
                     return _finishShortText(len);
                 }
@@ -1879,7 +1882,8 @@ public class ProtobufParser extends ParserMinimalBase
             if (_tokenIncomplete) {
                 // inlined '_finishToken()`
                 final int len = _decodedLength;
-                if ((_inputPtr + len) <= _inputEnd) {
+                // Compare against remaining input: `_inputPtr + len` may overflow
+                if (len <= (_inputEnd - _inputPtr)) {
                     _tokenIncomplete = false;
                     return _finishShortText(len);
                 }
@@ -1913,13 +1917,13 @@ public class ProtobufParser extends ParserMinimalBase
     @Override // since 2.8
     public int getString(Writer writer) throws JacksonException
     {
-        try {
-            JsonToken t = _currToken;
-            if (t == JsonToken.VALUE_STRING) {
+        if (_currToken == JsonToken.VALUE_STRING) {
+            try {
                 if (_tokenIncomplete) {
                     // inlined '_finishToken()`
                     final int len = _decodedLength;
-                    if ((_inputPtr + len) <= _inputEnd) {
+                    // Compare against remaining input: `_inputPtr + len` may overflow
+                    if (len <= (_inputEnd - _inputPtr)) {
                         _tokenIncomplete = false;
                         _finishShortText(len);
                     } else {
@@ -1927,24 +1931,14 @@ public class ProtobufParser extends ParserMinimalBase
                     }
                 }
                 return _textBuffer.contentsToWriter(writer);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
             }
-            if (t == JsonToken.PROPERTY_NAME) {
-                String n = _streamReadContext.currentName();
-                writer.write(n);
-                return n.length();
-            }
-            if (t != null) {
-                if (t.isNumeric()) {
-                    return _textBuffer.contentsToWriter(writer);
-                }
-                char[] ch = t.asCharArray();
-                writer.write(ch);
-                return ch.length;
-            }
-        } catch (IOException e) {
-            throw _wrapIOFailure(e);
         }
-        return 0;
+        // [dataformats-binary#846]: numbers are not decoded into `_textBuffer`,
+        // and binary values have no textual representation: so defer to
+        // default implementation that goes through `getString()`
+        return super.getString(writer);
     }
 
     /*
@@ -2382,21 +2376,45 @@ public class ProtobufParser extends ParserMinimalBase
 
     protected byte[] _finishBytes(int len) throws JacksonException
     {
-        byte[] b = new byte[len];
-        if (_inputPtr >= _inputEnd) {
-            loadMoreGuaranteed();
+        // If declared length exceeds buffered content, do not trust it for
+        // up-front allocation: accumulate incrementally instead
+        if (len > (_inputEnd - _inputPtr)) {
+            return _finishLongBytes(len);
         }
-        int ptr = 0;
-        while (true) {
-            int toAdd = Math.min(len, _inputEnd - _inputPtr);
-            System.arraycopy(_inputBuffer, _inputPtr, b, ptr, toAdd);
-            _inputPtr += toAdd;
-            ptr += toAdd;
-            len -= toAdd;
-            if (len <= 0) {
-                return b;
+        // Otherwise all content is buffered, can copy in one go
+        byte[] b = new byte[len];
+        System.arraycopy(_inputBuffer, _inputPtr, b, 0, len);
+        _inputPtr += len;
+        return b;
+    }
+
+    // Used when declared length exceeds buffered input: grows the result
+    // as content is actually read, so a bogus length only fails at end-of-input
+    private final byte[] _finishLongBytes(final int expLen) throws JacksonException
+    {
+        int len = expLen;
+        final ByteArrayBuilder bb = _getByteArrayBuilder();
+        while (len > 0) {
+            if (_inputPtr >= _inputEnd) {
+                _loadMoreForLongValue(JsonToken.VALUE_EMBEDDED_OBJECT, expLen, expLen - len);
             }
-            loadMoreGuaranteed();
+            int toAdd = Math.min(len, _inputEnd - _inputPtr);
+            bb.write(_inputBuffer, _inputPtr, toAdd);
+            _inputPtr += toAdd;
+            len -= toAdd;
+        }
+        return bb.toByteArray();
+    }
+
+    // Loads more content for long String/Binary value; if none available,
+    // reports EOF with expected/actual length
+    private final void _loadMoreForLongValue(JsonToken type, int expLen, int found)
+        throws JacksonException
+    {
+        if (!loadMore()) {
+            final String desc = (type == JsonToken.VALUE_STRING) ? "String" : "Binary";
+            _reportInvalidEOF(String.format(" for %s value: expected %d bytes, only found %d",
+                    desc, expLen, found), type);
         }
     }
 
@@ -2454,15 +2472,21 @@ public class ProtobufParser extends ParserMinimalBase
         return _textBuffer.setCurrentAndReturn(outPtr);
     }
 
-    private final void _finishLongText(int len) throws JacksonException
+    private final void _finishLongText(final int expLen) throws JacksonException
     {
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         int outPtr = 0;
         final int[] codes = UTF8_UNIT_CODES;
         int outEnd = outBuf.length;
+        int len = expLen;
 
         while (--len >= 0) {
-            int c = _nextByte() & 0xFF;
+            // Check for end-of-input here to report expected/actual length
+            // (truncation within multi-byte character gets generic error)
+            if (_inputPtr >= _inputEnd) {
+                _loadMoreForLongValue(JsonToken.VALUE_STRING, expLen, expLen - len - 1);
+            }
+            int c = _inputBuffer[_inputPtr++] & 0xFF;
             int code = codes[c];
             if (code == 0 && outPtr < outEnd) {
                 outBuf[outPtr++] = (char) c;
@@ -2642,7 +2666,7 @@ public class ProtobufParser extends ParserMinimalBase
                 if (count == 0) {
                     _reportBadInputStream(toRead);
                 }
-                throw _constructReadException("Needed to read "+minAvailable+" bytes, missed "+minAvailable+" before end-of-input");
+                throw _constructReadException("Needed to read "+minAvailable+" bytes, missed "+(minAvailable - _inputEnd)+" before end-of-input");
             }
             _inputEnd += count;
         }

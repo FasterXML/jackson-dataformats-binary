@@ -7,6 +7,7 @@ import org.apache.avro.io.DecoderFactory;
 
 import tools.jackson.core.*;
 import tools.jackson.core.io.IOContext;
+import tools.jackson.core.util.ByteArrayBuilder;
 import tools.jackson.dataformat.avro.AvroSchema;
 import tools.jackson.dataformat.avro.AvroReadFeature;
 import tools.jackson.dataformat.avro.deser.AvroParserImpl;
@@ -262,8 +263,9 @@ public class ApacheAvroParserImpl extends AvroParserImpl
             return _avroContext.currentName();
         }
         if (_currToken != null) {
-            if (_currToken.isScalarValue()) {
-                return _textValue;
+            // [dataformats-binary#845]: `_textValue` only set for String values
+            if (_currToken.isNumeric()) {
+                return getNumberValue().toString();
             }
             return _currToken.asString();
         }
@@ -273,29 +275,17 @@ public class ApacheAvroParserImpl extends AvroParserImpl
     @Override
     public int getString(Writer writer) throws JacksonException
     {
-        JsonToken t = _currToken;
-        try {
-            if (t == JsonToken.VALUE_STRING) {
+        if (_currToken == JsonToken.VALUE_STRING) {
+            try {
                 writer.write(_textValue);
-                return _textValue.length();
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
             }
-            if (t == JsonToken.PROPERTY_NAME) {
-                String n = _streamReadContext.currentName();
-                writer.write(n);
-                return n.length();
-            }
-            if (t != null) {
-                if (t.isNumeric()) {
-                    return _textBuffer.contentsToWriter(writer);
-                }
-                char[] ch = t.asCharArray();
-                writer.write(ch);
-                return ch.length;
-            }
-        } catch (IOException e) {
-            throw _wrapIOFailure(e);
+            return _textValue.length();
         }
-        return 0;
+        // [dataformats-binary#845]: only String values are held as-is;
+        // others (numbers, names, markers) go via `getString()`
+        return super.getString(writer);
     }
 
     /*
@@ -417,14 +407,45 @@ public class ApacheAvroParserImpl extends AvroParserImpl
         if (len <= 0) {
             _binaryValue = NO_BYTES;
         } else {
+            _binaryValue = _readBytes(len);
+        }
+        return JsonToken.VALUE_EMBEDDED_OBJECT;
+    }
+
+    /**
+     * Helper method for reading a {@code bytes} or {@code fixed} value of given length: allocates
+     * the full result buffer up front only if length is modest (at most
+     * {@code LONGEST_NON_CHUNKED_BINARY_READ}); otherwise reads content in chunks,
+     * so that truncated content is reported before a buffer of the declared
+     * length is allocated. Declared length is never trusted for larger values
+     * (decoder does not expose how much content is actually buffered).
+     *
+     * @since 2.18.12
+     */
+    private byte[] _readBytes(final int len) throws IOException
+    {
+        if (len <= LONGEST_NON_CHUNKED_BINARY_READ) {
             byte[] b = new byte[len];
             // this is simple raw read, safe to use:
             _decoder.readFixed(b, 0, len);
-            // plus let's retain reference to this buffer, for reuse
-            // (is safe due to way Avro impl handles them)
-            _binaryValue = b;
+            return b;
         }
-        return JsonToken.VALUE_EMBEDDED_OBJECT;
+        // Decoder does its own buffering so the (recyclable) input buffer is otherwise
+        // unused: reuse it as scratch space instead of allocating a chunk-sized array
+        byte[] chunk = _inputBuffer;
+        if (chunk == null) { // `byte[]` input: no buffer allocated by constructor
+            _inputBuffer = chunk = _ioContext.allocReadIOBuffer();
+            _bufferRecyclable = true; // so that it gets released on close
+        }
+        final ByteArrayBuilder bb = _getByteArrayBuilder();
+        int left = len;
+        while (left > 0) {
+            int count = Math.min(chunk.length, left);
+            _decoder.readFixed(chunk, 0, count);
+            bb.write(chunk, 0, count);
+            left -= count;
+        }
+        return bb.toByteArray();
     }
 
     @Override
@@ -434,9 +455,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
 
     @Override
     public JsonToken decodeFixed(int size) throws IOException {
-        byte[] data = new byte[size];
-        _decoder.readFixed(data);
-        _binaryValue = data;
+        _binaryValue = _readBytes(size);
         return JsonToken.VALUE_EMBEDDED_OBJECT;
     }
 

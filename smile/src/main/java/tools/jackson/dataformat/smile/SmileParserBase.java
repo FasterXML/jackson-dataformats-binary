@@ -1,5 +1,7 @@
 package tools.jackson.dataformat.smile;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -102,15 +104,21 @@ public abstract class SmileParserBase extends ParserMinimalBase
 
     /**
      * Number of characters/bytes that were contained in previous blocks
-     * (blocks that were already processed prior to the current buffer).
+     * (blocks that were already processed prior to the current buffer),
+     * minus offset of the input buffer at which content starts: so that
+     * {@code _currInputProcessed + _inputPtr} is the absolute byte offset
+     * of the current input position.
      */
     protected long _currInputProcessed;
 
     /**
-     * Alternative to {@code _tokenInputTotal} that will only contain
-     * offset within input buffer, as int.
+     * Absolute byte offset (from the beginning of the whole content) of the
+     * start of the current token: absolute, as opposed to relative to current
+     * input buffer, since a token may span multiple buffers.
+     *
+     * @since 2.23
      */
-    protected int _tokenOffsetForTotal;
+    protected long _tokenInputTotal;
 
     /**
      * Information about parser context, context in which
@@ -296,6 +304,15 @@ public abstract class SmileParserBase extends ParserMinimalBase
      * @return {@code true} if current token is numeric; {@code false} otherwise
      */
     protected abstract boolean _parseNumericValueIfNumber() throws JacksonException;
+
+    /**
+     * Method called to ensure contents of current {@link JsonToken#VALUE_STRING}
+     * token are fully decoded into {@link #_textBuffer}. Default implementation
+     * does nothing: only needed by parsers that decode values lazily.
+     *
+     * @since 3.1.8
+     */
+    protected void _finishStringValue() throws JacksonException { }
     
 //  public abstract int releaseBuffered(OutputStream out) throws JacksonException;
 //  public abstract Object getInputSource();
@@ -324,12 +341,7 @@ public abstract class SmileParserBase extends ParserMinimalBase
     @Override
     public final TokenStreamLocation currentTokenLocation()
     {
-        // token location is correctly managed...
-        long total = _currInputProcessed + _tokenOffsetForTotal;
-        // 2.4: used to be: _tokenInputTotal
-        return new TokenStreamLocation(_ioContext.contentReference(),
-                total, // bytes
-                -1, -1, (int) total); // char offset, line, column
+        return _locationAt(_tokenInputTotal);
     }
 
     /**
@@ -339,10 +351,16 @@ public abstract class SmileParserBase extends ParserMinimalBase
     @Override
     public final TokenStreamLocation currentLocation()
     {
-        final long offset = _currInputProcessed + _inputPtr;
+        return _locationAt(_currInputProcessed + _inputPtr);
+    }
+
+    /**
+     * @since 2.23
+     */
+    protected TokenStreamLocation _locationAt(long byteOffset) {
         return new TokenStreamLocation(_ioContext.contentReference(),
-                offset, // bytes
-                -1, -1, (int) offset); // char offset, line, column
+                byteOffset, // bytes
+                -1, -1, (int) byteOffset); // char offset, line, column
     }
 
     /**
@@ -378,6 +396,49 @@ public abstract class SmileParserBase extends ParserMinimalBase
     }
 
     protected abstract void _releaseBuffers2();
+
+    /**
+     * Helper method for calculating length of 7-bit encoded content, given
+     * length of raw (decoded) content: 8 encoded bytes for each full 7 bytes,
+     * and for last 1 - 6 bytes one more than the number of bytes.
+     * Calculated as {@code long} since may exceed {@code Integer.MAX_VALUE}.
+     *
+     * @since 2.18.12
+     */
+    protected static long _encoded7BitLength(int rawLength) {
+        final int leftover = rawLength % 7;
+        return (rawLength / 7) * 8L + ((leftover == 0) ? 0 : leftover + 1);
+    }
+
+    /*
+    /**********************************************************************
+    /* Text accessors of public API
+    /**********************************************************************
+     */
+
+    @Override
+    public int getString(Writer writer) throws JacksonException
+    {
+        final JsonToken t = _currToken;
+        if (t == JsonToken.VALUE_STRING) {
+            _finishStringValue();
+            try {
+                return _textBuffer.contentsToWriter(writer);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
+        }
+        // Binary values have no textual representation: avoid decoding them
+        if (t == JsonToken.VALUE_EMBEDDED_OBJECT) {
+            return 0;
+        }
+        if (t == JsonToken.NOT_AVAILABLE) {
+            _reportError("Current token not available: can not call this method");
+        }
+        // [dataformats-binary#835]: only String values are decoded into
+        // `_textBuffer`; others (numbers, names, markers) go via `getString()`
+        return super.getString(writer);
+    }
 
     /*
     /**********************************************************************
@@ -740,6 +801,28 @@ public abstract class SmileParserBase extends ParserMinimalBase
         _reportError(String.format(
                 "Unexpected close marker '%s': expected '%c' (for %s starting at %s)",
                 (char) actCh, expCh, ctxt.typeDesc(), ctxt.startLocation(_sourceReference())));
+    }
+
+    // @since 2.12.3 (moved from SmileParser in 2.18.12)
+    protected String _reportTruncatedUTF8InString(int strLenBytes, int truncatedCharOffset,
+            int firstUTFByteValue, int bytesExpected)
+        throws StreamReadException
+    {
+        throw _constructReadException(String.format(
+"Truncated UTF-8 character in Short Unicode String value (%d bytes): "
++"byte 0x%02X at offset #%d indicated %d more bytes needed",
+strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
+    }
+
+    // (moved from SmileParser in 2.18.12)
+    protected String _reportTruncatedUTF8InName(int strLenBytes, int truncatedCharOffset,
+            int firstUTFByteValue, int bytesExpected)
+        throws StreamReadException
+    {
+        throw _constructReadException(String.format(
+"Truncated UTF-8 character in Short Unicode Name (%d bytes): "
++"byte 0x%02X at offset #%d indicated %d more bytes needed",
+strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
     }
 
     /**

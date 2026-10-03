@@ -23,6 +23,44 @@ Active maintainers:
 #800: (ion) Upgrade `ion-java` dependency to 1.12.1 (from 1.11.11, which has
   binary-write corruption bug)
  (fix by @cowtowncoder, w/ Claude code)
+#831: (smile) Non-blocking Smile parser reports wrong `currentLocation()` /
+  `currentTokenLocation()` byte offsets
+ (fix by @cowtowncoder, w/ Claude code)
+#834: (smile) `SmileGenerator` silently writes wrong `BigDecimal` scale outside [-2^30, 2^30-1]
+ (fix by @cowtowncoder, w/ Claude code)
+#835: (smile) `SmileParser.getText(Writer)` writes stale text for numeric tokens
+ (fix by @cowtowncoder, w/ Claude code)
+#838: (smile) Non-blocking Smile parser requires a header after a root-level scalar
+  value (rejects end marker, following root values)
+ (fix by @cowtowncoder, w/ Claude code)
+#842: (cbor) `CBORGenerator` writes wrong exponent for `BigDecimal` with scale `Integer.MIN_VALUE`
+ (fix by @cowtowncoder, w/ Claude code)
+#844: (cbor) `CBORParser.getText(Writer)` writes stale text for numeric tokens,
+  NPE for binary
+ (fix by @cowtowncoder, w/ Claude code)
+#845: (avro) Avro parsers' `getText(Writer)` write wrong text for numeric tokens,
+  NPE for binary; `ApacheAvroParserImpl.getText()` returns stale text for non-String scalars
+ (fix by @cowtowncoder, w/ Claude code)
+#846: (protobuf) `ProtobufParser.getText(Writer)` writes stale text for numeric tokens,
+  NPE for binary
+ (fix by @cowtowncoder, w/ Claude code)
+
+2.22.4 (not yet released)
+
+#817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
+  [CVE-2026-104016][CVE-2026-104017]
+ (fix by @pjfanning, w/ Claude code)
+#819: (avro) `bytes` value allocated to declared length before checking available content
+  [CVE-2026-104015]
+ (fix by @pjfanning, w/ Claude code)
+#825: (smile) Non-blocking Smile parser should validate raw binary length and not pre-allocate
+  full buffer [CVE-2026-104895]
+ (fix by @pjfanning, w/ Claude code)
+#830: (smile) Non-blocking parser silently drops truncated root-level value at end-of-input
+ (fix by @cowtowncoder, w/ Claude code)
+#833: (smile) Non-blocking `_decodeShortUnicodeText()` reads past declared String length
+  on truncated UTF-8 sequence
+ (fix by @cowtowncoder, w/ Claude code)
 
 2.22.3 (21-Sep-2026)
 
@@ -78,6 +116,23 @@ Active maintainers:
 2.22.0 (31-May-2026)
 
 No changes since 2.21
+
+2.21.8 (not yet released)
+
+#817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
+  [CVE-2026-104016][CVE-2026-104017]
+ (fix by @pjfanning, w/ Claude code)
+#819: (avro) `bytes` value allocated to declared length before checking available content
+  [CVE-2026-104015]
+ (fix by @pjfanning, w/ Claude code)
+#825: (smile) Non-blocking Smile parser should validate raw binary length and not pre-allocate
+  full buffer [CVE-2026-104895]
+ (fix by @pjfanning, w/ Claude code)
+#830: (smile) Non-blocking parser silently drops truncated root-level value at end-of-input
+ (fix by @cowtowncoder, w/ Claude code)
+#833: (smile) Non-blocking `_decodeShortUnicodeText()` reads past declared String length
+  on truncated UTF-8 sequence
+ (fix by @cowtowncoder, w/ Claude code)
 
 2.21.7 (21-Sep-2026)
 
@@ -254,6 +309,25 @@ No changes since 2.19.1
  (contributed by Manuel S)
 #571: Unable to deserialize a pojo with IonStruct
  (reported, fix contributed by Josh C)
+
+2.18.12 (not yet released)
+
+#770: (smile) Async parser decodes short ASCII values split across input feeds
+  as short Unicode
+#817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
+  [CVE-2026-104016][CVE-2026-104017]
+ (fix by @pjfanning, w/ Claude code)
+#819: (avro) `bytes` value allocated to declared length before checking available content
+  [CVE-2026-104015]
+ (fix by @pjfanning, w/ Claude code)
+#825: (smile) Non-blocking Smile parser should validate raw binary length and not pre-allocate
+  full buffer [CVE-2026-104895]
+ (fix by @pjfanning, w/ Claude code)
+#830: (smile) Non-blocking parser silently drops truncated root-level value at end-of-input
+ (fix by @cowtowncoder, w/ Claude code)
+#833: (smile) Non-blocking `_decodeShortUnicodeText()` reads past declared String length
+  on truncated UTF-8 sequence
+ (fix by @cowtowncoder, w/ Claude code)
 
 2.18.11 (20-Sep-2026)
 
