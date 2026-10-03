@@ -152,6 +152,9 @@ public abstract class NonBlockingParserBase
 
         _updateTokenToNull();
         _majorState = MAJOR_INITIAL;
+        // [dataformats-binary#838]: root-level scalars must be followed by
+        // root-level content, not by (required) header
+        _majorStateAfterValue = MAJOR_ROOT;
     }
 
     @Override
