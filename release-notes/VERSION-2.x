@@ -19,6 +19,20 @@ Active maintainers:
 #816: (avro) `UnionReader.nextToken()` does not validate union index, throws
   `ArrayIndexOutOfBoundsException` for out-of-range values
  (contributed by @pjfanning)
+#817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
+  [CVE-2026-104016][CVE-2026-104017]
+ (fix by @pjfanning, w/ Claude code)
+#819: (avro) `bytes` value allocated to declared length before checking available content
+  [CVE-2026-104015]
+ (fix by @pjfanning, w/ Claude code)
+#825: (smile) Non-blocking Smile parser should validate raw binary length and not pre-allocate
+  full buffer [CVE-2026-104895]
+ (fix by @pjfanning, w/ Claude code)
+#830: (smile) Non-blocking parser silently drops truncated root-level value at end-of-input
+ (fix by @cowtowncoder, w/ Claude code)
+#833: (smile) Non-blocking `_decodeShortUnicodeText()` reads past declared String length
+  on truncated UTF-8 sequence
+ (fix by @cowtowncoder, w/ Claude code)
 
 2.21.7 (21-Sep-2026)
 
@@ -195,6 +209,25 @@ No changes since 2.19.1
  (contributed by Manuel S)
 #571: Unable to deserialize a pojo with IonStruct
  (reported, fix contributed by Josh C)
+
+2.18.12 (not yet released)
+
+#770: (smile) Async parser decodes short ASCII values split across input feeds
+  as short Unicode
+#817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
+  [CVE-2026-104016][CVE-2026-104017]
+ (fix by @pjfanning, w/ Claude code)
+#819: (avro) `bytes` value allocated to declared length before checking available content
+  [CVE-2026-104015]
+ (fix by @pjfanning, w/ Claude code)
+#825: (smile) Non-blocking Smile parser should validate raw binary length and not pre-allocate
+  full buffer [CVE-2026-104895]
+ (fix by @pjfanning, w/ Claude code)
+#830: (smile) Non-blocking parser silently drops truncated root-level value at end-of-input
+ (fix by @cowtowncoder, w/ Claude code)
+#833: (smile) Non-blocking `_decodeShortUnicodeText()` reads past declared String length
+  on truncated UTF-8 sequence
+ (fix by @cowtowncoder, w/ Claude code)
 
 2.18.11 (20-Sep-2026)
 

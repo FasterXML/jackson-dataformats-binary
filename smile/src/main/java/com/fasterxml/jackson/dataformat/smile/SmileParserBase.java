@@ -423,6 +423,19 @@ public abstract class SmileParserBase extends ParserMinimalBase
 
     protected abstract void _releaseBuffers2();
 
+    /**
+     * Helper method for calculating length of 7-bit encoded content, given
+     * length of raw (decoded) content: 8 encoded bytes for each full 7 bytes,
+     * and for last 1 - 6 bytes one more than the number of bytes.
+     * Calculated as {@code long} since may exceed {@code Integer.MAX_VALUE}.
+     *
+     * @since 2.18.12
+     */
+    protected static long _encoded7BitLength(int rawLength) {
+        final int leftover = rawLength % 7;
+        return (rawLength / 7) * 8L + ((leftover == 0) ? 0 : leftover + 1);
+    }
+
     @Override public final boolean isClosed() { return _closed; }
     @Override public final JsonReadContext getParsingContext() { return _streamReadContext; }
 
@@ -785,6 +798,28 @@ public abstract class SmileParserBase extends ParserMinimalBase
         _reportError(String.format(
                 "Unexpected close marker '%s': expected '%c' (for %s starting at %s)",
                 (char) actCh, expCh, ctxt.typeDesc(), ctxt.startLocation(_sourceReference())));
+    }
+
+    // @since 2.12.3 (moved from SmileParser in 2.18.12)
+    protected String _reportTruncatedUTF8InString(int strLenBytes, int truncatedCharOffset,
+            int firstUTFByteValue, int bytesExpected)
+        throws IOException
+    {
+        throw _constructReadException(String.format(
+"Truncated UTF-8 character in Short Unicode String value (%d bytes): "
++"byte 0x%02X at offset #%d indicated %d more bytes needed",
+strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
+    }
+
+    // (moved from SmileParser in 2.18.12)
+    protected String _reportTruncatedUTF8InName(int strLenBytes, int truncatedCharOffset,
+            int firstUTFByteValue, int bytesExpected)
+        throws IOException
+    {
+        throw _constructReadException(String.format(
+"Truncated UTF-8 character in Short Unicode Name (%d bytes): "
++"byte 0x%02X at offset #%d indicated %d more bytes needed",
+strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
     }
 
     /**

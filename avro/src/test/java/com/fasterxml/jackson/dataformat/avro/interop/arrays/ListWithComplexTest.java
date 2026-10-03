@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.TestTemplate;
 
 import com.fasterxml.jackson.dataformat.avro.interop.DummyRecord;
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.fail;
 public class ListWithComplexTest extends InteropTestBase
 {
 
-    @Test
+    @TestTemplate
     public void testEmptyListWithRecordElements() throws IOException {
         List<DummyRecord> original = new ArrayList<>();
         //
@@ -29,7 +29,7 @@ public class ListWithComplexTest extends InteropTestBase
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testListWithEnumElements() throws IOException {
         List<DummyEnum> original = new ArrayList<>();
         original.add(DummyEnum.EAST);
@@ -40,7 +40,7 @@ public class ListWithComplexTest extends InteropTestBase
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testListWithListElements() throws IOException {
         List<List<List<String>>> original = new ArrayList<>();
         original.add(new ArrayList<List<String>>());
@@ -53,7 +53,7 @@ public class ListWithComplexTest extends InteropTestBase
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testListWithMapElements() throws IOException {
         List<Map<String, Integer>> original = new ArrayList<>();
         original.add(Collections.singletonMap("Hello", 1));
@@ -64,7 +64,7 @@ public class ListWithComplexTest extends InteropTestBase
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testListWithNullElements() {
         List<DummyRecord> original = new ArrayList<>();
         original.add(null);
@@ -82,7 +82,7 @@ public class ListWithComplexTest extends InteropTestBase
         }
     }
 
-    @Test
+    @TestTemplate
     public void testListWithRecordElements() throws IOException {
         List<DummyRecord> original = new ArrayList<>();
         original.add(new DummyRecord("test", 2));

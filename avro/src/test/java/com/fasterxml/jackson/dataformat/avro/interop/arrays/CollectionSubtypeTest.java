@@ -6,8 +6,8 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.junit.Assume;
-import org.junit.Test;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.TestTemplate;
 
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@code ARRAY} schema type.
  */
 public class CollectionSubtypeTest extends InteropTestBase {
-    @Test
+    @TestTemplate
     public void testArrayList() throws IOException {
         ArrayList<String> original = new ArrayList<>();
         original.add("test");
@@ -31,7 +31,7 @@ public class CollectionSubtypeTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testConcurrentSkipListSet() throws IOException {
         ConcurrentSkipListSet<Integer> original = new ConcurrentSkipListSet<>();
         original.add(1234);
@@ -42,7 +42,7 @@ public class CollectionSubtypeTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testCopyOnWriteArrayList() throws IOException{
         CopyOnWriteArrayList<Integer> original = new CopyOnWriteArrayList<>();
         original.add(1234);
@@ -53,7 +53,7 @@ public class CollectionSubtypeTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testCopyOnWriteArraySet() throws IOException{
         CopyOnWriteArraySet<Integer> original = new CopyOnWriteArraySet<>();
         original.add(1234);
@@ -64,10 +64,10 @@ public class CollectionSubtypeTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testEnumSet() throws IOException {
         // Bug in apache deserializer, can't handle EnumSet
-        Assume.assumeTrue(deserializeFunctor != apacheDeserializer);
+        Assumptions.assumeTrue(deserializeFunctor != apacheDeserializer);
         EnumSet<DummyEnum> original = EnumSet.of(DummyEnum.EAST, DummyEnum.NORTH);
         //
         EnumSet<DummyEnum> result = roundTrip(type(EnumSet.class, DummyEnum.class), original);
@@ -75,7 +75,7 @@ public class CollectionSubtypeTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testHashSet() throws IOException {
         HashSet<Integer> original = new HashSet<>();
         original.add(1234);
@@ -86,7 +86,7 @@ public class CollectionSubtypeTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testLinkedList() throws IOException {
         LinkedList<Integer> original = new LinkedList<>();
         original.add(1234);
@@ -97,7 +97,7 @@ public class CollectionSubtypeTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testList() throws IOException {
         List<String> original = new ArrayList<>();
         original.add("test");
@@ -108,10 +108,10 @@ public class CollectionSubtypeTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testSet() throws IOException {
         // Bug in apache deserializer, can't handle Set
-        Assume.assumeTrue(deserializeFunctor != apacheDeserializer);
+        Assumptions.assumeTrue(deserializeFunctor != apacheDeserializer);
         Set<Integer> original = new HashSet<>();
         original.add(1234);
         original.add(98768234);
@@ -121,7 +121,7 @@ public class CollectionSubtypeTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testStack() throws IOException {
         Stack<Integer> original = new Stack<>();
         original.add(1234);
@@ -132,7 +132,7 @@ public class CollectionSubtypeTest extends InteropTestBase {
         assertThat(result).isEqualTo(original);
     }
 
-    @Test
+    @TestTemplate
     public void testTreeSet() throws IOException {
         TreeSet<Integer> original = new TreeSet<>();
         original.add(1234);
