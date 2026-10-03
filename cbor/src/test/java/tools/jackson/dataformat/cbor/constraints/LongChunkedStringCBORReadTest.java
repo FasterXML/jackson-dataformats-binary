@@ -1,6 +1,7 @@
 package tools.jackson.dataformat.cbor.constraints;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 
@@ -9,8 +10,8 @@ import tools.jackson.core.JsonToken;
 import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.exc.StreamConstraintsException;
 
+import tools.jackson.dataformat.cbor.CBORConstants;
 import tools.jackson.dataformat.cbor.CBORFactory;
-import tools.jackson.dataformat.cbor.CBORMapper;
 import tools.jackson.dataformat.cbor.CBORTestBase;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,11 +22,11 @@ public class LongChunkedStringCBORReadTest extends CBORTestBase
 {
     private final static int MAX_STRING_LEN = 10;
 
-    private final CBORMapper MAPPER = new CBORMapper(CBORFactory.builder()
+    private final CBORFactory FACTORY = CBORFactory.builder()
             .streamReadConstraints(StreamReadConstraints.builder()
                     .maxStringLength(MAX_STRING_LEN)
                     .build())
-            .build());
+            .build();
 
     @Test
     public void testChunkedAsciiViaStringCharacters() throws Exception
@@ -42,24 +43,30 @@ public class LongChunkedStringCBORReadTest extends CBORTestBase
     @Test
     public void testChunkedViaStringLength() throws Exception
     {
-        try (JsonParser p = MAPPER.createParser(_chunked(3, "abcdefghij"))) {
-            assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            int len = p.getStringLength();
-            fail("Should not pass, got length " + len);
-        } catch (StreamConstraintsException e) {
-            verifyException(e, "String value length");
+        final byte[] doc = _chunked(3, "abcdefghij");
+        for (boolean throttled : new boolean[] { false, true }) {
+            try (JsonParser p = cborParser(FACTORY, doc, throttled)) {
+                assertToken(JsonToken.VALUE_STRING, p.nextToken());
+                int len = p.getStringLength();
+                fail("Should not pass, got length " + len);
+            } catch (StreamConstraintsException e) {
+                verifyException(e, "String value length");
+            }
         }
     }
 
     @Test
     public void testChunkedViaString() throws Exception
     {
-        try (JsonParser p = MAPPER.createParser(_chunked(3, "abcdefghij"))) {
-            assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            String str = p.getString();
-            fail("Should not pass, got String of length " + str.length());
-        } catch (StreamConstraintsException e) {
-            verifyException(e, "String value length");
+        final byte[] doc = _chunked(3, "abcdefghij");
+        for (boolean throttled : new boolean[] { false, true }) {
+            try (JsonParser p = cborParser(FACTORY, doc, throttled)) {
+                assertToken(JsonToken.VALUE_STRING, p.nextToken());
+                String str = p.getString();
+                fail("Should not pass, got String of length " + str.length());
+            } catch (StreamConstraintsException e) {
+                verifyException(e, "String value length");
+            }
         }
     }
 
@@ -68,9 +75,9 @@ public class LongChunkedStringCBORReadTest extends CBORTestBase
     @Test
     public void testLargeChunkedAfterBufferReuse() throws Exception
     {
-        final String chunk = _repeat('a', 200);
+        final String chunk = "a".repeat(200);
         for (int i = 0; i < 3; ++i) {
-            try (JsonParser p = MAPPER.createParser(_definite(_repeat('b', 300_000)))) {
+            try (JsonParser p = cborParser(FACTORY, _definite("b".repeat(300_000)))) {
                 p.nextToken();
                 p.getString();
                 fail("Should not pass");
@@ -84,68 +91,65 @@ public class LongChunkedStringCBORReadTest extends CBORTestBase
     @Test
     public void testChunkedWithinLimit() throws Exception
     {
-        try (JsonParser p = MAPPER.createParser(_chunked(2, "abcde"))) {
-            assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            assertEquals("abcdeabcde", new String(p.getStringCharacters(),
-                    p.getStringOffset(), p.getStringLength()));
-            assertNull(p.nextToken());
+        final byte[] doc = _chunked(2, "abcde");
+        for (boolean throttled : new boolean[] { false, true }) {
+            try (JsonParser p = cborParser(FACTORY, doc, throttled)) {
+                assertToken(JsonToken.VALUE_STRING, p.nextToken());
+                assertEquals("abcdeabcde", new String(p.getStringCharacters(),
+                        p.getStringOffset(), p.getStringLength()));
+                assertNull(p.nextToken());
+            }
         }
     }
 
-    private void _verifyFailViaStringCharacters(byte[] doc) throws Exception
+    // Verifies with both byte[] and (throttled) InputStream input
+    private void _verifyFailViaStringCharacters(byte[] doc)
     {
-        try (JsonParser p = MAPPER.createParser(doc)) {
-            assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            p.getStringCharacters();
-            fail("Should not pass, got " + p.getStringLength() + " chars");
-        } catch (StreamConstraintsException e) {
-            verifyException(e, "String value length");
+        for (boolean throttled : new boolean[] { false, true }) {
+            try (JsonParser p = cborParser(FACTORY, doc, throttled)) {
+                assertToken(JsonToken.VALUE_STRING, p.nextToken());
+                p.getStringCharacters();
+                fail("Should not pass, got " + p.getStringLength() + " chars");
+            } catch (StreamConstraintsException e) {
+                verifyException(e, "String value length");
+            }
         }
     }
 
-    private static byte[] _chunked(int chunks, String chunk) throws Exception
+    private static byte[] _chunked(int chunks, String chunk)
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        bytes.write(0x7F); // indefinite-length text
+        bytes.write(CBORConstants.BYTE_STRING_INDEFINITE);
         byte[] enc = _definite(chunk);
         for (int i = 0; i < chunks; ++i) {
-            bytes.write(enc);
+            bytes.writeBytes(enc);
         }
-        bytes.write(0xFF); // break
+        bytes.write(CBORConstants.INT_BREAK);
         return bytes.toByteArray();
     }
 
-    private static byte[] _definite(String str) throws Exception
+    private static byte[] _definite(String str)
     {
-        byte[] utf8 = str.getBytes("UTF-8");
+        byte[] utf8 = str.getBytes(StandardCharsets.UTF_8);
         int len = utf8.length;
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        if (len < 24) {
-            bytes.write(0x60 | len);
+        if (len < CBORConstants.SUFFIX_UINT8_ELEMENTS) {
+            bytes.write(CBORConstants.PREFIX_TYPE_TEXT + len);
         } else if (len < 256) {
-            bytes.write(0x78);
+            bytes.write(CBORConstants.PREFIX_TYPE_TEXT + CBORConstants.SUFFIX_UINT8_ELEMENTS);
             bytes.write(len);
         } else if (len < 65536) {
-            bytes.write(0x79);
+            bytes.write(CBORConstants.PREFIX_TYPE_TEXT + CBORConstants.SUFFIX_UINT16_ELEMENTS);
             bytes.write(len >> 8);
             bytes.write(len);
         } else {
-            bytes.write(0x7A);
+            bytes.write(CBORConstants.PREFIX_TYPE_TEXT + CBORConstants.SUFFIX_UINT32_ELEMENTS);
             bytes.write(len >>> 24);
             bytes.write(len >> 16);
             bytes.write(len >> 8);
             bytes.write(len);
         }
-        bytes.write(utf8);
+        bytes.writeBytes(utf8);
         return bytes.toByteArray();
-    }
-
-    private static String _repeat(char c, int count)
-    {
-        StringBuilder sb = new StringBuilder(count);
-        for (int i = 0; i < count; ++i) {
-            sb.append(c);
-        }
-        return sb.toString();
     }
 }
