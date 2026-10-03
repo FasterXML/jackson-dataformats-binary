@@ -3,12 +3,17 @@ package com.fasterxml.jackson.dataformat.avro.interop;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
 
 import org.apache.avro.Schema;
-
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.TestInstancePostProcessor;
+import org.junit.jupiter.api.extension.TestTemplateInvocationContext;
+import org.junit.jupiter.api.extension.TestTemplateInvocationContextProvider;
 
 import com.fasterxml.jackson.dataformat.avro.testsupport.BiFunction;
 import com.fasterxml.jackson.dataformat.avro.testsupport.Function;
@@ -20,7 +25,7 @@ import static com.fasterxml.jackson.dataformat.avro.interop.ApacheAvroInteropUti
  * {@link #deserializeFunctor} with permutations of Apache and Jackson implementations to test all aspects of
  * interoperability between the implementations.
  */
-@RunWith(Parameterized.class)
+@ExtendWith(InteropTestBase.CombinationsProvider.class)
 public abstract class InteropTestBase
 {
     public enum DummyEnum {
@@ -29,7 +34,7 @@ public abstract class InteropTestBase
 
     // see https://github.com/FasterXML/jackson-dataformats-binary/pull/539 for
     // explanation (need to allow-list Jackson test packages for Avro 1.11.4+)
-    @Before
+    @BeforeEach
     public void init() {
         System.setProperty("org.apache.avro.SERIALIZABLE_PACKAGES",
                 "java.lang,java.math,java.io,java.net,org.apache.avro.reflect," +
@@ -104,16 +109,59 @@ public abstract class InteropTestBase
         }
     }
 
-    @Parameterized.Parameter
     public Function<Type, Schema> schemaFunctor;
-    @Parameterized.Parameter(1)
     public BiFunction<Schema, Object, byte[]> serializeFunctor;
-    @Parameterized.Parameter(2)
     public BiFunction<Schema, byte[], Object> deserializeFunctor;
-    @Parameterized.Parameter(3)
     public String combinationName;
 
-    @Parameterized.Parameters(name = "{3}")
+    /**
+     * Test methods of subclasses are "test templates" (annotated with {@code @TestTemplate}):
+     * invoked once for each combination returned by {@link #getParameters()}, with
+     * fields of the test instance populated from combination values.
+     */
+    static class CombinationsProvider implements TestTemplateInvocationContextProvider
+    {
+        @Override
+        public boolean supportsTestTemplate(ExtensionContext context) {
+            return true;
+        }
+
+        @Override
+        public Stream<TestTemplateInvocationContext> provideTestTemplateInvocationContexts(ExtensionContext context)
+        {
+            return Stream.of(getParameters()).map(CombinationContext::new);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    static class CombinationContext implements TestTemplateInvocationContext, TestInstancePostProcessor
+    {
+        private final Object[] _params;
+
+        CombinationContext(Object[] params) {
+            _params = params;
+        }
+
+        @Override
+        public String getDisplayName(int invocationIndex) {
+            return (String) _params[3];
+        }
+
+        @Override
+        public List<org.junit.jupiter.api.extension.Extension> getAdditionalExtensions() {
+            return Collections.<org.junit.jupiter.api.extension.Extension>singletonList(this);
+        }
+
+        @Override
+        public void postProcessTestInstance(Object testInstance, ExtensionContext context) {
+            InteropTestBase test = (InteropTestBase) testInstance;
+            test.schemaFunctor = (Function<Type, Schema>) _params[0];
+            test.serializeFunctor = (BiFunction<Schema, Object, byte[]>) _params[1];
+            test.deserializeFunctor = (BiFunction<Schema, byte[], Object>) _params[2];
+            test.combinationName = (String) _params[3];
+        }
+    }
+
     public static Object[][] getParameters() {
         return new Object[][]{
                 {getApacheSchema, apacheSerializer, jacksonDeserializer, "Apache to Jackson with Apache schema"},

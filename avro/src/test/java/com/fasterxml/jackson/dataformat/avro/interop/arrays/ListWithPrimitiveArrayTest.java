@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.TestTemplate;
 
 import com.fasterxml.jackson.dataformat.avro.interop.InteropTestBase;
 
@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * value type
  */
 public class ListWithPrimitiveArrayTest extends InteropTestBase {
-    @Test
+    @TestTemplate
     public void testListWithBytes() throws IOException {
         List<byte[]> original = new ArrayList<>();
         original.add(new byte[]{(byte) 1});
@@ -29,7 +29,7 @@ public class ListWithPrimitiveArrayTest extends InteropTestBase {
         assertThat(result).containsExactly(original.toArray(new byte[0][]));
     }
 
-    @Test
+    @TestTemplate
     public void testListWithCharacters() throws IOException {
         List<char[]> original = new ArrayList<>();
         original.add(new char[]{(char) 1});
@@ -43,7 +43,7 @@ public class ListWithPrimitiveArrayTest extends InteropTestBase {
         assertThat(result).containsExactly(original.toArray(new char[0][]));
     }
 
-    @Test
+    @TestTemplate
     public void testListWithDoubles() throws IOException {
         List<double[]> original = new ArrayList<>();
         original.add(new double[]{(double) 1});
@@ -57,7 +57,7 @@ public class ListWithPrimitiveArrayTest extends InteropTestBase {
         assertThat(result).containsExactly(original.toArray(new double[0][]));
     }
 
-    @Test
+    @TestTemplate
     public void testListWithFloats() throws IOException {
         List<float[]> original = new ArrayList<>();
         original.add(new float[]{(float) 1});
@@ -71,7 +71,7 @@ public class ListWithPrimitiveArrayTest extends InteropTestBase {
         assertThat(result).containsExactly(original.toArray(new float[0][]));
     }
 
-    @Test
+    @TestTemplate
     public void testListWithIntegers() throws IOException {
         List<int[]> original = new ArrayList<>();
         original.add(new int[]{(int) 1});
@@ -85,7 +85,7 @@ public class ListWithPrimitiveArrayTest extends InteropTestBase {
         assertThat(result).containsExactly(original.toArray(new int[0][]));
     }
 
-    @Test
+    @TestTemplate
     public void testListWithLongs() throws IOException {
         List<long[]> original = new ArrayList<>();
         original.add(new long[]{(long) 1});
@@ -99,7 +99,7 @@ public class ListWithPrimitiveArrayTest extends InteropTestBase {
         assertThat(result).containsExactly(original.toArray(new long[0][]));
     }
 
-    @Test
+    @TestTemplate
     public void testListWithShorts() throws IOException {
         List<short[]> original = new ArrayList<>();
         original.add(new short[]{(short) 1});
