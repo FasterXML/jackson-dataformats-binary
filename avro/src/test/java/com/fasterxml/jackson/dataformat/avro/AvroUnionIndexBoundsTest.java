@@ -26,15 +26,15 @@ public class AvroUnionIndexBoundsTest extends AvroTestBase
             + "'type':'record','name':'Root','fields':[{'name':'after','type':'int'}]}");
 
     // zig-zag varints: 10 -> index 5; 1 -> index -1
-    private final static byte[] DOC_INDEX_5 = new byte[] { 10, 0 };
-    private final static byte[] DOC_INDEX_MINUS_1 = new byte[] { 1, 0 };
+    private final static byte INDEX_5 = 10;
+    private final static byte INDEX_MINUS_1 = 1;
 
     private final AvroMapper NATIVE_MAPPER = new AvroMapper(AvroFactory.builderWithNativeDecoder().build());
     private final AvroMapper APACHE_MAPPER = new AvroMapper(AvroFactory.builderWithApacheDecoder().build());
 
     @Test
     public void testInvalidStructUnionIndex() throws Exception {
-        _testInvalidIndex(STRUCT_UNION_TYPE, "Invalid index", "union only has 2 types");
+        _testInvalidIndex(STRUCT_UNION_TYPE, "Invalid Union index", "union only has 2 types");
     }
 
     @Test
@@ -48,7 +48,23 @@ public class AvroUnionIndexBoundsTest extends AvroTestBase
         _testInvalidIndex(ENUM_TYPE, "Invalid Enum index", "enum 'Color' only has 2 types");
     }
 
+    // Test value of given type directly as record field, as well as array element
+    // and map value (which use different code paths from record fields)
     private void _testInvalidIndex(String valueType, String msgPrefix, String msgSuffix)
+        throws Exception
+    {
+        _testInvalidIndex(valueType,
+                new byte[0], msgPrefix, msgSuffix);
+        // array with one element: block count 1 (zig-zag 2), element, end-of-array (0)
+        _testInvalidIndex("{'type':'array','items':" + valueType + "}",
+                new byte[] { 2 }, msgPrefix, msgSuffix);
+        // map with one entry: block count 1 (zig-zag 2), key "k", value, end-of-map (0)
+        _testInvalidIndex("{'type':'map','values':" + valueType + "}",
+                new byte[] { 2, 2, 'k' }, msgPrefix, msgSuffix);
+    }
+
+    private void _testInvalidIndex(String valueType, byte[] docPrefix,
+            String msgPrefix, String msgSuffix)
         throws Exception
     {
         for (AvroMapper mapper : new AvroMapper[] { NATIVE_MAPPER, APACHE_MAPPER }) {
@@ -56,8 +72,10 @@ public class AvroUnionIndexBoundsTest extends AvroTestBase
             final AvroSchema skippingSchema = writerSchema.withReaderSchema(
                     mapper.schemaFrom(SKIPPING_READER_SCHEMA_JSON));
             for (AvroSchema schema : new AvroSchema[] { writerSchema, skippingSchema }) {
-                _verifyFail(mapper, schema, DOC_INDEX_5, msgPrefix + " (5)", msgSuffix);
-                _verifyFail(mapper, schema, DOC_INDEX_MINUS_1, msgPrefix + " (-1)", msgSuffix);
+                _verifyFail(mapper, schema, _doc(docPrefix, INDEX_5),
+                        msgPrefix + " (5)", msgSuffix);
+                _verifyFail(mapper, schema, _doc(docPrefix, INDEX_MINUS_1),
+                        msgPrefix + " (-1)", msgSuffix);
             }
         }
     }
@@ -68,6 +86,15 @@ public class AvroUnionIndexBoundsTest extends AvroTestBase
                 + "{'name':'value','type':" + valueType + "},"
                 + "{'name':'after','type':'int'}"
                 + "]}");
+    }
+
+    // Document: prefix, then the invalid index, followed by zero bytes as filler
+    // (end-of-array/map marker and/or "after" field value)
+    private static byte[] _doc(byte[] prefix, byte index) {
+        byte[] doc = new byte[prefix.length + 3];
+        System.arraycopy(prefix, 0, doc, 0, prefix.length);
+        doc[prefix.length] = index;
+        return doc;
     }
 
     private void _verifyFail(AvroMapper mapper, AvroSchema schema, byte[] doc,

@@ -469,12 +469,10 @@ public abstract class ScalarDecoder
         }
 
         private final static class FR extends AvroFieldReader {
-            protected final String _enumName;
             protected final String[] _values;
 
             public FR(String name, boolean skipper, EnumDecoder base, String typeId) {
                 super(name, skipper, typeId);
-                _enumName = base._name;
                 _values = base._values;
             }
 
@@ -492,7 +490,7 @@ public abstract class ScalarDecoder
                 if (index < 0 || index >= _values.length) {
                     throw parser._invalidEnumIndex(String.format(
                             "Invalid Enum index (%s); enum '%s' only has %d types",
-                            index, _enumName, _values.length));
+                            index, _typeId, _values.length));
                 }
                 return _values[index];
             }

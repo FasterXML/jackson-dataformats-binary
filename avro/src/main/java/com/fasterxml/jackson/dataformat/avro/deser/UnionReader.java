@@ -64,7 +64,7 @@ final class UnionReader extends AvroStructureReader
         final int index = parser.decodeIndex();
         if (index < 0 || index >= _memberReaders.length) {
             throw parser._invalidBranchIndex(String.format
-                    ("Invalid index (%s); union only has %d types", index, _memberReaders.length));
+                    ("Invalid Union index (%s); union only has %d types", index, _memberReaders.length));
         }
         return index;
     }
