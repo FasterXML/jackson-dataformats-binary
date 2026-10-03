@@ -263,8 +263,9 @@ public class ApacheAvroParserImpl extends AvroParserImpl
             return _avroContext.currentName();
         }
         if (_currToken != null) {
-            if (_currToken.isScalarValue()) {
-                return _textValue;
+            // [dataformats-binary#845]: `_textValue` only set for String values
+            if (_currToken.isNumeric()) {
+                return getNumberValue().toString();
             }
             return _currToken.asString();
         }
@@ -274,29 +275,17 @@ public class ApacheAvroParserImpl extends AvroParserImpl
     @Override
     public int getString(Writer writer) throws JacksonException
     {
-        JsonToken t = _currToken;
-        try {
-            if (t == JsonToken.VALUE_STRING) {
+        if (_currToken == JsonToken.VALUE_STRING) {
+            try {
                 writer.write(_textValue);
-                return _textValue.length();
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
             }
-            if (t == JsonToken.PROPERTY_NAME) {
-                String n = _streamReadContext.currentName();
-                writer.write(n);
-                return n.length();
-            }
-            if (t != null) {
-                if (t.isNumeric()) {
-                    return _textBuffer.contentsToWriter(writer);
-                }
-                char[] ch = t.asCharArray();
-                writer.write(ch);
-                return ch.length;
-            }
-        } catch (IOException e) {
-            throw _wrapIOFailure(e);
+            return _textValue.length();
         }
-        return 0;
+        // [dataformats-binary#845]: only String values are held as-is;
+        // others (numbers, names, markers) go via `getString()`
+        return super.getString(writer);
     }
 
     /*

@@ -221,29 +221,16 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     @Override
     public int getString(Writer writer) throws JacksonException
     {
-        JsonToken t = _currToken;
-
-        try {
-            if (t == JsonToken.VALUE_STRING) {
+        if (_currToken == JsonToken.VALUE_STRING) {
+            try {
                 return _textBuffer.contentsToWriter(writer);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
             }
-            if (t == JsonToken.PROPERTY_NAME) {
-                String n = _avroContext.currentName();
-                writer.write(n);
-                return n.length();
-            }
-            if (t != null) {
-                if (t.isNumeric()) {
-                    return _textBuffer.contentsToWriter(writer);
-                }
-                char[] ch = t.asCharArray();
-                writer.write(ch);
-                return ch.length;
-            }
-        } catch (IOException e) {
-            throw _wrapIOFailure(e);
         }
-        return 0;
+        // [dataformats-binary#845]: only String values are held as-is;
+        // others (numbers, names, markers) go via `getString()`
+        return super.getString(writer);
     }
 
     /*

@@ -1,7 +1,6 @@
 package tools.jackson.dataformat.avro;
 
 import java.io.IOException;
-import java.io.Writer;
 
 import tools.jackson.core.*;
 import tools.jackson.core.base.ParserBase;
@@ -218,8 +217,8 @@ public abstract class AvroParser extends ParserBase
     @Override
     public abstract String getString() throws JacksonException;
 
-    @Override
-    public abstract int getString(Writer writer) throws JacksonException;
+    // NOTE: `getString(Writer)` not re-declared abstract (since 3.1): default
+    // implementation, which writes contents of `getString()`, works as fallback
 
     @Override
     public String currentName() throws JacksonException {
