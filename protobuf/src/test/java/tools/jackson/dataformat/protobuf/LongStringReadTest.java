@@ -103,8 +103,9 @@ public class LongStringReadTest extends ProtobufTestBase
         }
     }
 
-    // Map keys are exposed as property names, so `maxNameLength` (and not
-    // `maxStringLength`) applies: both for keys longer than input buffer...
+    // Map keys are exposed as property names, so `maxNameLength` applies
+    // (in addition to `maxStringLength`, which `TextBuffer` enforces when
+    // constructing key String): both for keys longer than input buffer...
     @Test
     public void testLongMapKeyExceedsMaxNameLength() throws Exception
     {

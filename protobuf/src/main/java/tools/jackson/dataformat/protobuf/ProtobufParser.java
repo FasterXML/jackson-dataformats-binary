@@ -1329,7 +1329,9 @@ public class ProtobufParser extends ParserMinimalBase
             return "";
         }
         // [dataformats-binary#824]: map keys are exposed as property names, so
-        //   need to enforce `maxNameLength` (on encoded length, as with CBOR)
+        //   need to enforce `maxNameLength` (on encoded length, as with CBOR).
+        //   NOTE: `maxStringLength` is also enforced, by `TextBuffer`, when
+        //   constructing the key String
         _streamReadConstraints.validateNameLength(len);
         // Compare against remaining input: `_inputPtr + len` may overflow
         if (len <= (_inputEnd - _inputPtr)) {
@@ -2477,8 +2479,10 @@ public class ProtobufParser extends ParserMinimalBase
 
     /**
      * @param isName Whether content being decoded is that of a property name
-     *   (map key) and not a String value: if so, caller is responsible for
-     *   validating length (against {@code maxNameLength})
+     *   (map key) and not a String value: if so, the explicit
+     *   {@code maxStringLength} check is skipped here, as caller validates
+     *   against {@code maxNameLength} (and {@code TextBuffer} still validates
+     *   against {@code maxStringLength} when key String is constructed)
      */
     private final void _finishLongText(final int expLen, final boolean isName)
         throws JacksonException
