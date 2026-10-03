@@ -319,6 +319,12 @@ public class ProtobufParser extends ParserMinimalBase
     protected BigInteger _numberBigInt;
     protected BigDecimal _numberBigDecimal;
 
+    /**
+     * Bitfield that indicates which Protobuf-specific
+     * {@link ProtobufReadFeature}s are enabled.
+     */
+    protected final int _formatFeatures;
+
     /*
     /**********************************************************************
     /* Life-cycle
@@ -326,12 +332,13 @@ public class ProtobufParser extends ParserMinimalBase
      */
 
     public ProtobufParser(ObjectReadContext readCtxt, IOContext ioCtxt,
-            int parserFeatures, ProtobufSchema schema,
+            int parserFeatures, int formatFeatures, ProtobufSchema schema,
             InputStream in, byte[] inputBuffer, int start, int end,
             boolean bufferRecyclable)
     {
         super(readCtxt, ioCtxt, parserFeatures);
 
+        _formatFeatures = formatFeatures;
         _inputStream = in;
         _inputBuffer = inputBuffer;
         _inputPtr = start;
@@ -979,6 +986,10 @@ public class ProtobufParser extends ParserMinimalBase
             {
                 int ix = _decodeLength();
                 if (_currentField.isStdEnum) {
+                    if (ProtobufReadFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE.enabledIn(_formatFeatures)
+                            && (_currentField.findEnumByIndex(ix) == null)) {
+                        ix = _currentField.getDefaultEnumIndex();
+                    }
                     _numberInt = ix;
                     _numTypesValid = NR_INT;
                     type =  JsonToken.VALUE_NUMBER_INT;
@@ -987,7 +998,11 @@ public class ProtobufParser extends ParserMinimalBase
                     // handle that part
                     String enumStr = _currentField.findEnumByIndex(ix);
                     if (enumStr == null) {
-                        _reportErrorF("Unknown id %d (for enum field %s)", ix, _currentField.name);
+                        if (ProtobufReadFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE.enabledIn(_formatFeatures)) {
+                            enumStr = _currentField.getDefaultEnumValue();
+                        } else {
+                            _reportErrorF("Unknown id %d (for enum field %s)", ix, _currentField.name);
+                        }
                     }
                     type = JsonToken.VALUE_STRING;
                     _textBuffer.resetWithString(enumStr);

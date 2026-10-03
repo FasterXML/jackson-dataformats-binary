@@ -8,6 +8,10 @@ public class ProtobufEnum
 
     protected final Map<String,Integer> _valuesByName;
 
+    protected final String _defaultValue;
+
+    protected final int _defaultIndex;
+
     /**
      * Flag that indicates whether mapping from enum value and id is standard or not;
      * standard means that first enum has value 0, and all following enums have value
@@ -20,6 +24,14 @@ public class ProtobufEnum
         _name = name;
         _valuesByName = valuesByName;
         _standardIndexing = standardIndexing;
+        if (valuesByName.isEmpty()) {
+            _defaultValue = null;
+            _defaultIndex = -1;
+        } else {
+            Map.Entry<String,Integer> first = valuesByName.entrySet().iterator().next();
+            _defaultValue = first.getKey();
+            _defaultIndex = first.getValue().intValue();
+        }
     }
 
     public Integer findEnum(String name) {
@@ -32,5 +44,13 @@ public class ProtobufEnum
 
     public boolean usesStandardIndexing() {
         return _standardIndexing;
+    }
+
+    public String getDefaultValue() {
+        return _defaultValue;
+    }
+
+    public int getDefaultIndex() {
+        return _defaultIndex;
     }
 }

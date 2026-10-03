@@ -14,6 +14,12 @@ public class ProtobufFactory
 {
     private static final long serialVersionUID = 1;
 
+    /**
+     * Bitfield (set of flags) of all parser features that are enabled
+     * by default.
+     */
+    final static int DEFAULT_PROTOBUF_PARSER_FEATURE_FLAGS = ProtobufReadFeature.collectDefaults();
+
     /*
     /**********************************************************************
     /* Factory construction, configuration
@@ -23,7 +29,7 @@ public class ProtobufFactory
     public ProtobufFactory() {
         super(StreamReadConstraints.defaults(), StreamWriteConstraints.defaults(),
                 ErrorReportConfiguration.defaults(),
-                0, 0);
+                DEFAULT_PROTOBUF_PARSER_FEATURE_FLAGS, 0);
     }
 
     protected ProtobufFactory(ProtobufFactory src) {
@@ -119,23 +125,29 @@ public class ProtobufFactory
     }
 
 
-    // No format-specific configuration, yet:
-/*
     @Override
-    public Class<? extends FormatFeature> getFormatReadFeatureType() {
-        return null;
+    public Class<ProtobufReadFeature> getFormatReadFeatureType() {
+        return ProtobufReadFeature.class;
     }
 
+/*
     @Override
     public Class<? extends FormatFeature> getFormatWriteFeatureType() {
         return null;
     }
 */
     @Override
-    public int getFormatReadFeatures() { return 0; }
+    public int getFormatReadFeatures() { return _formatReadFeatures; }
 
     @Override
     public int getFormatWriteFeatures() { return 0; }
+
+    /**
+     * Check whether specified Protobuf-specific stream read feature is enabled.
+     */
+    public boolean isEnabled(ProtobufReadFeature f) {
+        return f.enabledIn(_formatReadFeatures);
+    }
 
     /*
     /**********************************************************************
@@ -155,6 +167,7 @@ public class ProtobufFactory
         byte[] buf = ioCtxt.allocReadIOBuffer();
         return new ProtobufParser(readCtxt, ioCtxt,
                 readCtxt.getStreamReadFeatures(_streamReadFeatures),
+                readCtxt.getFormatReadFeatures(_formatReadFeatures),
                 (ProtobufSchema) readCtxt.getSchema(),
                 in, buf, 0, 0, true);
     }
@@ -167,6 +180,7 @@ public class ProtobufFactory
         _streamReadConstraints.validateDocumentLength(len);
         return new ProtobufParser(readCtxt, ioCtxt,
                 readCtxt.getStreamReadFeatures(_streamReadFeatures),
+                readCtxt.getFormatReadFeatures(_formatReadFeatures),
                 (ProtobufSchema) readCtxt.getSchema(),
                 null, data, offset, len, false);
     }
