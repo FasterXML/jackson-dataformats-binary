@@ -23,7 +23,7 @@ public class ApacheAvroDirectInputStream797Test extends AvroTestBase
     @Test
     public void testDirectInputStreamReadsRootValue() throws Exception
     {
-        AvroSchema schema = MAPPER.schemaFrom(quote("int"));
+        AvroSchema schema = MAPPER.schemaFrom(q("int"));
         byte[] doc = MAPPER.writer(schema).writeValueAsBytes(Integer.valueOf(123));
 
         try (JsonParser p = DIRECT_MAPPER.reader(schema)
@@ -37,7 +37,7 @@ public class ApacheAvroDirectInputStream797Test extends AvroTestBase
     @Test
     public void testDirectInputStreamTruncatedInputFails() throws Exception
     {
-        AvroSchema schema = MAPPER.schemaFrom(quote("int"));
+        AvroSchema schema = MAPPER.schemaFrom(q("int"));
 
         try (JsonParser p = DIRECT_MAPPER.reader(schema)
                 .createParser(new ByteArrayInputStream(new byte[] { (byte) 0x80 }))) {
@@ -50,7 +50,7 @@ public class ApacheAvroDirectInputStream797Test extends AvroTestBase
     @Test
     public void testDirectInputStreamRootSequenceEOFWithMaxDocLength() throws Exception
     {
-        AvroSchema schema = MAPPER.schemaFrom(quote("int"));
+        AvroSchema schema = MAPPER.schemaFrom(q("int"));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         try (SequenceWriter sw = MAPPER.writer(schema).writeValues(out)) {

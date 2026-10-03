@@ -77,6 +77,9 @@ public abstract class NonBlockingParserBase
     protected final static int MINOR_VALUE_BINARY_7BIT_LEN = 23;
     protected final static int MINOR_VALUE_BINARY_7BIT_BODY = 24;
 
+    // @since 2.18.12: skipping 7-bit encoded content of a value that failed validation
+    protected final static int MINOR_VALUE_SKIP_7BIT_BODY = 25;
+
     /*
     /**********************************************************************
     /* Additional parsing state
@@ -149,6 +152,9 @@ public abstract class NonBlockingParserBase
 
         _updateTokenToNull();
         _majorState = MAJOR_INITIAL;
+        // [dataformats-binary#838]: root-level scalars must be followed by
+        // root-level content, not by (required) header
+        _majorStateAfterValue = MAJOR_ROOT;
     }
 
     @Override
@@ -168,6 +174,7 @@ public abstract class NonBlockingParserBase
             _inputCopy = null;
             _ioContext.releaseReadIOBuffer(b);
         }
+        _byteArrayBuilder = null;
     }
 
     /*
@@ -316,23 +323,6 @@ public abstract class NonBlockingParserBase
     @Override
     public int getStringOffset() throws JacksonException {
         return 0;
-    }
-
-    @Override
-    public int getString(Writer w) throws JacksonException
-    {
-        if (_currToken == JsonToken.VALUE_STRING) {
-            try {
-                return _textBuffer.contentsToWriter(w);
-            } catch (IOException e) {
-                throw _wrapIOFailure(e);
-            }
-        }
-        if (_currToken == JsonToken.NOT_AVAILABLE) {
-            _reportError("Current token not available: can not call this method");
-        }
-        // otherwise default handling works fine
-        return super.getString(w);
     }
 
     /*
@@ -536,6 +526,8 @@ public abstract class NonBlockingParserBase
      * input feeder has indicated no more input will be forthcoming.
      */
     protected final JsonToken _eofAsNextToken() throws JacksonException {
+        // [dataformats-binary#831]: end-of-input "token" located at end of content
+        _tokenInputTotal = _currInputProcessed + _inputPtr;
         _majorState = MAJOR_CLOSED;
         if (!_streamReadContext.inRoot()) {
             _handleEOF();
