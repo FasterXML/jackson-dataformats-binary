@@ -48,6 +48,12 @@ No changes since 3.1
  (fix by @cowtowncoder, w/ Claude code)
 #842: (cbor) `CBORGenerator` writes wrong exponent for `BigDecimal` with scale `Integer.MIN_VALUE`
  (fix by @cowtowncoder, w/ Claude code)
+#844: (cbor) `CBORParser.getString(Writer)` writes stale text for numeric tokens,
+  NPE for binary
+ (fix by @cowtowncoder, w/ Claude code)
+#845: (avro) Avro parsers' `getString(Writer)` write wrong text for numeric tokens,
+  NPE for binary; `ApacheAvroParserImpl.getString()` returns stale text for non-String scalars
+ (fix by @cowtowncoder, w/ Claude code)
 #846: (protobuf) `ProtobufParser.getString(Writer)` writes stale text for numeric tokens,
   NPE for binary
  (fix by @cowtowncoder, w/ Claude code)
