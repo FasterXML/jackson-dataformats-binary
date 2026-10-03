@@ -1872,37 +1872,24 @@ public class CBORParser extends ParserMinimalBase
     @Override // since 2.8
     public int getText(Writer writer) throws IOException
     {
-        if (_tokenIncomplete) {
-            _finishToken();
-        }
-        JsonToken t = _currToken;
+        final JsonToken t = _currToken;
         if (t == JsonToken.VALUE_STRING) {
+            if (_tokenIncomplete) {
+                _finishToken();
+            }
             if (_sharedString == null) {
                 return _textBuffer.contentsToWriter(writer);
-            } else {
-                writer.write(_sharedString);
-                return _sharedString.length();
             }
+            writer.write(_sharedString);
+            return _sharedString.length();
         }
-        if (t == JsonToken.FIELD_NAME) {
-            String n = _streamReadContext.getCurrentName();
-            writer.write(n);
-            return n.length();
+        // Binary values have no textual representation: avoid decoding them
+        if (t == JsonToken.VALUE_EMBEDDED_OBJECT) {
+            return 0;
         }
-        if (t != null) {
-            if (t.isNumeric()) {
-                if (_sharedString == null) {
-                    return _textBuffer.contentsToWriter(writer);
-                } else {
-                    writer.write(_sharedString);
-                    return _sharedString.length();
-                }
-            }
-            char[] ch = t.asCharArray();
-            writer.write(ch);
-            return ch.length;
-        }
-        return 0;
+        // [dataformats-binary#844]: only String values are decoded into
+        // `_textBuffer`; others (numbers, names, markers) go via `getText()`
+        return super.getText(writer);
     }
 
     /*

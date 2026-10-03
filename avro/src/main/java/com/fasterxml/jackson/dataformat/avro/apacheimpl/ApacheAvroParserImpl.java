@@ -257,8 +257,9 @@ public class ApacheAvroParserImpl extends AvroParserImpl
             return _avroContext.getCurrentName();
         }
         if (_currToken != null) {
-            if (_currToken.isScalarValue()) {
-                return _textValue;
+            // [dataformats-binary#845]: `_textValue` only set for String values
+            if (_currToken.isNumeric()) {
+                return getNumberValue().toString();
             }
             return _currToken.asString();
         }
@@ -268,25 +269,19 @@ public class ApacheAvroParserImpl extends AvroParserImpl
     @Override // since 2.8
     public int getText(Writer writer) throws IOException
     {
-        JsonToken t = _currToken;
-        if (t == JsonToken.VALUE_STRING) {
+        if (_currToken == JsonToken.VALUE_STRING) {
             writer.write(_textValue);
             return _textValue.length();
         }
-        if (t == JsonToken.FIELD_NAME) {
-            String n = _parsingContext.getCurrentName();
-            writer.write(n);
-            return n.length();
+        // [dataformats-binary#845]: only String values are held as-is;
+        // others (numbers, names, markers) go via `getText()`
+        // (binary values have no textual representation: nothing written)
+        String str = getText();
+        if (str == null) {
+            return 0;
         }
-        if (t != null) {
-            if (t.isNumeric()) {
-                return _textBuffer.contentsToWriter(writer);
-            }
-            char[] ch = t.asCharArray();
-            writer.write(ch);
-            return ch.length;
-        }
-        return 0;
+        writer.write(str);
+        return str.length();
     }
 
     /*
