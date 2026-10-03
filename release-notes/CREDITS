@@ -82,6 +82,8 @@ PJ Fanning (@pjfanning)
 * Contributed #781: (smile) `SmileGenerator.writeNumber(String)` should validate
   number length against configured `StreamReadConstraints`, not global defaults
  (3.3.0)
+* Fixed #816: (avro) `UnionReader.nextToken()` does not validate union index
+ (3.1.8)
 * Contributed #823: (cbor) `maxStringLength` not consistently checked for chunked
   (indefinite-length) text values
  (3.3.0)

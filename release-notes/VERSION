@@ -58,6 +58,9 @@ implementations)
 #797: (avro) Apache decoder fails with `UnsupportedOperationException` when
   `AvroReadFeature.AVRO_BUFFERING` disabled
  (contributed by @Dongnyoung)
+#816: (avro) `UnionReader.nextToken()` does not validate union index, throws
+  `ArrayIndexOutOfBoundsException` for out-of-range values
+ (fix by @pjfanning, w/ Claude code)
 #817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
  (fix by @pjfanning, w/ Claude code)
 #819: (avro) `bytes` value allocated to declared length before checking available content
@@ -164,6 +167,9 @@ No changes since 3.2.0
 #797: (avro) Apache decoder fails with `UnsupportedOperationException` when
   `AvroReadFeature.AVRO_BUFFERING` disabled
  (contributed by @Dongnyoung)
+#816: (avro) `UnionReader.nextToken()` does not validate union index, throws
+  `ArrayIndexOutOfBoundsException` for out-of-range values
+ (fix by @pjfanning, w/ Claude code)
 #817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
  (fix by @pjfanning, w/ Claude code)
 #819: (avro) `bytes` value allocated to declared length before checking available content

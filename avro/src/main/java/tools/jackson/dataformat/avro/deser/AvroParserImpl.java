@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import tools.jackson.core.*;
+import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.core.io.IOContext;
 import tools.jackson.core.sym.PropertyNameMatcher;
 import tools.jackson.dataformat.avro.AvroParser;
@@ -626,6 +627,20 @@ public abstract class AvroParserImpl
     public abstract void skipBoolean() throws IOException;
     public abstract int decodeIndex() throws IOException;
     public abstract int decodeEnum() throws IOException;
+
+    // Called when index returned by `decodeIndex()` is out of range for the union:
+    // clears the stored (invalid) index and returns exception to throw
+    final StreamReadException _invalidBranchIndex(String msg) {
+        _branchIndex = -1;
+        return _constructReadException(msg);
+    }
+
+    // Called when index returned by `decodeEnum()` is out of range for the enum:
+    // clears the stored (invalid) index and returns exception to throw
+    final StreamReadException _invalidEnumIndex(String msg) {
+        _enumIndex = -1;
+        return _constructReadException(msg);
+    }
 
     /*
     /**********************************************************************
