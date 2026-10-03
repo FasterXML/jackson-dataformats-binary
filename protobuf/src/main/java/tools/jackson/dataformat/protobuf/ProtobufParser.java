@@ -2548,7 +2548,8 @@ public class ProtobufParser extends ParserMinimalBase
         }
         _textBuffer.setCurrentLength(outPtr);
         // [dataformats-binary#824]: `TextBuffer` only validates length when
-        //   finishing a segment, so need to check if all content fit in one
+        //   finishing a segment or building a `String`/`char[]`, but not for
+        //   `getTextBuffer()`, `size()` or `contentsToWriter()`, so check here
         if (!isName) {
             _streamReadConstraints.validateStringLength(_textBuffer.size());
         }
