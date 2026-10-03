@@ -101,6 +101,8 @@ No changes since 2.21
 #817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
   [CVE-2026-104016][CVE-2026-104017]
  (fix by @pjfanning, w/ Claude code)
+#818: (ion) Report corrupt content for String/Symbol value without text
+ (fix by @pjfanning, w/ Claude code)
 #819: (avro) `bytes` value allocated to declared length before checking available content
   [CVE-2026-104015]
  (fix by @pjfanning, w/ Claude code)
