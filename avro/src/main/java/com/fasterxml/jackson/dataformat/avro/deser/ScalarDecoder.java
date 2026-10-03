@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaHelper;
 
@@ -373,18 +374,18 @@ public abstract class ScalarDecoder
 
         @Override
         protected JsonToken decodeValue(AvroParserImpl parser) throws IOException {
-            return _checkIndex(parser.decodeIndex()).decodeValue(parser);
+            return _checkIndex(parser, parser.decodeIndex()).decodeValue(parser);
         }
 
         @Override
         protected void skipValue(AvroParserImpl parser) throws IOException
         {
-            _checkIndex(parser.decodeIndex()).skipValue(parser);
+            _checkIndex(parser, parser.decodeIndex()).skipValue(parser);
         }
 
-        private ScalarDecoder _checkIndex(int index) throws IOException {
+        private ScalarDecoder _checkIndex(AvroParserImpl parser, int index) throws IOException {
             if (index < 0 || index >= _readers.length) {
-                throw new IOException(String.format(
+                throw new JsonParseException(parser, String.format(
                         "Invalid Union index (%s); union only has %d types", index, _readers.length));
             }
             return _readers[index];
@@ -410,17 +411,17 @@ public abstract class ScalarDecoder
 
             @Override
             public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException {
-                return _checkIndex(parser.decodeIndex()).decodeValue(parser);
+                return _checkIndex(parser, parser.decodeIndex()).decodeValue(parser);
             }
 
             @Override
             public void skipValue(AvroParserImpl parser) throws IOException {
-                _checkIndex(parser.decodeIndex()).skipValue(parser);
+                _checkIndex(parser, parser.decodeIndex()).skipValue(parser);
             }
 
-            private ScalarDecoder _checkIndex(int index) throws IOException {
+            private ScalarDecoder _checkIndex(AvroParserImpl parser, int index) throws IOException {
                 if (index < 0 || index >= _readers.length) {
-                    throw new IOException(String.format(
+                    throw new JsonParseException(parser, String.format(
                             "Invalid Union index (%s); union only has %d types", index, _readers.length));
                 }
                 return _readers[index];
@@ -441,17 +442,17 @@ public abstract class ScalarDecoder
 
         @Override
         public JsonToken decodeValue(AvroParserImpl parser) throws IOException {
-            return parser.setString(_checkIndex(parser.decodeEnum()));
+            return parser.setString(_checkIndex(parser, parser.decodeEnum()));
         }
 
         @Override
         protected void skipValue(AvroParserImpl parser) throws IOException {
-            _checkIndex(parser.decodeEnum());
+            _checkIndex(parser, parser.decodeEnum());
         }
 
-        private final String _checkIndex(int index) throws IOException {
+        private final String _checkIndex(AvroParserImpl parser, int index) throws IOException {
             if (index < 0 || index >= _values.length) {
-                throw new IOException(String.format(
+                throw new JsonParseException(parser, String.format(
                         "Invalid Enum index (%s); enum '%s' only has %d types",
                         index, _name, _values.length));
             }
@@ -478,17 +479,17 @@ public abstract class ScalarDecoder
 
             @Override
             public JsonToken readValue(AvroReadContext parent, AvroParserImpl parser) throws IOException {
-                return parser.setString(_checkIndex(parser.decodeEnum()));
+                return parser.setString(_checkIndex(parser, parser.decodeEnum()));
             }
 
             @Override
             public void skipValue(AvroParserImpl parser) throws IOException {
-                _checkIndex(parser.decodeEnum());
+                _checkIndex(parser, parser.decodeEnum());
             }
 
-            private final String _checkIndex(int index) throws IOException {
+            private final String _checkIndex(AvroParserImpl parser, int index) throws IOException {
                 if (index < 0 || index >= _values.length) {
-                    throw new IOException(String.format(
+                    throw new JsonParseException(parser, String.format(
                             "Invalid Enum index (%s); enum '%s' only has %d types",
                             index, _name, _values.length));
                 }
