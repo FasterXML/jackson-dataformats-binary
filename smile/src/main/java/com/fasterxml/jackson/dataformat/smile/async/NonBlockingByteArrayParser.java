@@ -61,6 +61,15 @@ public class NonBlockingByteArrayParser
      */
 
     /**
+     * State of header decoding (see {@link #_finishHeader}) when a collapsed
+     * in-line header has been fully decoded, but the following byte has not yet
+     * been seen.
+     *
+     * @since 2.23
+     */
+    private final static int HEADER_STATE_AFTER_INLINE = 3;
+
+    /**
      * Flag set when an in-line header is encountered right after a `null` token
      * (end marker, or another header): if so, header is not reported as a separate
      * `null` token (same as with blocking parser).
@@ -432,7 +441,7 @@ public class NonBlockingByteArrayParser
     // [dataformats-binary#838]: collapsed in-line header fully decoded,
     // only waiting to see the following byte
     private final boolean _inlineHeaderCompleted() {
-        return (_minorState == MINOR_HEADER_INLINE) && (_pending32 == 3);
+        return (_minorState == MINOR_HEADER_INLINE) && (_pending32 == HEADER_STATE_AFTER_INLINE);
     }
 
     /*
@@ -513,7 +522,7 @@ public class NonBlockingByteArrayParser
                 // to avoid deep recursion for long sequences of headers, only recurse
                 // if next byte is not another header (same as blocking parser):
                 // so need to see that byte first
-                state = 3;
+                state = HEADER_STATE_AFTER_INLINE;
             } else {
                 // [dataformats-binary#831]: if no more content available, token location
                 // should still point to after the header (recursive call will update
@@ -523,7 +532,7 @@ public class NonBlockingByteArrayParser
                 return nextToken();
             }
             // fall through
-        case 3: // [dataformats-binary#838]: collapsed in-line header, check next byte
+        case HEADER_STATE_AFTER_INLINE: // [dataformats-binary#838]: check next byte
             if (_inputPtr >= _inputEnd) {
                 _pending32 = state;
                 return _updateTokenToNA();
