@@ -37,6 +37,9 @@ No changes since 2.22
 #833: (smile) Non-blocking `_decodeShortUnicodeText()` reads past declared String length
   on truncated UTF-8 sequence
  (fix by @cowtowncoder, w/ Claude code)
+#852: (avro) `skipMap()` / `skipArray()` on `Decoder` passed to `@AvroEncode` `CustomEncoding`
+  misreads data
+ (fix by @cowtowncoder, w/ Claude code)
 
 2.22.3 (21-Sep-2026)
 
@@ -113,6 +116,9 @@ No changes since 2.21
  (fix by @cowtowncoder, w/ Claude code)
 #833: (smile) Non-blocking `_decodeShortUnicodeText()` reads past declared String length
   on truncated UTF-8 sequence
+ (fix by @cowtowncoder, w/ Claude code)
+#852: (avro) `skipMap()` / `skipArray()` on `Decoder` passed to `@AvroEncode` `CustomEncoding`
+  misreads data
  (fix by @cowtowncoder, w/ Claude code)
 
 2.21.7 (21-Sep-2026)
