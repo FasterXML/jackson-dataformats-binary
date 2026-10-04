@@ -146,6 +146,7 @@ public abstract class MapReader extends AvroStructureReader
                 // more stuff?
                 if (_count > 0L) {
                     _index = 0;
+                    _state = STATE_VALUE;
                     _currentName = _parser.decodeMapKey();
                     return (_currToken = JsonToken.FIELD_NAME);
                 }
@@ -225,6 +226,7 @@ public abstract class MapReader extends AvroStructureReader
                 // more stuff?
                 if (_count > 0L) {
                     _index = 0;
+                    _state = STATE_VALUE;
                     _currentName = _parser.decodeMapKey();
                     return (_currToken = JsonToken.FIELD_NAME);
                 }
