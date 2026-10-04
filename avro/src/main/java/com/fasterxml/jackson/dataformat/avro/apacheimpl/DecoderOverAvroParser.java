@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro.apacheimpl;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -169,7 +170,9 @@ public class DecoderOverAvroParser extends Decoder {
     @Override
     public int readEnum() throws IOException {
         nextValue();
-        return _parser.enumIndex();
+        int index = _parser.enumIndex();
+        _parser.clearCurrentToken();
+        return index;
     }
 
     @Override
@@ -228,6 +231,9 @@ public class DecoderOverAvroParser extends Decoder {
         JsonToken t = _parser.currentToken();
         if (t == null) {
             t = _parser.nextToken();
+            if (t == null) {
+                throw new EOFException("Unexpected end-of-input within Array or Map");
+            }
         }
         if (t == endToken) {
             _parser.clearCurrentToken();

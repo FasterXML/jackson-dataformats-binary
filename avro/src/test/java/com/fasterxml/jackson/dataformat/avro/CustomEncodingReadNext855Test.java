@@ -86,6 +86,38 @@ public class CustomEncodingReadNext855Test extends AvroTestBase
         }
     }
 
+    // Enum values (as indexes), to verify `readEnum()` consumes the value
+    public static class ReadEnumArrayEncoding extends CustomEncoding<List<Integer>> {
+        public ReadEnumArrayEncoding() {
+            schema = SchemaBuilder.array().items().enumeration("Color")
+                    .symbols("RED", "GREEN", "BLUE");
+        }
+
+        @Override
+        protected void write(Object datum, Encoder out) throws IOException {
+            @SuppressWarnings("unchecked")
+            List<Integer> list = (List<Integer>) datum;
+            out.writeArrayStart();
+            out.setItemCount(list.size());
+            for (Integer value : list) {
+                out.startItem();
+                out.writeEnum(value);
+            }
+            out.writeArrayEnd();
+        }
+
+        @Override
+        protected List<Integer> read(Object reuse, Decoder in) throws IOException {
+            List<Integer> list = new ArrayList<>();
+            for (long n = in.readArrayStart(); n > 0; n = in.arrayNext()) {
+                for (long i = 0; i < n; ++i) {
+                    list.add(in.readEnum());
+                }
+            }
+            return list;
+        }
+    }
+
     // Value surrounded by other fields, to verify exactly the value is read
     @JsonPropertyOrder({ "before", "value", "after" })
     public static abstract class Wrapper {
@@ -107,6 +139,14 @@ public class CustomEncodingReadNext855Test extends AvroTestBase
     public static class IntMapWrapper extends Wrapper {
         @AvroEncode(using = ReadIntMapEncoding.class)
         public Map<String, Integer> value;
+
+        @Override
+        Object value() { return value; }
+    }
+
+    public static class EnumArrayWrapper extends Wrapper {
+        @AvroEncode(using = ReadEnumArrayEncoding.class)
+        public List<Integer> value;
 
         @Override
         Object value() { return value; }
@@ -139,6 +179,15 @@ public class CustomEncodingReadNext855Test extends AvroTestBase
         _testRead(w);
     }
 
+    @Test
+    public void testReadEnumArray() throws Exception {
+        EnumArrayWrapper w = new EnumArrayWrapper();
+        w.value = Arrays.asList(2, 0, 1, 1);
+        _testRead(w);
+        w.value = Collections.emptyList();
+        _testRead(w);
+    }
+
     /*
     /**********************************************************************
     /* Tests, data written in multiple blocks by Apache Avro
@@ -148,13 +197,13 @@ public class CustomEncodingReadNext855Test extends AvroTestBase
     @Test
     public void testReadBlockedIntArray() throws Exception {
         List<Integer> list = _intList(100);
-        _testReadBlocked(IntArrayWrapper.class, list, list);
+        _testReadBlocked(IntArrayWrapper.class, list);
     }
 
     @Test
     public void testReadBlockedIntMap() throws Exception {
         Map<String, Integer> map = _intMap(40);
-        _testReadBlocked(IntMapWrapper.class, map, map);
+        _testReadBlocked(IntMapWrapper.class, map);
     }
 
     /*
@@ -190,8 +239,8 @@ public class CustomEncodingReadNext855Test extends AvroTestBase
         }
     }
 
-    private void _testReadBlocked(Class<? extends Wrapper> type, Object value,
-            Object expected) throws Exception
+    private void _testReadBlocked(Class<? extends Wrapper> type, Object value)
+        throws Exception
     {
         for (AvroMapper mapper : new AvroMapper[] { NATIVE_MAPPER, APACHE_MAPPER }) {
             AvroSchema schema = mapper.schemaFor(type);
@@ -212,7 +261,7 @@ public class CustomEncodingReadNext855Test extends AvroTestBase
             assertEquals(3, dec.readInt());
             assertTrue(dec.readLong() < 0L);
 
-            _verifyRead(mapper, type, schema, avro, expected);
+            _verifyRead(mapper, type, schema, avro, value);
         }
     }
 
