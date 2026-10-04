@@ -104,28 +104,38 @@ public class CustomEncodingSkip852Test extends AvroTestBase
         }
     }
 
+    // Skipped value surrounded by other fields, to verify exactly the value is skipped
     @JsonPropertyOrder({ "before", "value", "after" })
-    public static class IntMapWrapper {
+    public static abstract class Wrapper {
         public int before;
+        public int after;
+
+        // not a getter, so not a property
+        abstract Object value();
+    }
+
+    public static class IntMapWrapper extends Wrapper {
         @AvroEncode(using = SkipIntMapEncoding.class)
         public Map<String, Integer> value;
-        public int after;
+
+        @Override
+        Object value() { return value; }
     }
 
-    @JsonPropertyOrder({ "before", "value", "after" })
-    public static class IntArrayWrapper {
-        public int before;
+    public static class IntArrayWrapper extends Wrapper {
         @AvroEncode(using = SkipIntArrayEncoding.class)
         public List<Integer> value;
-        public int after;
+
+        @Override
+        Object value() { return value; }
     }
 
-    @JsonPropertyOrder({ "before", "value", "after" })
-    public static class PointMapWrapper {
-        public int before;
+    public static class PointMapWrapper extends Wrapper {
         @AvroEncode(using = SkipPointMapEncoding.class)
         public Map<String, int[]> value;
-        public int after;
+
+        @Override
+        Object value() { return value; }
     }
 
     private final AvroMapper NATIVE_MAPPER = new AvroMapper(AvroFactory.builderWithNativeDecoder().build());
@@ -209,7 +219,7 @@ public class CustomEncodingSkip852Test extends AvroTestBase
         return w;
     }
 
-    private void _testSkip(Class<?> type, Object input) throws Exception
+    private void _testSkip(Class<? extends Wrapper> type, Wrapper input) throws Exception
     {
         for (AvroMapper mapper : new AvroMapper[] { NATIVE_MAPPER, APACHE_MAPPER }) {
             AvroSchema schema = mapper.schemaFor(type);
@@ -218,7 +228,7 @@ public class CustomEncodingSkip852Test extends AvroTestBase
         }
     }
 
-    private void _testSkipBlocked(Class<?> type, Object value) throws Exception
+    private void _testSkipBlocked(Class<? extends Wrapper> type, Object value) throws Exception
     {
         for (AvroMapper mapper : new AvroMapper[] { NATIVE_MAPPER, APACHE_MAPPER }) {
             AvroSchema schema = mapper.schemaFor(type);
@@ -243,25 +253,14 @@ public class CustomEncodingSkip852Test extends AvroTestBase
         }
     }
 
-    private void _verifySkip(AvroMapper mapper, Class<?> type, AvroSchema schema, byte[] avro)
+    private void _verifySkip(AvroMapper mapper, Class<? extends Wrapper> type,
+            AvroSchema schema, byte[] avro)
         throws Exception
     {
-        Object result = mapper.readerFor(type).with(schema).readValue(avro);
-        if (result instanceof IntMapWrapper) {
-            IntMapWrapper w = (IntMapWrapper) result;
-            assertEquals(3, w.before);
-            assertNull(w.value);
-            assertEquals(7, w.after);
-        } else if (result instanceof IntArrayWrapper) {
-            IntArrayWrapper w = (IntArrayWrapper) result;
-            assertEquals(3, w.before);
-            assertNull(w.value);
-            assertEquals(7, w.after);
-        } else {
-            PointMapWrapper w = (PointMapWrapper) result;
-            assertEquals(3, w.before);
-            assertNull(w.value);
-            assertEquals(7, w.after);
-        }
+        Wrapper result = mapper.readerFor(type).with(schema).readValue(avro);
+        assertNotNull(result);
+        assertEquals(3, result.before);
+        assertNull(result.value());
+        assertEquals(7, result.after);
     }
 }

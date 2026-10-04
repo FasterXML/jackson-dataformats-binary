@@ -4,6 +4,13 @@ import java.io.ByteArrayOutputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericDatumWriter;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.io.BinaryEncoder;
+import org.apache.avro.io.DecoderFactory;
+import org.apache.avro.io.EncoderFactory;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.*;
@@ -209,5 +216,114 @@ public class MapTest extends AvroTestBase
             map.put(stuff[i], stuff[i+1]);
         }
         return map;
+    }
+
+    /*
+    /**********************************************************************
+    /* Maps written in multiple blocks (by Apache Avro blocking encoder)
+    /**********************************************************************
+     */
+
+    static class Point {
+        public int x, y;
+    }
+
+    static class IntMapWrapper {
+        public Map<String, Integer> map;
+        public int after;
+    }
+
+    static class PointMapWrapper {
+        public Map<String, Point> map;
+        public int after;
+    }
+
+    private final static String INT_MAP_WRAPPER_SCHEMA_JSON = aposToQuotes("{"
+            + "'type':'record','name':'Wrapper','fields':["
+            + "{'name':'map','type':{'type':'map','values':'int'}},"
+            + "{'name':'after','type':'int'}"
+            + "]}");
+
+    private final static String POINT_MAP_WRAPPER_SCHEMA_JSON = aposToQuotes("{"
+            + "'type':'record','name':'Wrapper','fields':["
+            + "{'name':'map','type':{'type':'map','values':"
+            + "{'type':'record','name':'Point','fields':["
+            + "{'name':'x','type':'int'},{'name':'y','type':'int'}]}}},"
+            + "{'name':'after','type':'int'}"
+            + "]}");
+
+    // Second and later blocks of a Map must be read correctly, for Maps
+    // with scalar values
+    @Test
+    public void testMultiBlockIntMap() throws Exception
+    {
+        Schema schema = new Schema.Parser().parse(INT_MAP_WRAPPER_SCHEMA_JSON);
+        Map<String, Object> map = new LinkedHashMap<>();
+        for (int i = 0; i < 40; ++i) {
+            map.put("key" + i, i);
+        }
+        byte[] avro = _writeBlocked(schema, map);
+
+        for (AvroMapper mapper : _mappers()) {
+            IntMapWrapper result = mapper.readerFor(IntMapWrapper.class)
+                    .with(mapper.schemaFrom(INT_MAP_WRAPPER_SCHEMA_JSON))
+                    .readValue(avro);
+            assertEquals(map, result.map);
+            assertEquals(7, result.after);
+        }
+    }
+
+    // ... as well as non-scalar (Record) values
+    @Test
+    public void testMultiBlockRecordMap() throws Exception
+    {
+        Schema schema = new Schema.Parser().parse(POINT_MAP_WRAPPER_SCHEMA_JSON);
+        Schema pointSchema = schema.getField("map").schema().getValueType();
+        Map<String, Object> map = new LinkedHashMap<>();
+        for (int i = 0; i < 40; ++i) {
+            GenericRecord point = new GenericData.Record(pointSchema);
+            point.put("x", i);
+            point.put("y", -i);
+            map.put("key" + i, point);
+        }
+        byte[] avro = _writeBlocked(schema, map);
+
+        for (AvroMapper mapper : _mappers()) {
+            PointMapWrapper result = mapper.readerFor(PointMapWrapper.class)
+                    .with(mapper.schemaFrom(POINT_MAP_WRAPPER_SCHEMA_JSON))
+                    .readValue(avro);
+            assertEquals(40, result.map.size());
+            for (int i = 0; i < 40; ++i) {
+                Point p = result.map.get("key" + i);
+                assertEquals(i, p.x);
+                assertEquals(-i, p.y);
+            }
+            assertEquals(7, result.after);
+        }
+    }
+
+    private static AvroMapper[] _mappers() {
+        return new AvroMapper[] {
+                new AvroMapper(AvroFactory.builderWithNativeDecoder().build()),
+                new AvroMapper(AvroFactory.builderWithApacheDecoder().build())
+        };
+    }
+
+    // Writes Record with given Map (and "after" of 7) in multiple small blocks
+    private static byte[] _writeBlocked(Schema schema, Map<String, Object> map) throws Exception
+    {
+        GenericRecord record = new GenericData.Record(schema);
+        record.put("map", map);
+        record.put("after", 7);
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        BinaryEncoder enc = new EncoderFactory().configureBlockSize(64)
+                .blockingBinaryEncoder(bytes, null);
+        new GenericDatumWriter<GenericRecord>(schema).write(record, enc);
+        enc.flush();
+        byte[] avro = bytes.toByteArray();
+        // sanity check: first block must have negative count (followed by byte size),
+        // which (with block size of 64) means there are multiple blocks
+        assertTrue(DecoderFactory.get().binaryDecoder(avro, null).readLong() < 0L);
+        return avro;
     }
 }

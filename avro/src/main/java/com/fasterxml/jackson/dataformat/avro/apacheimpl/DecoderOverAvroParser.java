@@ -211,6 +211,8 @@ public class DecoderOverAvroParser extends Decoder {
      * NOTE: can not use {@link AvroParserImpl#skipValue()}, as by the time start marker
      * has been returned, the reader has already consumed the first block count, and
      * {@code skipValue()} would try to read it again.
+     * Instead the remaining contents are read (and discarded) token by token: this decodes
+     * all keys and values, so it is no cheaper than reading the value.
      *
      * @since 2.21.8
      */
@@ -219,8 +221,8 @@ public class DecoderOverAvroParser extends Decoder {
         if (token != startToken) {
             throw new IllegalArgumentException("Expected " + startToken + ", got: " + token);
         }
-        // Lets currently open reader skip the rest, block by block, up to and including
-        // matching end marker; and then clear that so it is not seen as the next value
+        // Read through the rest using currently open reader, up to and including matching
+        // end marker; and then clear that so it is not seen as the next value
         _parser.skipChildren();
         _parser.clearCurrentToken();
     }
