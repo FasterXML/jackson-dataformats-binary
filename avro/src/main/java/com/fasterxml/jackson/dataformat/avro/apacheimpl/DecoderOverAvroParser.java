@@ -175,12 +175,17 @@ public class DecoderOverAvroParser extends Decoder {
     @Override
     public long readArrayStart() throws IOException {
         consumeToken(JsonToken.START_ARRAY);
-        return _parser.getRemainingElements();
+        long count = _parser.getRemainingElements();
+        if (count > 0L) {
+            return count;
+        }
+        return _hasMoreElements(JsonToken.END_ARRAY) ? 1L : 0L;
     }
 
     @Override
     public long arrayNext() throws IOException {
-        return _parser.getRemainingElements();
+        // NOTE: block counts not exposed; one element reported at a time
+        return _hasMoreElements(JsonToken.END_ARRAY) ? 1L : 0L;
     }
 
     @Override
@@ -192,18 +197,43 @@ public class DecoderOverAvroParser extends Decoder {
     @Override
     public long readMapStart() throws IOException {
         consumeToken(JsonToken.START_OBJECT);
-        return _parser.getRemainingElements();
+        long count = _parser.getRemainingElements();
+        if (count > 0L) {
+            return count;
+        }
+        return _hasMoreElements(JsonToken.END_OBJECT) ? 1L : 0L;
     }
 
     @Override
     public long mapNext() throws IOException {
-        return _parser.getRemainingElements();
+        // NOTE: block counts not exposed; one element reported at a time
+        return _hasMoreElements(JsonToken.END_OBJECT) ? 1L : 0L;
     }
 
     @Override
     public long skipMap() throws IOException {
         _skipStructure(JsonToken.START_OBJECT);
         return 0;
+    }
+
+    /**
+     * Helper method for checking whether there are more elements in the current
+     * Array or Map: if so, the next token is left as the current token (to be
+     * returned by the next {@code readXxx()} call); if not, the end marker is
+     * consumed.
+     */
+    private boolean _hasMoreElements(JsonToken endToken) throws IOException {
+        // [dataformats-binary#855]: must read the next block (if any), or consume end marker
+        // (note: can not use `nextValue()` as it skips END_ARRAY)
+        JsonToken t = _parser.currentToken();
+        if (t == null) {
+            t = _parser.nextToken();
+        }
+        if (t == endToken) {
+            _parser.clearCurrentToken();
+            return false;
+        }
+        return true;
     }
 
     /**
