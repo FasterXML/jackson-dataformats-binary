@@ -47,6 +47,9 @@ Active maintainers:
 
 2.22.4 (not yet released)
 
+#816: (avro) `UnionReader.nextToken()` does not validate union index, throws
+  `ArrayIndexOutOfBoundsException` for out-of-range values
+ (fix by @pjfanning, w/ Claude code)
 #817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
   [CVE-2026-104016][CVE-2026-104017]
  (fix by @pjfanning, w/ Claude code)
@@ -60,6 +63,9 @@ Active maintainers:
  (fix by @cowtowncoder, w/ Claude code)
 #833: (smile) Non-blocking `_decodeShortUnicodeText()` reads past declared String length
   on truncated UTF-8 sequence
+ (fix by @cowtowncoder, w/ Claude code)
+#852: (avro) `skipMap()` / `skipArray()` on `Decoder` passed to `@AvroEncode` `CustomEncoding`
+  misreads data
  (fix by @cowtowncoder, w/ Claude code)
 
 2.22.3 (21-Sep-2026)
@@ -119,8 +125,13 @@ No changes since 2.21
 
 2.21.8 (not yet released)
 
+#816: (avro) `UnionReader.nextToken()` does not validate union index, throws
+  `ArrayIndexOutOfBoundsException` for out-of-range values
+ (fix by @pjfanning, w/ Claude code)
 #817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
   [CVE-2026-104016][CVE-2026-104017]
+ (fix by @pjfanning, w/ Claude code)
+#818: (ion) Report corrupt content for String/Symbol value without text
  (fix by @pjfanning, w/ Claude code)
 #819: (avro) `bytes` value allocated to declared length before checking available content
   [CVE-2026-104015]
@@ -132,6 +143,9 @@ No changes since 2.21
  (fix by @cowtowncoder, w/ Claude code)
 #833: (smile) Non-blocking `_decodeShortUnicodeText()` reads past declared String length
   on truncated UTF-8 sequence
+ (fix by @cowtowncoder, w/ Claude code)
+#852: (avro) `skipMap()` / `skipArray()` on `Decoder` passed to `@AvroEncode` `CustomEncoding`
+  misreads data
  (fix by @cowtowncoder, w/ Claude code)
 
 2.21.7 (21-Sep-2026)

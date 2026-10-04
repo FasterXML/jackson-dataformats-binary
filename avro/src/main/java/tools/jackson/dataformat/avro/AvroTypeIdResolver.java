@@ -44,18 +44,16 @@ public class AvroTypeIdResolver extends ClassNameIdResolver
         if (subType != null) {
             id = _idFrom(ctxt, null, subType);
         }
-        return super._typeFromId(ctxt, id);
-
-        // 26-Nov-2019, tatu: Should not swallow exceptions; with 2.10+ we can get
-        //    "Illegal subtype" accidentally and that should be propagated
-/*
-        try {
-            return super._typeFromId(ctxt, id);
-        } catch (InvalidTypeIdException | IllegalArgumentException e) {
-            // AvroTypeDeserializer expects null if we can't map the type ID to a class; It will throw an appropriate error if we can't
-            // find a usable type.
+        // [dataformats-binary#812]: Avro record names need not be Java class names
+        //   (non-Java writer, changed namespace); for those return `null` and let
+        //   `AvroTypeDeserializer` decide: `super._typeFromId()` would instead call
+        //   `handleUnknownTypeId()`, which throws. Other failures ("Illegal subtype",
+        //   PTV denial, not-a-subtype) still propagate.
+        if (ctxt.resolveAndValidateSubType(_baseType, id, _subTypeValidator) == null) {
             return null;
         }
-*/
+        // Class exists: let `super` resolve it, with all its checks (like
+        // `DeserializationFeature.FAIL_ON_SUBTYPE_CLASS_NOT_REGISTERED`)
+        return super._typeFromId(ctxt, id);
     }
 }

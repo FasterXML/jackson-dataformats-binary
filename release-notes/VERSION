@@ -47,6 +47,9 @@ implementations)
 #781: (smile) `SmileGenerator.writeNumber(String)` should validate number length
   against configured `StreamReadConstraints`, not global defaults
  (contributed by @pjfanning)
+#812: (avro) Deserializing as `Object` fails with `InvalidTypeIdException` for
+  unresolvable type id
+ (fix by @cowtowncoder, w/ Claude code)
 #823: (cbor) `maxStringLength` not consistently checked for chunked
   (indefinite-length) text values
  (fix by @pjfanning, w/ Claude code)
@@ -58,7 +61,12 @@ implementations)
 #797: (avro) Apache decoder fails with `UnsupportedOperationException` when
   `AvroReadFeature.AVRO_BUFFERING` disabled
  (contributed by @Dongnyoung)
+#816: (avro) `UnionReader.nextToken()` does not validate union index, throws
+  `ArrayIndexOutOfBoundsException` for out-of-range values
+ (fix by @pjfanning, w/ Claude code)
 #817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
+ (fix by @pjfanning, w/ Claude code)
+#818: (ion) Report corrupt content for String/Symbol value without text
  (fix by @pjfanning, w/ Claude code)
 #819: (avro) `bytes` value allocated to declared length before checking available content
   [CVE-2026-104015]
@@ -91,6 +99,9 @@ implementations)
  (fix by @cowtowncoder, w/ Claude code)
 #846: (protobuf) `ProtobufParser.getString(Writer)` writes stale text for numeric tokens,
   NPE for binary
+ (fix by @cowtowncoder, w/ Claude code)
+#852: (avro) `skipMap()` / `skipArray()` on `Decoder` passed to `@AvroEncode` `CustomEncoding`
+  misreads data
  (fix by @cowtowncoder, w/ Claude code)
 
 3.2.3 (21-Sep-2026)
@@ -164,7 +175,12 @@ No changes since 3.2.0
 #797: (avro) Apache decoder fails with `UnsupportedOperationException` when
   `AvroReadFeature.AVRO_BUFFERING` disabled
  (contributed by @Dongnyoung)
+#816: (avro) `UnionReader.nextToken()` does not validate union index, throws
+  `ArrayIndexOutOfBoundsException` for out-of-range values
+ (fix by @pjfanning, w/ Claude code)
 #817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
+ (fix by @pjfanning, w/ Claude code)
+#818: (ion) Report corrupt content for String/Symbol value without text
  (fix by @pjfanning, w/ Claude code)
 #819: (avro) `bytes` value allocated to declared length before checking available content
   [CVE-2026-104015]
@@ -197,6 +213,9 @@ No changes since 3.2.0
  (fix by @cowtowncoder, w/ Claude code)
 #846: (protobuf) `ProtobufParser.getString(Writer)` writes stale text for numeric tokens,
   NPE for binary
+ (fix by @cowtowncoder, w/ Claude code)
+#852: (avro) `skipMap()` / `skipArray()` on `Decoder` passed to `@AvroEncode` `CustomEncoding`
+  misreads data
  (fix by @cowtowncoder, w/ Claude code)
 
 3.1.7 (21-Sep-2026)
