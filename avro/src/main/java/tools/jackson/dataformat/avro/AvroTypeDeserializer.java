@@ -65,12 +65,12 @@ public class AvroTypeDeserializer extends TypeDeserializerBase
     protected JavaType _handleUnknownTypeId(DeserializationContext ctxt, String typeId)
         throws JacksonException
     {
-        // 29-Jan-2018, tatu: No idea why this was added in 2.x.
-        /*
-        if (ctxt.hasValueDeserializerFor(_baseType, null)) {
+        // [dataformats-binary#812]: for "untyped" (`java.lang.Object`) values, read
+        //   record with unresolvable type id as "natural" type (`Map`), as 2.x does.
+        //   Not for other (`@Union`) base types: likely abstract, so it would just fail later
+        if (_baseType.isJavaLangObject()) {
             return _baseType;
         }
-        */
         return super._handleUnknownTypeId(ctxt, typeId);
     }
 }

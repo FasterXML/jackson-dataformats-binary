@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import tools.jackson.databind.DatabindContext;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.jsontype.NamedType;
 import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
@@ -44,18 +46,17 @@ public class AvroTypeIdResolver extends ClassNameIdResolver
         if (subType != null) {
             id = _idFrom(ctxt, null, subType);
         }
-        return super._typeFromId(ctxt, id);
-
-        // 26-Nov-2019, tatu: Should not swallow exceptions; with 2.10+ we can get
-        //    "Illegal subtype" accidentally and that should be propagated
-/*
-        try {
-            return super._typeFromId(ctxt, id);
-        } catch (InvalidTypeIdException | IllegalArgumentException e) {
-            // AvroTypeDeserializer expects null if we can't map the type ID to a class; It will throw an appropriate error if we can't
-            // find a usable type.
-            return null;
+        // [dataformats-binary#812]: Avro record names need not be Java class names
+        //   (non-Java writer, changed namespace); for those return `null` and let
+        //   `AvroTypeDeserializer` decide. Unlike `super._typeFromId()`, does NOT call
+        //   `handleUnknownTypeId()` here, which would throw. Other failures
+        //   ("Illegal subtype", PTV denial, not-a-subtype) still propagate.
+        if (ctxt instanceof DeserializationContext dctxt
+                && dctxt.isEnabled(DeserializationFeature.FAIL_ON_SUBTYPE_CLASS_NOT_REGISTERED)
+                && !_allowedSubtypes.contains(id)) {
+            throw dctxt.invalidTypeIdException(_baseType, id,
+"`DeserializationFeature.FAIL_ON_SUBTYPE_CLASS_NOT_REGISTERED` is enabled and the input class is not registered using `@JsonSubTypes` annotation");
         }
-*/
+        return ctxt.resolveAndValidateSubType(_baseType, id, _subTypeValidator);
     }
 }

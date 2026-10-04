@@ -1,4 +1,4 @@
-package tools.jackson.dataformat.avro.tofix;
+package tools.jackson.dataformat.avro.interop.records;
 
 import java.io.IOException;
 import java.util.Map;
@@ -8,20 +8,15 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import tools.jackson.dataformat.avro.testutil.failure.JacksonTestFailureExpected;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static tools.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.getJacksonSchema;
 import static tools.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.jacksonDeserialize;
 import static tools.jackson.dataformat.avro.interop.ApacheAvroInteropUtil.jacksonSerialize;
 import static tools.jackson.dataformat.avro.interop.InteropTestBase.type;
 
-// [dataformats-binary#812]: passes on 2.x, where an unresolvable type id falls
-// back to the base type (here `Object`, so result is a `Map`): on 3.x that fallback
-// was removed from `AvroTypeIdResolver` and `AvroTypeDeserializer._handleUnknownTypeId()`,
-// so `InvalidTypeIdException` is thrown instead.
-// (test never ran before as class name lacked `Test` suffix; namespace also changed
-// from "bad-namespace" as Avro 1.12 rejects "-" in namespaces)
+// [dataformats-binary#812]: record type id that does not resolve to a class
+// must fall back to the base type (here `Object`, so result is a `Map`).
+// (namespace changed from "bad-namespace" as Avro 1.12 rejects "-" in namespaces)
 public class RecordWithMissingType812Test {
 
     public static class WrapperOuter<T> {
@@ -56,7 +51,6 @@ public class RecordWithMissingType812Test {
 
     // [dataformats-binary#812]
     @SuppressWarnings("unchecked")
-    @JacksonTestFailureExpected
     @Test
     public void testRecordWithPolymorphicKeyDeserialization() throws IOException {
         Schema schema = getJacksonSchema(type(WrapperOuter.class, type(WrapperInner.class, type(Holder.class, Double.class))));
