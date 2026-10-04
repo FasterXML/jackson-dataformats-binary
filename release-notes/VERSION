@@ -65,6 +65,9 @@ No changes since 3.2
 #852: (avro) `skipMap()` / `skipArray()` on `Decoder` passed to `@AvroEncode` `CustomEncoding`
   misreads data
  (fix by @cowtowncoder, w/ Claude code)
+#855: (avro) `arrayNext()` / `mapNext()` on `Decoder` passed to `@AvroEncode`
+  `CustomEncoding` lose elements and the following field
+ (fix by @cowtowncoder, w/ Claude code)
 
 3.2.3 (21-Sep-2026)
 
@@ -177,6 +180,9 @@ No changes since 3.2.0
  (fix by @cowtowncoder, w/ Claude code)
 #852: (avro) `skipMap()` / `skipArray()` on `Decoder` passed to `@AvroEncode` `CustomEncoding`
   misreads data
+ (fix by @cowtowncoder, w/ Claude code)
+#855: (avro) `arrayNext()` / `mapNext()` on `Decoder` passed to `@AvroEncode`
+  `CustomEncoding` lose elements and the following field
  (fix by @cowtowncoder, w/ Claude code)
 
 3.1.7 (21-Sep-2026)
