@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import tools.jackson.databind.DatabindContext;
-import tools.jackson.databind.DeserializationContext;
-import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.jsontype.NamedType;
 import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
@@ -48,15 +46,14 @@ public class AvroTypeIdResolver extends ClassNameIdResolver
         }
         // [dataformats-binary#812]: Avro record names need not be Java class names
         //   (non-Java writer, changed namespace); for those return `null` and let
-        //   `AvroTypeDeserializer` decide. Unlike `super._typeFromId()`, does NOT call
-        //   `handleUnknownTypeId()` here, which would throw. Other failures
-        //   ("Illegal subtype", PTV denial, not-a-subtype) still propagate.
-        if (ctxt instanceof DeserializationContext dctxt
-                && dctxt.isEnabled(DeserializationFeature.FAIL_ON_SUBTYPE_CLASS_NOT_REGISTERED)
-                && !_allowedSubtypes.contains(id)) {
-            throw dctxt.invalidTypeIdException(_baseType, id,
-"`DeserializationFeature.FAIL_ON_SUBTYPE_CLASS_NOT_REGISTERED` is enabled and the input class is not registered using `@JsonSubTypes` annotation");
+        //   `AvroTypeDeserializer` decide: `super._typeFromId()` would instead call
+        //   `handleUnknownTypeId()`, which throws. Other failures ("Illegal subtype",
+        //   PTV denial, not-a-subtype) still propagate.
+        if (ctxt.resolveAndValidateSubType(_baseType, id, _subTypeValidator) == null) {
+            return null;
         }
-        return ctxt.resolveAndValidateSubType(_baseType, id, _subTypeValidator);
+        // Class exists: let `super` resolve it, with all its checks (like
+        // `DeserializationFeature.FAIL_ON_SUBTYPE_CLASS_NOT_REGISTERED`)
+        return super._typeFromId(ctxt, id);
     }
 }

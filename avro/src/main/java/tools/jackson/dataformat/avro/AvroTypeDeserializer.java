@@ -71,6 +71,13 @@ public class AvroTypeDeserializer extends TypeDeserializerBase
         if (_baseType.isJavaLangObject()) {
             return _baseType;
         }
-        return super._handleUnknownTypeId(ctxt, typeId);
+        // `AvroTypeIdResolver` only returns `null` for type ids with no matching class:
+        // say so, instead of generic "known type ids" description `super` would use
+        String extraDesc = "no such class found";
+        if (_property != null) {
+            extraDesc = "%s (for POJO property '%s')".formatted(extraDesc,
+                    _property.getName());
+        }
+        return ctxt.handleUnknownTypeId(_baseType, typeId, _idResolver, extraDesc);
     }
 }

@@ -47,6 +47,9 @@ implementations)
 #781: (smile) `SmileGenerator.writeNumber(String)` should validate number length
   against configured `StreamReadConstraints`, not global defaults
  (contributed by @pjfanning)
+#812: (avro) Deserializing as `Object` fails with `InvalidTypeIdException` for
+  unresolvable type id
+ (fix by @cowtowncoder, w/ Claude code)
 #823: (cbor) `maxStringLength` not consistently checked for chunked
   (indefinite-length) text values
  (fix by @pjfanning, w/ Claude code)
