@@ -18,8 +18,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-// [dataformats-binary#852]: `Decoder.skipMap()` / `skipArray()` called by
-// a `CustomEncoding` must skip the whole value (and nothing more)
+// [dataformats-binary#852]: `Decoder.skipMap()` / `skipArray()` (and `skipString()`)
+// called by a `CustomEncoding` must skip the whole value (and nothing more)
 public class CustomEncodingSkip852Test extends AvroTestBase
 {
     // Encodings that write Map/Array values normally, but skip them on read
@@ -71,6 +71,23 @@ public class CustomEncodingSkip852Test extends AvroTestBase
         @Override
         protected List<Integer> read(Object reuse, Decoder in) throws IOException {
             assertEquals(0L, in.skipArray());
+            return null;
+        }
+    }
+
+    public static class SkipStringEncoding extends CustomEncoding<String> {
+        public SkipStringEncoding() {
+            schema = Schema.create(Schema.Type.STRING);
+        }
+
+        @Override
+        protected void write(Object datum, Encoder out) throws IOException {
+            out.writeString((String) datum);
+        }
+
+        @Override
+        protected String read(Object reuse, Decoder in) throws IOException {
+            in.skipString();
             return null;
         }
     }
@@ -130,6 +147,14 @@ public class CustomEncodingSkip852Test extends AvroTestBase
         Object value() { return value; }
     }
 
+    public static class StringWrapper extends Wrapper {
+        @AvroEncode(using = SkipStringEncoding.class)
+        public String value;
+
+        @Override
+        Object value() { return value; }
+    }
+
     public static class PointMapWrapper extends Wrapper {
         @AvroEncode(using = SkipPointMapEncoding.class)
         public Map<String, int[]> value;
@@ -171,6 +196,16 @@ public class CustomEncodingSkip852Test extends AvroTestBase
         input.value.put("b", new int[] { 3, 4 });
         input.after = 7;
         _testSkip(PointMapWrapper.class, input);
+    }
+
+    // `skipString()` used to also consume the following value
+    @Test
+    public void testSkipString() throws Exception {
+        StringWrapper input = new StringWrapper();
+        input.before = 3;
+        input.value = "skipped";
+        input.after = 7;
+        _testSkip(StringWrapper.class, input);
     }
 
     /*

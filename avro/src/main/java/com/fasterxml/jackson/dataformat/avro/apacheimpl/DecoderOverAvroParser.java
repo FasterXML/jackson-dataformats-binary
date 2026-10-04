@@ -132,7 +132,8 @@ public class DecoderOverAvroParser extends Decoder {
 
     @Override
     public void skipString() throws IOException {
-        consumeToken(JsonToken.VALUE_STRING);
+        // Must read exactly one value: `readString()` also handles Map keys
+        // (FIELD_NAME), unlike `consumeToken(JsonToken.VALUE_STRING)`
         readString();
     }
 
