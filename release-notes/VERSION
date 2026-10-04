@@ -62,6 +62,9 @@ No changes since 3.2
 #846: (protobuf) `ProtobufParser.getString(Writer)` writes stale text for numeric tokens,
   NPE for binary
  (fix by @cowtowncoder, w/ Claude code)
+#852: (avro) `skipMap()` / `skipArray()` on `Decoder` passed to `@AvroEncode` `CustomEncoding`
+  misreads data
+ (fix by @cowtowncoder, w/ Claude code)
 
 3.2.3 (21-Sep-2026)
 
@@ -171,6 +174,9 @@ No changes since 3.2.0
  (fix by @cowtowncoder, w/ Claude code)
 #846: (protobuf) `ProtobufParser.getString(Writer)` writes stale text for numeric tokens,
   NPE for binary
+ (fix by @cowtowncoder, w/ Claude code)
+#852: (avro) `skipMap()` / `skipArray()` on `Decoder` passed to `@AvroEncode` `CustomEncoding`
+  misreads data
  (fix by @cowtowncoder, w/ Claude code)
 
 3.1.7 (21-Sep-2026)

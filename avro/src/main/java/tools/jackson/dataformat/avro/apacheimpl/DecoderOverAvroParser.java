@@ -132,7 +132,8 @@ public class DecoderOverAvroParser extends Decoder {
 
     @Override
     public void skipString() throws IOException {
-        consumeToken(JsonToken.VALUE_STRING);
+        // Must read exactly one value: `readString()` also handles Map keys
+        // (PROPERTY_NAME), unlike `consumeToken(JsonToken.VALUE_STRING)`
         readString();
     }
 
@@ -184,9 +185,7 @@ public class DecoderOverAvroParser extends Decoder {
 
     @Override
     public long skipArray() throws IOException {
-        consumeToken(JsonToken.START_ARRAY);
-        _parser.skipValue();
-        consumeToken(JsonToken.END_ARRAY);
+        _skipStructure(JsonToken.START_ARRAY);
         return 0;
     }
 
@@ -203,10 +202,30 @@ public class DecoderOverAvroParser extends Decoder {
 
     @Override
     public long skipMap() throws IOException {
-        consumeToken(JsonToken.START_OBJECT);
-        _parser.skipValue();
-        consumeToken(JsonToken.END_OBJECT);
+        _skipStructure(JsonToken.START_OBJECT);
         return 0;
+    }
+
+    /**
+     * Helper method for skipping a full Array or Map value, including its end marker.
+     *<p>
+     * NOTE: can not use {@link AvroParserImpl#skipValue()}, as by the time start marker
+     * has been returned, the reader has already consumed the first block count, and
+     * {@code skipValue()} would try to read it again.
+     * Instead the remaining contents are read (and discarded) token by token: this decodes
+     * all keys and values, so it is no cheaper than reading the value.
+     *
+     * @since 2.21.8
+     */
+    private void _skipStructure(JsonToken startToken) throws IOException {
+        JsonToken token = nextValue();
+        if (token != startToken) {
+            throw new IllegalArgumentException("Expected " + startToken + ", got: " + token);
+        }
+        // Read through the rest using currently open reader, up to and including matching
+        // end marker; and then clear that so it is not seen as the next value
+        _parser.skipChildren();
+        _parser.clearCurrentToken();
     }
 
     @Override
