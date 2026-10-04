@@ -2812,6 +2812,10 @@ currentToken(), firstCh);
             _inputPtr = inPtr;
         }
         _textBuffer.setCurrentLength(outPtr);
+        // [dataformats-binary#824]: `TextBuffer` only validates length when
+        //   finishing a segment or building a `String`/`char[]`, but not for
+        //   `getTextBuffer()`, `size()` or `contentsToWriter()`, so check here
+        _streamReadConstraints.validateStringLength(_textBuffer.size());
     }
 
     private final void _decodeLongUnicodeValue() throws JacksonException
@@ -2900,6 +2904,10 @@ currentToken(), firstCh);
             outBuf[outPtr++] = (char) c;
         }
         _textBuffer.setCurrentLength(outPtr);
+        // [dataformats-binary#824]: `TextBuffer` only validates length when
+        //   finishing a segment or building a `String`/`char[]`, but not for
+        //   `getTextBuffer()`, `size()` or `contentsToWriter()`, so check here
+        _streamReadConstraints.validateStringLength(_textBuffer.size());
     }
 
     /*

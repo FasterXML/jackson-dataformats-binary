@@ -184,6 +184,7 @@ public abstract class MapReader extends AvroStructureReader
             long l;
             while ((l = parser.skipMap()) > 0L) {
                 while (--l >= 0) {
+                    parser.skipString(); // key
                     _scalarDecoder.skipValue(parser);
                 }
             }
@@ -265,6 +266,7 @@ public abstract class MapReader extends AvroStructureReader
             long l;
             while ((l = parser.skipMap()) > 0L) {
                 while (--l >= 0) {
+                    parser.skipString(); // key
                     _structureReader.skipValue(parser);
                 }
             }

@@ -947,6 +947,24 @@ public class NonBlockingByteArrayParser
     /**********************************************************************
      */
 
+    /**
+     * Helper method called when a long (end-marker terminated) String value
+     * has been fully decoded.
+     */
+    private final JsonToken _longStringComplete(int outPtr) throws JacksonException
+    {
+        _textBuffer.setCurrentLength(outPtr);
+        // Mark value complete first, so that if length check fails, parser
+        // is not left in the middle of String value (to continue from it
+        // if more tokens are requested)
+        JsonToken t = _valueComplete(JsonToken.VALUE_STRING);
+        // [dataformats-binary#824]: `TextBuffer` only validates length when
+        //   finishing a segment or building a `String`/`char[]`, but not for
+        //   `getTextBuffer()`, `size()` or `contentsToWriter()`, so check here
+        _streamReadConstraints.validateStringLength(_textBuffer.size());
+        return t;
+    }
+
     private final JsonToken _startLongASCII() throws JacksonException
     {
         int outPtr = 0;
@@ -964,8 +982,7 @@ public class NonBlockingByteArrayParser
                 byte b = _inputBuffer[inPtr++];
                 if (b == SmileConstants.BYTE_MARKER_END_OF_STRING) {
                     _inputPtr = inPtr;
-                    _textBuffer.setCurrentLength(outPtr);
-                    return _valueComplete(JsonToken.VALUE_STRING);
+                    return _longStringComplete(outPtr);
                 }
                 outBuf[outPtr++] = (char) b;
             } while (--left > 0);
@@ -994,8 +1011,7 @@ public class NonBlockingByteArrayParser
                 byte b = _inputBuffer[inPtr++];
                 if (b == SmileConstants.BYTE_MARKER_END_OF_STRING) {
                     _inputPtr = inPtr;
-                    _textBuffer.setCurrentLength(outPtr);
-                    return _valueComplete(JsonToken.VALUE_STRING);
+                    return _longStringComplete(outPtr);
                 }
                 outBuf[outPtr++] = (char) b;
             } while (--left > 0);
@@ -1049,8 +1065,7 @@ public class NonBlockingByteArrayParser
             }
             // Ok: end marker, escape or multi-byte?
             if (c == SmileConstants.INT_MARKER_END_OF_STRING) {
-                _textBuffer.setCurrentLength(outPtr);
-                return _valueComplete(JsonToken.VALUE_STRING);
+                return _longStringComplete(outPtr);
             }
 
             // otherwise need at least one more byte, so:
@@ -1166,8 +1181,7 @@ public class NonBlockingByteArrayParser
             }
             // Ok: end marker, escape or multi-byte?
             if (c == SmileConstants.INT_MARKER_END_OF_STRING) {
-                _textBuffer.setCurrentLength(outPtr);
-                return _valueComplete(JsonToken.VALUE_STRING);
+                return _longStringComplete(outPtr);
             }
 
             // otherwise need at least one more byte, so:
