@@ -497,6 +497,28 @@ public class MapField712Test extends ProtobufTestBase
         assertEquals(5, t2.get("counts").get("").asInt());
     }
 
+    // Absent enum value defaults to the first declared constant, even when that
+    // constant's id is not 0 (non-standard proto2 enum)
+    @Test
+    public void testAbsentNonStandardEnumValueDefault() throws Exception
+    {
+        // `B = 0` is declared, but is not the first value
+        ProtobufSchema schema = ProtobufSchemaLoader.std.parse(
+                "enum E { A = 5; B = 0; }\n"
+                + "message Msg { map<string, E> m = 1; }\n", "Msg");
+        JsonNode tree = MAPPER.readerFor(JsonNode.class).with(schema)
+                .readValue(new byte[] { 0x0a, 0x03, 0x0a, 0x01, 0x6b });
+        assertEquals("A", tree.get("m").get("k").asString());
+
+        // and with no `0` id at all
+        schema = ProtobufSchemaLoader.std.parse(
+                "enum E { A = 5; B = 7; }\n"
+                + "message Msg { map<string, E> m = 1; }\n", "Msg");
+        tree = MAPPER.readerFor(JsonNode.class).with(schema)
+                .readValue(new byte[] { 0x0a, 0x03, 0x0a, 0x01, 0x6b });
+        assertEquals("A", tree.get("m").get("k").asString());
+    }
+
     @Test
     public void testUnknownFieldInsideEntrySkipped() throws Exception
     {

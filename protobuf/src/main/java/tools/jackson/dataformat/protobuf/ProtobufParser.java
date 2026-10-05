@@ -1418,7 +1418,9 @@ public class ProtobufParser extends ParserMinimalBase
                 return JsonToken.VALUE_NUMBER_INT;
             }
             {
-                String enumStr = valueField.findEnumByIndex(0);
+                // Default is the first declared value, which need not have id 0
+                // for non-standard enums (proto2)
+                String enumStr = valueField.getDefaultEnumValue();
                 if (enumStr == null) {
                     _numberInt = 0;
                     _numTypesValid = NR_INT;
