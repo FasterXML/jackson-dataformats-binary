@@ -27,6 +27,8 @@ Active maintainers:
 #819: (avro) `bytes` value allocated to declared length before checking available content
   [CVE-2026-104015]
  (fix by @pjfanning, w/ Claude code)
+#821: (cbor) `CBORParser.TagList` should grow its backing array geometrically
+ (fix by @pjfanning, w/ Claude code)
 #825: (smile) Non-blocking Smile parser should validate raw binary length and not pre-allocate
   full buffer [CVE-2026-104895]
  (fix by @pjfanning, w/ Claude code)
@@ -224,6 +226,8 @@ No changes since 2.19.1
  (fix by @pjfanning, w/ Claude code)
 #819: (avro) `bytes` value allocated to declared length before checking available content
   [CVE-2026-104015]
+ (fix by @pjfanning, w/ Claude code)
+#821: (cbor) `CBORParser.TagList` should grow its backing array geometrically
  (fix by @pjfanning, w/ Claude code)
 #825: (smile) Non-blocking Smile parser should validate raw binary length and not pre-allocate
   full buffer [CVE-2026-104895]
