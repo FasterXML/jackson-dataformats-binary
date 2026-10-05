@@ -56,7 +56,7 @@ public class ProtobufField
      *
      * @since 3.3
      */
-    protected final String enumDefaultValue;
+    protected final String enumDefaultValueName;
 
     /**
      * Link to next field within message definition; used for efficient traversal.
@@ -139,7 +139,7 @@ public class ProtobufField
         wireType = FieldType.MESSAGE.getWireType(); // LENGTH_PREFIXED
         usesZigZag = false;
         enumValues = EnumLookup.empty();
-        enumDefaultValue = null;
+        enumDefaultValueName = null;
         isStdEnum = false;
         messageType = entryType;
         isMap = true;
@@ -168,11 +168,11 @@ public class ProtobufField
         _valueField = null;
         if (et == null) {
             enumValues = EnumLookup.empty();
-            enumDefaultValue = null;
+            enumDefaultValueName = null;
             isStdEnum = false;
         } else {
             enumValues = EnumLookup.construct(et);
-            enumDefaultValue = et.getDefaultValue();
+            enumDefaultValueName = et.getDefaultValueName();
             isStdEnum = et.usesStandardIndexing();
         }
         messageType = msg;
@@ -315,8 +315,8 @@ public class ProtobufField
      *
      * @since 3.3
      */
-    public final String getDefaultEnumValue() {
-        return enumDefaultValue;
+    public final String getDefaultEnumValueName() {
+        return enumDefaultValueName;
     }
 
     public Collection<String> getEnumValues() {

@@ -1015,7 +1015,7 @@ public class ProtobufParser extends ParserMinimalBase
                     String enumStr = _currentField.findEnumByIndex(ix);
                     if (enumStr == null) {
                         if (ProtobufReadFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE.enabledIn(_formatFeatures)) {
-                            enumStr = _currentField.getDefaultEnumValue();
+                            enumStr = _currentField.getDefaultEnumValueName();
                         } else {
                             _reportErrorF("Unknown id %d (for enum field %s)", ix, _currentField.name);
                         }
@@ -1420,7 +1420,7 @@ public class ProtobufParser extends ParserMinimalBase
             {
                 // Default is the first declared value, which need not have id 0
                 // for non-standard enums (proto2)
-                String enumStr = valueField.getDefaultEnumValue();
+                String enumStr = valueField.getDefaultEnumValueName();
                 if (enumStr == null) {
                     _numberInt = 0;
                     _numTypesValid = NR_INT;

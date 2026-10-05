@@ -14,7 +14,7 @@ public class ProtobufEnum
      *
      * @since 3.3
      */
-    protected final String _defaultValue;
+    protected final String _defaultValueName;
 
     /**
      * Flag that indicates whether mapping from enum value and id is standard or not;
@@ -28,7 +28,7 @@ public class ProtobufEnum
         _name = name;
         _valuesByName = valuesByName;
         _standardIndexing = standardIndexing;
-        _defaultValue = valuesByName.isEmpty() ? null
+        _defaultValueName = valuesByName.isEmpty() ? null
                 : valuesByName.keySet().iterator().next();
     }
 
@@ -52,7 +52,7 @@ public class ProtobufEnum
      *
      * @since 3.3
      */
-    public String getDefaultValue() {
-        return _defaultValue;
+    public String getDefaultValueName() {
+        return _defaultValueName;
     }
 }
