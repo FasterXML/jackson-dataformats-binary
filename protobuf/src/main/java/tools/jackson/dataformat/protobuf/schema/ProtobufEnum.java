@@ -17,14 +17,6 @@ public class ProtobufEnum
     protected final String _defaultValue;
 
     /**
-     * Id of the first declared enum value: Protobuf's schema-level default;
-     * {@code -1} if enum has no values.
-     *
-     * @since 3.3
-     */
-    protected final int _defaultIndex;
-
-    /**
      * Flag that indicates whether mapping from enum value and id is standard or not;
      * standard means that first enum has value 0, and all following enums have value
      * one bigger than preceding one.
@@ -36,14 +28,8 @@ public class ProtobufEnum
         _name = name;
         _valuesByName = valuesByName;
         _standardIndexing = standardIndexing;
-        if (valuesByName.isEmpty()) {
-            _defaultValue = null;
-            _defaultIndex = -1;
-        } else {
-            Map.Entry<String,Integer> first = valuesByName.entrySet().iterator().next();
-            _defaultValue = first.getKey();
-            _defaultIndex = first.getValue().intValue();
-        }
+        _defaultValue = valuesByName.isEmpty() ? null
+                : valuesByName.keySet().iterator().next();
     }
 
     public Integer findEnum(String name) {
@@ -68,17 +54,5 @@ public class ProtobufEnum
      */
     public String getDefaultValue() {
         return _defaultValue;
-    }
-
-    /**
-     * Accessor for the id of the first declared enum value, which is
-     * Protobuf's schema-level default.
-     *
-     * @return Id of the default enum value; {@code -1} if enum has no values
-     *
-     * @since 3.3
-     */
-    public int getDefaultIndex() {
-        return _defaultIndex;
     }
 }

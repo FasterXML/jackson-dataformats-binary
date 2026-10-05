@@ -11,6 +11,7 @@ import tools.jackson.core.type.TypeReference;
 
 import tools.jackson.databind.ObjectReader;
 import tools.jackson.databind.ObjectWriter;
+import tools.jackson.databind.cfg.EnumFeature;
 
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
@@ -33,9 +34,10 @@ public class EnumHandlingTest extends ProtobufTestBase
     }
 
     // NOTE: deliberately has one more constant than `PROTOC_STANDARD_ENUM` declares:
-    // `THIRD` shows that, with the feature disabled, an id unknown to the schema (2)
-    // still binds by ordinal (see `testUnknownStandardEnumRetainsExistingBehaviorByDefault`).
-    // `@JsonEnumDefaultValue` on `SECOND` (here and in `NonStandardEnum`) shows that the
+    // `THIRD` shows that an id unknown to the schema (2) still binds by ordinal
+    // (see `testUnknownStandardEnumRetainsExistingBehaviorByDefault`).
+    // `@JsonEnumDefaultValue` on `SECOND`: for standard enums, databind's default is used
+    // (`ProtobufReadFeature` does not apply); for `NonStandardEnum`, shows that the
     // fallback is the Protobuf default (first declared value), not the databind-level one.
     public enum StandardEnum {
         FIRST,
@@ -176,29 +178,31 @@ public class EnumHandlingTest extends ProtobufTestBase
         assertEquals(NonStandardEnum.FIRST, result.value);
     }
 
+    // Feature does not apply to standard enums: unknown id is exposed as-is, so that
+    // databind-level unknown-enum handling still works
     @Test
-    public void testUnknownStandardEnumUsesProtobufDefault() throws Exception
+    public void testUnknownStandardEnumLeftToDatabind() throws Exception
     {
         ProtobufMapper mapper = ProtobufMapper.builder()
                 .enable(ProtobufReadFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE)
+                .enable(EnumFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE)
                 .build();
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_STANDARD_ENUM);
-        byte[] bytes = { 0x08, 0x02 };
+        byte[] bytes = { 0x08, 0x05 };
 
         try (JsonParser p = mapper.reader().with(schema).createParser(bytes)) {
             assertEquals(JsonToken.START_OBJECT, p.nextToken());
             assertEquals(JsonToken.PROPERTY_NAME, p.nextToken());
             assertEquals("value", p.currentName());
             assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-            assertEquals(0, p.getIntValue());
+            assertEquals(5, p.getIntValue());
             assertEquals(JsonToken.END_OBJECT, p.nextToken());
         }
 
         StandardEnumWrapper result = mapper.readerFor(StandardEnumWrapper.class)
                 .with(schema)
                 .readValue(bytes);
-
-        assertEquals(StandardEnum.FIRST, result.value);
+        assertEquals(StandardEnum.SECOND, result.value);
     }
 
     @Test

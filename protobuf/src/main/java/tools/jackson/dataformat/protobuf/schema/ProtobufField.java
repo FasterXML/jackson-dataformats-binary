@@ -59,14 +59,6 @@ public class ProtobufField
     protected final String enumDefaultValue;
 
     /**
-     * For fields of type {@link FieldType#ENUM}, id of first declared enum value;
-     * {@code -1} for other types.
-     *
-     * @since 3.3
-     */
-    protected final int enumDefaultIndex;
-
-    /**
      * Link to next field within message definition; used for efficient traversal.
      * Due to inverse construction order need to be assigned after construction;
      * but functionally immutable.
@@ -148,7 +140,6 @@ public class ProtobufField
         usesZigZag = false;
         enumValues = EnumLookup.empty();
         enumDefaultValue = null;
-        enumDefaultIndex = -1;
         isStdEnum = false;
         messageType = entryType;
         isMap = true;
@@ -178,12 +169,10 @@ public class ProtobufField
         if (et == null) {
             enumValues = EnumLookup.empty();
             enumDefaultValue = null;
-            enumDefaultIndex = -1;
             isStdEnum = false;
         } else {
             enumValues = EnumLookup.construct(et);
             enumDefaultValue = et.getDefaultValue();
-            enumDefaultIndex = et.getDefaultIndex();
             isStdEnum = et.usesStandardIndexing();
         }
         messageType = msg;
@@ -328,18 +317,6 @@ public class ProtobufField
      */
     public final String getDefaultEnumValue() {
         return enumDefaultValue;
-    }
-
-    /**
-     * For fields of type {@link FieldType#ENUM}, accessor for the id of the
-     * first declared enum value (Protobuf's schema-level default).
-     *
-     * @return Id of the default enum value; {@code -1} for other types
-     *
-     * @since 3.3
-     */
-    public final int getDefaultEnumIndex() {
-        return enumDefaultIndex;
     }
 
     public Collection<String> getEnumValues() {

@@ -10,13 +10,20 @@ import tools.jackson.core.FormatFeature;
 public enum ProtobufReadFeature implements FormatFeature
 {
     /**
-     * Feature that determines whether unknown enum ids are decoded as the
-     * schema's default enum value instead of failing immediately at streaming
-     * level.
+     * Feature that determines whether unknown enum ids of "non-standard" enums
+     * (ones whose ids are not 0, 1, 2 and so on in declaration order) are
+     * decoded as the schema's default enum value, instead of failing
+     * at streaming level.
      *<p>
      * The Protobuf enum default is the first declared enum value; this is
      * independent of databind-level annotations such as
      * {@code @JsonEnumDefaultValue}.
+     *<p>
+     * Feature has no effect on "standard" enums: their ids are exposed as-is
+     * (as {@link tools.jackson.core.JsonToken#VALUE_NUMBER_INT}), so unknown
+     * ids are handled by databind, configured with
+     * {@code EnumFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE} or
+     * {@code EnumFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL}.
      *<p>
      * Feature is disabled by default to preserve existing parser behavior.
      *

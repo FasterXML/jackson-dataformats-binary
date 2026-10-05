@@ -1004,10 +1004,8 @@ public class ProtobufParser extends ParserMinimalBase
             {
                 int ix = _decodeLength();
                 if (_currentField.isStdEnum) {
-                    if (ProtobufReadFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE.enabledIn(_formatFeatures)
-                            && (_currentField.findEnumByIndex(ix) == null)) {
-                        ix = _currentField.getDefaultEnumIndex();
-                    }
+                    // Unknown ids passed as-is: databind handles them (see
+                    // `ProtobufReadFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE`)
                     _numberInt = ix;
                     _numTypesValid = NR_INT;
                     type =  JsonToken.VALUE_NUMBER_INT;
