@@ -149,10 +149,9 @@ public class CBORParser extends ParserMinimalBase
          */
         public void add(int tag) {
             if (_tagCount == _tags.length) {
-                // Linear growth since we expect a small number of tags.
-                int[] newTags = new int[_tagCount + 8];
-                System.arraycopy(_tags, 0, newTags, 0, _tagCount);
-                _tags = newTags;
+                // Geometric growth: linear growth would make a long run of
+                // tags (which CBOR allows) quadratic to accumulate
+                _tags = Arrays.copyOf(_tags, _tagCount + Math.max(8, _tagCount >> 1));
             }
 
             _tags[_tagCount++] = tag;
