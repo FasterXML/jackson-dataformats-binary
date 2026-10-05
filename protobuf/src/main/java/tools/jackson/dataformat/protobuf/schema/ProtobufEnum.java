@@ -59,6 +59,11 @@ public class ProtobufEnum
     }
 
     /**
+     * Accessor for the name of the first declared enum value, which is
+     * Protobuf's schema-level default.
+     *
+     * @return Name of the default enum value; {@code null} if enum has no values
+     *
      * @since 3.3
      */
     public String getDefaultValue() {
@@ -66,6 +71,11 @@ public class ProtobufEnum
     }
 
     /**
+     * Accessor for the id of the first declared enum value, which is
+     * Protobuf's schema-level default.
+     *
+     * @return Id of the default enum value; {@code -1} if enum has no values
+     *
      * @since 3.3
      */
     public int getDefaultIndex() {

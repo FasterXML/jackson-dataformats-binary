@@ -319,6 +319,11 @@ public class ProtobufField
     }
 
     /**
+     * For fields of type {@link FieldType#ENUM}, accessor for the name of the
+     * first declared enum value (Protobuf's schema-level default).
+     *
+     * @return Name of the default enum value; {@code null} for other types
+     *
      * @since 3.3
      */
     public final String getDefaultEnumValue() {
@@ -326,6 +331,11 @@ public class ProtobufField
     }
 
     /**
+     * For fields of type {@link FieldType#ENUM}, accessor for the id of the
+     * first declared enum value (Protobuf's schema-level default).
+     *
+     * @return Id of the default enum value; {@code -1} for other types
+     *
      * @since 3.3
      */
     public final int getDefaultEnumIndex() {
