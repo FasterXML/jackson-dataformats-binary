@@ -16,6 +16,10 @@ implementations)
 
 3.3.0 (not yet released)
 
+#398: (protobuf) Add `ProtobufReadFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE`
+  to decode unknown enum ids as the schema default (first declared) enum value
+ (requested by @itsmoonrack)
+ (contributed by @Dongnyoung)
 #624: (cbor) Use more efficient (in JDK 17) `String` construction wrt
   "Compact Strings"
  (fix by @cowtowncoder, w/ Claude code)

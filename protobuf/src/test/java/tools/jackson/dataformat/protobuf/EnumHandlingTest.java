@@ -15,6 +15,7 @@ import tools.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -149,6 +150,8 @@ public class EnumHandlingTest extends ProtobufTestBase
         ProtobufMapper mapper = ProtobufMapper.builder()
                 .enable(ProtobufReadFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE)
                 .build();
+        assertTrue(mapper.isEnabled(ProtobufReadFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE));
+        assertFalse(MAPPER.isEnabled(ProtobufReadFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE));
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_NON_STANDARD_ENUM);
         byte[] bytes = { 0x08, 0x1e };
 

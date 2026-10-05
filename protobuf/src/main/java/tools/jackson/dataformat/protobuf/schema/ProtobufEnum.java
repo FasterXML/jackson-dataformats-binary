@@ -46,10 +46,16 @@ public class ProtobufEnum
         return _standardIndexing;
     }
 
+    /**
+     * @since 3.3
+     */
     public String getDefaultValue() {
         return _defaultValue;
     }
 
+    /**
+     * @since 3.3
+     */
     public int getDefaultIndex() {
         return _defaultIndex;
     }

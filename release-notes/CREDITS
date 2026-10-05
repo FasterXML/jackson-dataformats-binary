@@ -90,6 +90,8 @@ PJ Fanning (@pjfanning)
 
 DongNyoung Lee (@Dongnyoung)
 
+* Contributed #398: (protobuf) Add `ProtobufReadFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE`
+ (3.3.0)
 * Contributed #780: (ion) Fix `IonFactory` resource cleanup on failed construction
  (3.3.0)
 * Contributed fix for #797: (avro) Apache decoder fails with `UnsupportedOperationException`

@@ -1,10 +1,11 @@
 package tools.jackson.dataformat.protobuf;
 
 import tools.jackson.core.FormatFeature;
-import tools.jackson.core.JsonToken;
 
 /**
  * Enumeration that defines all togglable features for Protobuf parsers.
+ *
+ * @since 3.3
  */
 public enum ProtobufReadFeature implements FormatFeature
 {
@@ -18,6 +19,8 @@ public enum ProtobufReadFeature implements FormatFeature
      * {@code @JsonEnumDefaultValue}.
      *<p>
      * Feature is disabled by default to preserve existing parser behavior.
+     *
+     * @since 3.3
      */
     READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE(false)
     ;

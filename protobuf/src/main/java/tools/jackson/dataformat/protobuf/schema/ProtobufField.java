@@ -310,10 +310,16 @@ public class ProtobufField
         return enumValues.findEnumByIndex(index);
     }
 
+    /**
+     * @since 3.3
+     */
     public final String getDefaultEnumValue() {
         return enumDefaultValue;
     }
 
+    /**
+     * @since 3.3
+     */
     public final int getDefaultEnumIndex() {
         return enumDefaultIndex;
     }

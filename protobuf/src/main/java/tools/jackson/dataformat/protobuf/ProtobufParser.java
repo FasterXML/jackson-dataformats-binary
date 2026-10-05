@@ -331,6 +331,22 @@ public class ProtobufParser extends ParserMinimalBase
     /**********************************************************************
      */
 
+    /**
+     * @deprecated Since 3.3 use the variant that also takes {@code formatFeatures}
+     */
+    @Deprecated // since 3.3
+    public ProtobufParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            int parserFeatures, ProtobufSchema schema,
+            InputStream in, byte[] inputBuffer, int start, int end,
+            boolean bufferRecyclable)
+    {
+        this(readCtxt, ioCtxt, parserFeatures, ProtobufFactory.DEFAULT_PROTOBUF_PARSER_FEATURE_FLAGS,
+                schema, in, inputBuffer, start, end, bufferRecyclable);
+    }
+
+    /**
+     * @since 3.3
+     */
     public ProtobufParser(ObjectReadContext readCtxt, IOContext ioCtxt,
             int parserFeatures, int formatFeatures, ProtobufSchema schema,
             InputStream in, byte[] inputBuffer, int start, int end,

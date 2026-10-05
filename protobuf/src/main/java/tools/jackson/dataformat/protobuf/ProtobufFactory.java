@@ -144,6 +144,8 @@ public class ProtobufFactory
 
     /**
      * Check whether specified Protobuf-specific stream read feature is enabled.
+     *
+     * @since 3.3
      */
     public boolean isEnabled(ProtobufReadFeature f) {
         return f.enabledIn(_formatReadFeatures);
