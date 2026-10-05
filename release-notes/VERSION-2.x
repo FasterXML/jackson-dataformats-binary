@@ -44,6 +44,9 @@ Active maintainers:
 #846: (protobuf) `ProtobufParser.getText(Writer)` writes stale text for numeric tokens,
   NPE for binary
  (fix by @cowtowncoder, w/ Claude code)
+#855: (avro) `arrayNext()` / `mapNext()` on `Decoder` passed to `@AvroEncode`
+  `CustomEncoding` lose elements and the following field
+ (fix by @cowtowncoder, w/ Claude code)
 
 2.22.4 (not yet released)
 
