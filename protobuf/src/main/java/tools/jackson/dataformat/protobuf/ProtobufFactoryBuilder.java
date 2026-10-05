@@ -17,11 +17,58 @@ public class ProtobufFactoryBuilder extends DecorableTSFBuilder<ProtobufFactory,
     public ProtobufFactoryBuilder() {
         super(StreamReadConstraints.defaults(), StreamWriteConstraints.defaults(),
                 ErrorReportConfiguration.defaults(),
-                0, 0);
+                ProtobufFactory.DEFAULT_PROTOBUF_PARSER_FEATURE_FLAGS, 0);
     }
 
     public ProtobufFactoryBuilder(ProtobufFactory base) {
         super(base);
+    }
+
+    // // // Parser features
+
+    /**
+     * @since 3.3
+     */
+    public ProtobufFactoryBuilder enable(ProtobufReadFeature f) {
+        _formatReadFeatures |= f.getMask();
+        return _this();
+    }
+
+    /**
+     * @since 3.3
+     */
+    public ProtobufFactoryBuilder enable(ProtobufReadFeature first, ProtobufReadFeature... other) {
+        _formatReadFeatures |= first.getMask();
+        for (ProtobufReadFeature f : other) {
+            _formatReadFeatures |= f.getMask();
+        }
+        return _this();
+    }
+
+    /**
+     * @since 3.3
+     */
+    public ProtobufFactoryBuilder disable(ProtobufReadFeature f) {
+        _formatReadFeatures &= ~f.getMask();
+        return _this();
+    }
+
+    /**
+     * @since 3.3
+     */
+    public ProtobufFactoryBuilder disable(ProtobufReadFeature first, ProtobufReadFeature... other) {
+        _formatReadFeatures &= ~first.getMask();
+        for (ProtobufReadFeature f : other) {
+            _formatReadFeatures &= ~f.getMask();
+        }
+        return _this();
+    }
+
+    /**
+     * @since 3.3
+     */
+    public ProtobufFactoryBuilder configure(ProtobufReadFeature f, boolean state) {
+        return state ? enable(f) : disable(f);
     }
 
     @Override

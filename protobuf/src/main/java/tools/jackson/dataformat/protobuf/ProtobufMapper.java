@@ -56,6 +56,45 @@ public class ProtobufMapper extends ObjectMapper
             return new StateImpl(this);
         }
 
+        /*
+        /******************************************************************
+        /* Format features
+        /******************************************************************
+         */
+
+        /**
+         * @since 3.3
+         */
+        public Builder enable(ProtobufReadFeature... features) {
+            for (ProtobufReadFeature f : features) {
+                _formatReadFeatures |= f.getMask();
+            }
+            return this;
+        }
+
+        /**
+         * @since 3.3
+         */
+        public Builder disable(ProtobufReadFeature... features) {
+            for (ProtobufReadFeature f : features) {
+                _formatReadFeatures &= ~f.getMask();
+            }
+            return this;
+        }
+
+        /**
+         * @since 3.3
+         */
+        public Builder configure(ProtobufReadFeature feature, boolean state)
+        {
+            if (state) {
+                _formatReadFeatures |= feature.getMask();
+            } else {
+                _formatReadFeatures &= ~feature.getMask();
+            }
+            return this;
+        }
+
         protected static class StateImpl extends MapperBuilderState
             implements java.io.Serializable // important!
         {
@@ -146,6 +185,19 @@ public class ProtobufMapper extends ObjectMapper
     @Override
     public ProtobufFactory tokenStreamFactory() {
         return (ProtobufFactory) _streamFactory;
+    }
+
+    /*
+    /**********************************************************************
+    /* Format-specific
+    /**********************************************************************
+     */
+
+    /**
+     * @since 3.3
+     */
+    public boolean isEnabled(ProtobufReadFeature f) {
+        return _deserializationConfig.hasFormatFeature(f);
     }
 
     /*

@@ -319,19 +319,44 @@ public class ProtobufParser extends ParserMinimalBase
     protected BigInteger _numberBigInt;
     protected BigDecimal _numberBigDecimal;
 
+    /**
+     * Bitfield that indicates which Protobuf-specific
+     * {@link ProtobufReadFeature}s are enabled.
+     *
+     * @since 3.3
+     */
+    protected final int _formatFeatures;
+
     /*
     /**********************************************************************
     /* Life-cycle
     /**********************************************************************
      */
 
+    /**
+     * @deprecated Since 3.3 use the variant that also takes {@code formatFeatures}
+     */
+    @Deprecated // since 3.3
     public ProtobufParser(ObjectReadContext readCtxt, IOContext ioCtxt,
             int parserFeatures, ProtobufSchema schema,
             InputStream in, byte[] inputBuffer, int start, int end,
             boolean bufferRecyclable)
     {
+        this(readCtxt, ioCtxt, parserFeatures, ProtobufFactory.DEFAULT_PROTOBUF_PARSER_FEATURE_FLAGS,
+                schema, in, inputBuffer, start, end, bufferRecyclable);
+    }
+
+    /**
+     * @since 3.3
+     */
+    public ProtobufParser(ObjectReadContext readCtxt, IOContext ioCtxt,
+            int parserFeatures, int formatFeatures, ProtobufSchema schema,
+            InputStream in, byte[] inputBuffer, int start, int end,
+            boolean bufferRecyclable)
+    {
         super(readCtxt, ioCtxt, parserFeatures);
 
+        _formatFeatures = formatFeatures;
         _inputStream = in;
         _inputBuffer = inputBuffer;
         _inputPtr = start;
@@ -979,6 +1004,8 @@ public class ProtobufParser extends ParserMinimalBase
             {
                 int ix = _decodeLength();
                 if (_currentField.isStdEnum) {
+                    // Unknown ids passed as-is: databind handles them (see
+                    // `ProtobufReadFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE`)
                     _numberInt = ix;
                     _numTypesValid = NR_INT;
                     type =  JsonToken.VALUE_NUMBER_INT;
@@ -987,7 +1014,11 @@ public class ProtobufParser extends ParserMinimalBase
                     // handle that part
                     String enumStr = _currentField.findEnumByIndex(ix);
                     if (enumStr == null) {
-                        _reportErrorF("Unknown id %d (for enum field %s)", ix, _currentField.name);
+                        if (ProtobufReadFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE.enabledIn(_formatFeatures)) {
+                            enumStr = _currentField.getDefaultEnumValueName();
+                        } else {
+                            _reportErrorF("Unknown id %d (for enum field %s)", ix, _currentField.name);
+                        }
                     }
                     type = JsonToken.VALUE_STRING;
                     _textBuffer.resetWithString(enumStr);
@@ -1387,7 +1418,9 @@ public class ProtobufParser extends ParserMinimalBase
                 return JsonToken.VALUE_NUMBER_INT;
             }
             {
-                String enumStr = valueField.findEnumByIndex(0);
+                // Default is the first declared value, which need not have id 0
+                // for non-standard enums (proto2)
+                String enumStr = valueField.getDefaultEnumValueName();
                 if (enumStr == null) {
                     _numberInt = 0;
                     _numTypesValid = NR_INT;

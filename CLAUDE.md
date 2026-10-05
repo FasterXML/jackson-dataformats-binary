@@ -242,10 +242,11 @@ New features target `3.x`, not a patch branch.
    type, so no new builder method is usually needed.
 5. Add tests, and a release-notes entry.
 
-This applies to CBOR, Smile, Avro and Ion. **Protobuf has no feature enums at all** —
-there is no `ProtobufReadFeature` or `ProtobufWriteFeature`. Adding a Protobuf feature flag
-means introducing that machinery first, so treat it as a larger change than the steps above
-suggest.
+This applies to CBOR, Smile, Avro and Ion. **Protobuf has read features only** —
+`ProtobufReadFeature` exists (since 3.3, #398), but there is no `ProtobufWriteFeature`.
+Adding a Protobuf write feature means introducing that machinery first (enum, factory
+`getFormatWriteFeatureType()`, builder and mapper overloads, generator plumbing), so treat
+it as a larger change than the steps above suggest.
 
 ### Adding a new package
 
