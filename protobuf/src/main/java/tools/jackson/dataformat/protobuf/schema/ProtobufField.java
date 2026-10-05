@@ -53,9 +53,17 @@ public class ProtobufField
     /**
      * For fields of type {@link FieldType#ENUM}, first declared enum value:
      * Protobuf's schema-level default.
+     *
+     * @since 3.3
      */
     protected final String enumDefaultValue;
 
+    /**
+     * For fields of type {@link FieldType#ENUM}, id of first declared enum value;
+     * {@code -1} for other types.
+     *
+     * @since 3.3
+     */
     protected final int enumDefaultIndex;
 
     /**

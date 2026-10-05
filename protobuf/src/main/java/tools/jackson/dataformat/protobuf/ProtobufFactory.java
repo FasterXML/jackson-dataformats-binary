@@ -17,6 +17,8 @@ public class ProtobufFactory
     /**
      * Bitfield (set of flags) of all parser features that are enabled
      * by default.
+     *
+     * @since 3.3
      */
     final static int DEFAULT_PROTOBUF_PARSER_FEATURE_FLAGS = ProtobufReadFeature.collectDefaults();
 

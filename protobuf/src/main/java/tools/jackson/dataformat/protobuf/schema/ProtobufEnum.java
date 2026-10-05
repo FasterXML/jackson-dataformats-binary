@@ -8,8 +8,20 @@ public class ProtobufEnum
 
     protected final Map<String,Integer> _valuesByName;
 
+    /**
+     * Name of the first declared enum value: Protobuf's schema-level default;
+     * {@code null} if enum has no values.
+     *
+     * @since 3.3
+     */
     protected final String _defaultValue;
 
+    /**
+     * Id of the first declared enum value: Protobuf's schema-level default;
+     * {@code -1} if enum has no values.
+     *
+     * @since 3.3
+     */
     protected final int _defaultIndex;
 
     /**

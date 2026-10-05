@@ -25,12 +25,21 @@ public enum ProtobufReadFeature implements FormatFeature
     READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE(false)
     ;
 
+    /**
+     * @since 3.3
+     */
     private final boolean _defaultState;
+
+    /**
+     * @since 3.3
+     */
     private final int _mask;
 
     /**
      * Method that calculates bit set (flags) of all features that
      * are enabled by default.
+     *
+     * @since 3.3
      */
     public static int collectDefaults()
     {

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
 
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
+import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.core.type.TypeReference;
 
 import tools.jackson.databind.ObjectReader;
@@ -31,6 +32,11 @@ public class EnumHandlingTest extends ProtobufTestBase
         F, G, H, I, J;
     }
 
+    // NOTE: deliberately has one more constant than `PROTOC_STANDARD_ENUM` declares:
+    // `THIRD` shows that, with the feature disabled, an id unknown to the schema (2)
+    // still binds by ordinal (see `testUnknownStandardEnumRetainsExistingBehaviorByDefault`).
+    // `@JsonEnumDefaultValue` on `SECOND` (here and in `NonStandardEnum`) shows that the
+    // fallback is the Protobuf default (first declared value), not the databind-level one.
     public enum StandardEnum {
         FIRST,
         @JsonEnumDefaultValue
@@ -137,11 +143,11 @@ public class EnumHandlingTest extends ProtobufTestBase
         ProtobufSchema schema = ProtobufSchemaLoader.std.parse(PROTOC_NON_STANDARD_ENUM);
         byte[] bytes = { 0x08, 0x01 };
 
-        Exception e = assertThrows(Exception.class, () ->
+        StreamReadException e = assertThrows(StreamReadException.class, () ->
                 MAPPER.readerFor(NonStandardEnumWrapper.class)
                         .with(schema)
                         .readValue(bytes));
-        assertTrue(e.getMessage().contains("Unknown id 1 (for enum field value)"));
+        verifyException(e, "Unknown id 1 (for enum field value)");
     }
 
     @Test

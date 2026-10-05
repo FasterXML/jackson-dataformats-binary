@@ -322,6 +322,8 @@ public class ProtobufParser extends ParserMinimalBase
     /**
      * Bitfield that indicates which Protobuf-specific
      * {@link ProtobufReadFeature}s are enabled.
+     *
+     * @since 3.3
      */
     protected final int _formatFeatures;
 
