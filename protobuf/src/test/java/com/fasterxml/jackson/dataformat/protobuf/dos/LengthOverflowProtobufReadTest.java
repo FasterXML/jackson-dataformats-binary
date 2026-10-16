@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.protobuf.dos;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -105,6 +106,40 @@ public class LengthOverflowProtobufReadTest extends ProtobufTestBase
     @Test
     public void testPackedArrayHugeLength() throws Exception {
         _verifyFailure(_doc(0x4A), "Packed array length overflows for field 'packed'");
+    }
+
+    // `map` with `string` key that has huge length: must not overflow
+    // [CVE-2026-110747]
+    @Test
+    public void testMapStringKeyHugeLength() throws Exception {
+        final ProtobufSchema mapSchema = ProtobufSchemaLoader.std.parse(
+                "syntax = \"proto3\";\n"
+                + "message M { map<string, int32> counts = 1; }\n", "M");
+        // tag for field 1 (map entry); entry length; then key tag (field 1, string),
+        // key length of Integer.MAX_VALUE, then filler
+        final byte[] doc = new byte[2 + 1 + MAX_INT_VINT.length + 20];
+        doc[0] = (byte) 0x0A;
+        doc[1] = (byte) (doc.length - 2);
+        doc[2] = (byte) 0x0A;
+        System.arraycopy(MAX_INT_VINT, 0, doc, 3, MAX_INT_VINT.length);
+        Arrays.fill(doc, 3 + MAX_INT_VINT.length, doc.length, (byte) 'a');
+        // Also: minimal document with no key content at all
+        final byte[] minDoc = new byte[] { 0x0A, 0x06, 0x0A,
+                (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, 0x07 };
+        for (byte[] bytes : new byte[][] { doc, minDoc }) {
+            for (Object input : new Object[] { bytes, new ByteArrayInputStream(bytes) }) {
+                try {
+                    if (input instanceof byte[]) {
+                        MAPPER.readerFor(Map.class).with(mapSchema).readValue((byte[]) input);
+                    } else {
+                        MAPPER.readerFor(Map.class).with(mapSchema).readValue((InputStream) input);
+                    }
+                    fail("Should not pass");
+                } catch (JacksonException e) {
+                    // fine, any parse failure
+                }
+            }
+        }
     }
 
     // String with declared length below input buffer size, but truncated content:
