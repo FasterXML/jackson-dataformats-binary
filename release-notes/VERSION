@@ -27,6 +27,7 @@ No changes since 3.2
   `ArrayIndexOutOfBoundsException` for out-of-range values
  (fix by @pjfanning, w/ Claude code)
 #817: (protobuf) Improve length validation for length-prefixed values in `ProtobufParser`
+  [CVE-2026-104016][CVE-2026-104017][CVE-2026-110747]
  (fix by @pjfanning, w/ Claude code)
 #818: (ion) Report corrupt content for String/Symbol value without text
  (fix by @pjfanning, w/ Claude code)
