@@ -106,7 +106,8 @@ public class LengthOverflowProtobufReadTest extends ProtobufTestBase
         _verifyFailure(_doc(0x4A), "Packed array length overflows for field 'packed'");
     }
 
-    // `map` with `string` key that has huge length: must not overflow (3.x only)
+    // `map` with `string` key that has huge length: must not overflow
+    // [CVE-2026-110747]
     @Test
     public void testMapStringKeyHugeLength() throws Exception {
         final ProtobufSchema mapSchema = ProtobufSchemaLoader.std.parse(
@@ -120,16 +121,21 @@ public class LengthOverflowProtobufReadTest extends ProtobufTestBase
         doc[2] = (byte) 0x0A;
         System.arraycopy(MAX_INT_VINT, 0, doc, 3, MAX_INT_VINT.length);
         Arrays.fill(doc, 3 + MAX_INT_VINT.length, doc.length, (byte) 'a');
-        for (Object input : new Object[] { doc, new ByteArrayInputStream(doc) }) {
-            try {
-                if (input instanceof byte[]) {
-                    MAPPER.readerFor(Map.class).with(mapSchema).readValue((byte[]) input);
-                } else {
-                    MAPPER.readerFor(Map.class).with(mapSchema).readValue((InputStream) input);
+        // Also: minimal document with no key content at all
+        final byte[] minDoc = new byte[] { 0x0A, 0x06, 0x0A,
+                (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, 0x07 };
+        for (byte[] bytes : new byte[][] { doc, minDoc }) {
+            for (Object input : new Object[] { bytes, new ByteArrayInputStream(bytes) }) {
+                try {
+                    if (input instanceof byte[]) {
+                        MAPPER.readerFor(Map.class).with(mapSchema).readValue((byte[]) input);
+                    } else {
+                        MAPPER.readerFor(Map.class).with(mapSchema).readValue((InputStream) input);
+                    }
+                    fail("Should not pass");
+                } catch (JacksonException e) {
+                    // fine, any parse failure
                 }
-                fail("Should not pass");
-            } catch (JacksonException e) {
-                // fine, any parse failure
             }
         }
     }
