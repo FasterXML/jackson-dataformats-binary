@@ -14,7 +14,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.21.8 (not yet released)
+2.21.8 (17-Oct-2026)
 
 #816: (avro) `UnionReader.nextToken()` does not validate union index, throws
   `ArrayIndexOutOfBoundsException` for out-of-range values
