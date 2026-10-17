@@ -48,7 +48,7 @@ Active maintainers:
   `CustomEncoding` lose elements and the following field
  (fix by @cowtowncoder, w/ Claude code)
 
-2.22.4 (not yet released)
+2.22.4 (17-Oct-2026)
 
 #816: (avro) `UnionReader.nextToken()` does not validate union index, throws
   `ArrayIndexOutOfBoundsException` for out-of-range values
