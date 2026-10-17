@@ -14,10 +14,6 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.23.0 (not yet released)
-
-No changes since 2.22
-
 2.22.4 (not yet released)
 
 #816: (avro) `UnionReader.nextToken()` does not validate union index, throws
