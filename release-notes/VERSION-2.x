@@ -47,6 +47,8 @@ Active maintainers:
 #855: (avro) `arrayNext()` / `mapNext()` on `Decoder` passed to `@AvroEncode`
   `CustomEncoding` lose elements and the following field
  (fix by @cowtowncoder, w/ Claude code)
+#869: (smile) Wrong cached property name returned for names containing 0xFF bytes
+ (fix by @pjfanning, w/ Claude code)
 
 2.22.4 (17-Oct-2026)
 
