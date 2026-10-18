@@ -2551,6 +2551,7 @@ public class CBORParser extends ParserMinimalBase
                             _reportInvalidOther(c2 & 0xFF, inPtr);
                         }
                         i = ((i & 0x1F) << 6) | (c2 & 0x3F);
+                        _verifyUTF8(i, 2, inPtr);
                     }
                     break;
                     case 2: {
@@ -2563,20 +2564,34 @@ public class CBORParser extends ParserMinimalBase
                             _reportInvalidOther(c3 & 0xFF, inPtr);
                         }
                         i = ((i & 0x0F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
+                        _verifyUTF8(i, 3, inPtr);
                     }
                     break;
-                    case 3:
-                        // 30-Jan-2021, tatu: TODO - validate these too?
-                        i = ((i & 0x07) << 18)
-                            | ((inputBuf[inPtr++] & 0x3F) << 12)
-                            | ((inputBuf[inPtr++] & 0x3F) << 6)
-                            | (inputBuf[inPtr++] & 0x3F);
+                    case 3: {
+                        // [dataformats-binary#860]: validate continuation bytes too
+                        final int c2 = inputBuf[inPtr++];
+                        if ((c2 & 0xC0) != 0x080) {
+                            _reportInvalidOther(c2 & 0xFF, inPtr);
+                        }
+                        final int c3 = inputBuf[inPtr++];
+                        if ((c3 & 0xC0) != 0x080) {
+                            _reportInvalidOther(c3 & 0xFF, inPtr);
+                        }
+                        final int c4 = inputBuf[inPtr++];
+                        if ((c4 & 0xC0) != 0x080) {
+                            _reportInvalidOther(c4 & 0xFF, inPtr);
+                        }
+                        i = ((i & 0x07) << 18) | ((c2 & 0x3F) << 12)
+                            | ((c3 & 0x3F) << 6) | (c4 & 0x3F);
+                        _verifyUTF8(i, 4, inPtr);
                         // note: this is the codepoint value; need to split, too
                         i -= 0x10000;
                         outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
                         i = 0xDC00 | (i & 0x3FF);
-                        break;
+                    }
+                    break;
                     default: // invalid
+                        _inputPtr = inPtr;
                         _reportInvalidInitial(i);
                 }
             }
@@ -2642,6 +2657,7 @@ public class CBORParser extends ParserMinimalBase
                         _reportInvalidOther(d & 0xFF, _inputPtr);
                     }
                     c = ((c & 0x1F) << 6) | (d & 0x3F);
+                    _verifyUTF8(c, 2, _inputPtr);
                 }
                 break;
             case 2: // 3-byte UTF
@@ -2806,6 +2822,7 @@ public class CBORParser extends ParserMinimalBase
                         _reportInvalidOther(d & 0xFF, _inputPtr);
                     }
                     c = ((c & 0x1F) << 6) | (d & 0x3F);
+                    _verifyUTF8(c, 2, _inputPtr);
                 }
                 break;
                 case 2: // 3-byte UTF
@@ -3257,6 +3274,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
                             _reportInvalidOther(c2 & 0xFF, inPtr);
                         }
                         i = ((i & 0x1F) << 6) | (c2 & 0x3F);
+                        _verifyUTF8(i, 2, inPtr);
                     }
                     break;
                 case 2:
@@ -3270,20 +3288,35 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
                             _reportInvalidOther(c3 & 0xFF, inPtr);
                         }
                         i = ((i & 0x0F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
+                        _verifyUTF8(i, 3, inPtr);
                     }
                     break;
                 case 3:
-                    // 30-Jan-2021, tatu: TODO - validate surrogate case too?
-                    i = ((i & 0x07) << 18)
-                        | ((inBuf[inPtr++] & 0x3F) << 12)
-                        | ((inBuf[inPtr++] & 0x3F) << 6)
-                        | (inBuf[inPtr++] & 0x3F);
+                    {
+                        // [dataformats-binary#860]: validate continuation bytes too
+                        final int c2 = inBuf[inPtr++];
+                        if ((c2 & 0xC0) != 0x080) {
+                            _reportInvalidOther(c2 & 0xFF, inPtr);
+                        }
+                        final int c3 = inBuf[inPtr++];
+                        if ((c3 & 0xC0) != 0x080) {
+                            _reportInvalidOther(c3 & 0xFF, inPtr);
+                        }
+                        final int c4 = inBuf[inPtr++];
+                        if ((c4 & 0xC0) != 0x080) {
+                            _reportInvalidOther(c4 & 0xFF, inPtr);
+                        }
+                        i = ((i & 0x07) << 18) | ((c2 & 0x3F) << 12)
+                            | ((c3 & 0x3F) << 6) | (c4 & 0x3F);
+                        _verifyUTF8(i, 4, inPtr);
+                    }
                     // note: this is the codepoint value; need to split, too
                     i -= 0x10000;
                     outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
                     i = 0xDC00 | (i & 0x3FF);
                     break;
                 default: // invalid
+                    _inputPtr = inPtr;
                     throw _constructReadException("Invalid UTF-8 byte 0x%s in Object property name",
                             Integer.toHexString(i));
                 }
@@ -3969,6 +4002,7 @@ expType, type, ch));
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
         c = (c << 6) | (d & 0x3F);
+        _verifyUTF8(c, 3, _inputPtr);
         return c;
     }
 
@@ -3985,6 +4019,7 @@ expType, type, ch));
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
         c = (c << 6) | (d & 0x3F);
+        _verifyUTF8(c, 3, _inputPtr);
         return c;
     }
 
@@ -4008,7 +4043,9 @@ expType, type, ch));
         if ((d & 0xC0) != 0x080) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
-        return ((c << 6) | (d & 0x3F)) - 0x10000;
+        c = (c << 6) | (d & 0x3F);
+        _verifyUTF8(c, 4, _inputPtr);
+        return c - 0x10000;
     }
 
     private final int _decodeChunkedUTF8_4(int c) throws IOException
@@ -4027,7 +4064,9 @@ expType, type, ch));
         if ((d & 0xC0) != 0x080) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
-        return ((c << 6) | (d & 0x3F)) - 0x10000;
+        c = (c << 6) | (d & 0x3F);
+        _verifyUTF8(c, 4, _inputPtr);
+        return c - 0x10000;
     }
 
     /*
@@ -4235,6 +4274,40 @@ expType, type, ch));
     protected void _reportInvalidOther(int mask, int ptr) throws JsonParseException {
         _inputPtr = ptr;
         _reportInvalidOther(mask);
+    }
+
+    // [dataformats-binary#860]: Decoded code point must use the shortest form,
+    //   must not be a surrogate and must be at most U+10FFFF (RFC 3629).
+    //   `ptr` is the input offset just past the sequence, for error location.
+    private void _verifyUTF8(int ch, int byteCount, int ptr) throws JsonParseException
+    {
+        final String problem;
+        if (byteCount == 2) {
+            if (ch >= 0x80) {
+                return;
+            }
+            problem = "overlong 2-byte encoding of 0x"+Integer.toHexString(ch);
+        } else if (byteCount == 3) {
+            if (ch >= 0x800) {
+                if (ch < 0xD800 || ch > 0xDFFF) {
+                    return;
+                }
+                problem = "Illegal surrogate character 0x"+Integer.toHexString(ch);
+            } else {
+                problem = "overlong 3-byte encoding of 0x"+Integer.toHexString(ch);
+            }
+        } else {
+            if (ch >= 0x10000) {
+                if (ch <= Character.MAX_CODE_POINT) {
+                    return;
+                }
+                problem = "code point 0x"+Integer.toHexString(ch)+" beyond U+10FFFF";
+            } else {
+                problem = "overlong 4-byte encoding of 0x"+Integer.toHexString(ch);
+            }
+        }
+        _inputPtr = ptr;
+        _reportError("Invalid UTF-8: "+problem);
     }
 
     // @since 2.12
