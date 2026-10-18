@@ -2362,29 +2362,31 @@ public class ProtobufParser extends ParserMinimalBase
         final int[] codes = UTF8_UNIT_CODES;
         do {
             i = inputBuf[inPtr++] & 0xFF;
-            switch (codes[i]) {
+            final int code = codes[i];
+            // [dataformats-binary#863]: must not read past end of String
+            if ((inPtr + code) > end) {
+                throw _constructError(String.format(
+                        "Malformed %d-byte UTF-8 character at the end of Unicode text block", code+1));
+            }
+            // [dataformats-binary#863]: validate continuation bytes, code point
+            switch (code) {
             case 0:
                 break;
             case 1:
-                i = ((i & 0x1F) << 6) | (inputBuf[inPtr++] & 0x3F);
-                break;
             case 2:
-                i = ((i & 0x0F) << 12)
-                   | ((inputBuf[inPtr++] & 0x3F) << 6)
-                   | (inputBuf[inPtr++] & 0x3F);
+                i = _decodeUTF8InBuffer(inputBuf, inPtr, i, code);
+                inPtr += code;
                 break;
             case 3:
-                i = ((i & 0x07) << 18)
-                 | ((inputBuf[inPtr++] & 0x3F) << 12)
-                 | ((inputBuf[inPtr++] & 0x3F) << 6)
-                 | (inputBuf[inPtr++] & 0x3F);
+                i = _decodeUTF8InBuffer(inputBuf, inPtr, i, code);
+                inPtr += code;
                 // note: this is the codepoint value; need to split, too
                 i -= 0x10000;
                 outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
                 i = 0xDC00 | (i & 0x3FF);
                 break;
             default: // invalid
-                _reportError("Invalid byte "+Integer.toHexString(i)+" in Unicode text block");
+                _reportError(String.format("Invalid byte 0x%02X in Unicode text block", i));
             }
             outBuf[outPtr++] = (char) i;
         } while (inPtr < end);
@@ -2425,6 +2427,7 @@ public class ProtobufParser extends ParserMinimalBase
                         _reportInvalidOther(d & 0xFF, _inputPtr);
                     }
                     c = ((c & 0x1F) << 6) | (d & 0x3F);
+                    _verifyUTF8(c, 2);
                 }
                 break;
             case 2: // 3-byte UTF
@@ -2471,6 +2474,7 @@ public class ProtobufParser extends ParserMinimalBase
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
         c = (c << 6) | (d & 0x3F);
+        _verifyUTF8(c, 3);
         return c;
     }
 
@@ -2494,7 +2498,9 @@ public class ProtobufParser extends ParserMinimalBase
         if ((d & 0xC0) != 0x080) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
-        return ((c << 6) | (d & 0x3F)) - 0x10000;
+        c = (c << 6) | (d & 0x3F);
+        _verifyUTF8(c, 4);
+        return c - 0x10000;
     }
 
     private final int _nextByte() throws IOException {
@@ -2993,6 +2999,57 @@ public class ProtobufParser extends ParserMinimalBase
 
     private void _reportTooLongVLong(int fifth) throws JsonParseException {
         _reportError("Too long tag VLong: tenth byte 0x%x", fifth);
+    }
+
+    // [dataformats-binary#863]: Decodes multi-byte UTF-8 sequence fully contained in
+    //   buffer: lead byte `c` already read, `needed` (1 - 3) continuation bytes start
+    //   at `buf[ptr]`. Verifies continuation bytes and decoded code point.
+    private int _decodeUTF8InBuffer(byte[] buf, int ptr, int c, int needed)
+        throws JsonParseException
+    {
+        // Mask lead byte: 0x1F for 2-byte, 0x0F for 3-byte, 0x07 for 4-byte
+        c &= (0x3F >> needed);
+        for (int i = 0; i < needed; ++i) {
+            final int d = buf[ptr++];
+            if ((d & 0xC0) != 0x080) {
+                _reportInvalidOther(d & 0xFF);
+            }
+            c = (c << 6) | (d & 0x3F);
+        }
+        _verifyUTF8(c, needed+1);
+        return c;
+    }
+
+    // [dataformats-binary#863]: Decoded code point must use the shortest form,
+    //   must not be a surrogate and must be at most U+10FFFF (RFC 3629)
+    private void _verifyUTF8(int ch, int byteCount) throws JsonParseException
+    {
+        final String problem;
+        if (byteCount == 2) {
+            if (ch >= 0x80) {
+                return;
+            }
+            problem = "overlong 2-byte encoding of 0x"+Integer.toHexString(ch);
+        } else if (byteCount == 3) {
+            if (ch >= 0x800) {
+                if (ch < 0xD800 || ch > 0xDFFF) {
+                    return;
+                }
+                problem = "Illegal surrogate character 0x"+Integer.toHexString(ch);
+            } else {
+                problem = "overlong 3-byte encoding of 0x"+Integer.toHexString(ch);
+            }
+        } else {
+            if (ch >= 0x10000) {
+                if (ch <= Character.MAX_CODE_POINT) {
+                    return;
+                }
+                problem = "code point 0x"+Integer.toHexString(ch)+" beyond U+10FFFF";
+            } else {
+                problem = "overlong 4-byte encoding of 0x"+Integer.toHexString(ch);
+            }
+        }
+        _reportError("Invalid UTF-8: "+problem);
     }
 
     private void _reportInvalidInitial(int mask) throws JsonParseException {
