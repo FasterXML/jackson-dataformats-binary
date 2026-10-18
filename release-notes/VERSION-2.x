@@ -48,7 +48,7 @@ Active maintainers:
   `CustomEncoding` lose elements and the following field
  (fix by @cowtowncoder, w/ Claude code)
 
-2.22.4 (not yet released)
+2.22.4 (17-Oct-2026)
 
 #816: (avro) `UnionReader.nextToken()` does not validate union index, throws
   `ArrayIndexOutOfBoundsException` for out-of-range values
@@ -128,7 +128,7 @@ Active maintainers:
 
 No changes since 2.21
 
-2.21.8 (not yet released)
+2.21.8 (17-Oct-2026)
 
 #816: (avro) `UnionReader.nextToken()` does not validate union index, throws
   `ArrayIndexOutOfBoundsException` for out-of-range values
@@ -331,7 +331,7 @@ No changes since 2.19.1
 #571: Unable to deserialize a pojo with IonStruct
  (reported, fix contributed by Josh C)
 
-2.18.12 (not yet released)
+2.18.12 (17-Oct-2026)
 
 #770: (smile) Async parser decodes short ASCII values split across input feeds
   as short Unicode
