@@ -39,7 +39,8 @@ public class Fuzz32527ShortUnicodeTest extends BaseTestForSmile
                 p.nextToken();
                 fail("Should have failed");
             } catch (StreamReadException e) {
-                verifyException(e, "Truncated UTF-8 character in Short Unicode Name (10 bytes)");
+                // [dataformats-binary#861]: continuation bytes now validated, so fails earlier
+                verifyException(e, "Invalid UTF-8 middle byte 0xc8");
             }
         }
     }

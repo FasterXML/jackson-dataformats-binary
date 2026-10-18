@@ -1308,7 +1308,9 @@ public class NonBlockingByteArrayParser
         if ((d & 0xC0) != 0x080) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
-        return ((c & 0x1F) << 6) | (d & 0x3F);
+        c = ((c & 0x1F) << 6) | (d & 0x3F);
+        _verifyUTF8(c, 2);
+        return c;
     }
 
     private final int _decodeUTF8_3(int c, int d, int e) throws IOException
@@ -1321,7 +1323,9 @@ public class NonBlockingByteArrayParser
         if ((e & 0xC0) != 0x080) {
             _reportInvalidOther(e & 0xFF, _inputPtr);
         }
-        return (c << 6) | (e & 0x3F);
+        c = (c << 6) | (e & 0x3F);
+        _verifyUTF8(c, 3);
+        return c;
     }
 
     // @return Character value <b>minus 0x10000</c>; this so that caller
@@ -1339,7 +1343,9 @@ public class NonBlockingByteArrayParser
         if ((f & 0xC0) != 0x080) {
             _reportInvalidOther(f & 0xFF, _inputPtr);
         }
-        return ((c << 6) | (f & 0x3F)) - 0x10000;
+        c = (c << 6) | (f & 0x3F);
+        _verifyUTF8(c, 4);
+        return c - 0x10000;
     }
 
     /*
@@ -1822,20 +1828,16 @@ public class NonBlockingByteArrayParser
                     _reportTruncatedUTF8InString(len, firstCharOffset, i, code);
                 }
                 // trickiest one, need surrogate handling
+                // [dataformats-binary#861]: validate continuation bytes, code point
                 switch (code) {
                 case 1:
-                    i = ((i & 0x1F) << 6) | (inBuf[inPtr++] & 0x3F);
-                    break;
                 case 2:
-                    i = ((i & 0x0F) << 12)
-                        | ((inBuf[inPtr++] & 0x3F) << 6)
-                        | (inBuf[inPtr++] & 0x3F);
+                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code);
+                    inPtr += code;
                     break;
                 case 3:
-                    i = ((i & 0x07) << 18)
-                    | ((inBuf[inPtr++] & 0x3F) << 12)
-                    | ((inBuf[inPtr++] & 0x3F) << 6)
-                    | (inBuf[inPtr++] & 0x3F);
+                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code);
+                    inPtr += code;
                     // note: this is the codepoint value; need to split, too
                     i -= 0x10000;
                     outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
@@ -1875,20 +1877,16 @@ public class NonBlockingByteArrayParser
                     _reportInvalidEOF(" in long field name", JsonToken.FIELD_NAME);
                 }
                 // trickiest one, need surrogate handling
+                // [dataformats-binary#861]: validate continuation bytes, code point
                 switch (code) {
                 case 1:
-                    i = ((i & 0x1F) << 6) | (inBuf[inPtr++] & 0x3F);
-                    break;
                 case 2:
-                    i = ((i & 0x0F) << 12)
-                        | ((inBuf[inPtr++] & 0x3F) << 6)
-                        | (inBuf[inPtr++] & 0x3F);
+                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code);
+                    inPtr += code;
                     break;
                 case 3:
-                    i = ((i & 0x07) << 18)
-                    | ((inBuf[inPtr++] & 0x3F) << 12)
-                    | ((inBuf[inPtr++] & 0x3F) << 6)
-                    | (inBuf[inPtr++] & 0x3F);
+                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code);
+                    inPtr += code;
                     // note: this is the codepoint value; need to split, too
                     i -= 0x10000;
                     outBuf[outPtr++] = (char) (0xD800 | (i >> 10));

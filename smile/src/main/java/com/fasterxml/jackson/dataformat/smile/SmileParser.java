@@ -1625,20 +1625,16 @@ versionBits));
                     _reportTruncatedUTF8InName(len, firstCharOffset, i, code);
                 }
                 // trickiest one, need surrogate handling
+                // [dataformats-binary#861]: validate continuation bytes, code point
                 switch (code) {
                 case 1:
-                    i = ((i & 0x1F) << 6) | (inBuf[inPtr++] & 0x3F);
-                    break;
                 case 2:
-                    i = ((i & 0x0F) << 12)
-                        | ((inBuf[inPtr++] & 0x3F) << 6)
-                        | (inBuf[inPtr++] & 0x3F);
+                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code);
+                    inPtr += code;
                     break;
                 case 3:
-                    i = ((i & 0x07) << 18)
-                    | ((inBuf[inPtr++] & 0x3F) << 12)
-                    | ((inBuf[inPtr++] & 0x3F) << 6)
-                    | (inBuf[inPtr++] & 0x3F);
+                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code);
+                    inPtr += code;
                     // note: this is the codepoint value; need to split, too
                     i -= 0x10000;
                     outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
@@ -1715,7 +1711,7 @@ versionBits));
                 ++ix;
 
                 if ((ch2 & 0xC0) != 0x080) {
-                    _reportInvalidOther(ch2);
+                    _reportInvalidOther(ch2 & 0xFF);
                 }
                 ch = (ch << 6) | (ch2 & 0x3F);
                 if (needed > 1) {
@@ -1725,7 +1721,7 @@ versionBits));
                     ++ix;
 
                     if ((ch2 & 0xC0) != 0x080) {
-                        _reportInvalidOther(ch2);
+                        _reportInvalidOther(ch2 & 0xFF);
                     }
                     ch = (ch << 6) | (ch2 & 0x3F);
                     if (needed > 2) { // 4 bytes? (need surrogates on output)
@@ -1739,6 +1735,8 @@ versionBits));
                         ch = (ch << 6) | (ch2 & 0x3F);
                     }
                 }
+                // [dataformats-binary#861]: validate decoded code point
+                _verifyUTF8(ch, needed+1);
                 if (needed > 2) { // surrogate pair? once again, let's output one here, one later on
                     ch -= 0x10000; // to normalize it starting with 0x0
                     if (cix >= cbuf.length) {
@@ -2516,26 +2514,23 @@ currentToken(), firstCh);
                 return _reportTruncatedUTF8InString(byteLen, firstCharOffset, i, unitLen);
             }
 
+            // [dataformats-binary#861]: validate continuation bytes, code point
             switch (unitLen) {
             case 1:
-                i = ((i & 0x1F) << 6) | (inputBuf[inPtr++] & 0x3F);
-                break;
             case 2:
-                i = ((i & 0x0F) << 12)
-                    | ((inputBuf[inPtr++] & 0x3F) << 6)
-                    | (inputBuf[inPtr++] & 0x3F);
+                i = _decodeUTF8InBuffer(inputBuf, inPtr, i, unitLen);
+                inPtr += unitLen;
                 break;
             case 3:// trickiest one, need surrogate handling
-                i = ((i & 0x07) << 18)
-                    | ((inputBuf[inPtr++] & 0x3F) << 12)
-                    | ((inputBuf[inPtr++] & 0x3F) << 6)
-                    | (inputBuf[inPtr++] & 0x3F);
+                i = _decodeUTF8InBuffer(inputBuf, inPtr, i, unitLen);
+                inPtr += unitLen;
                 // note: this is the codepoint value; need to split, too
                 i -= 0x10000;
                 outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
                 i = 0xDC00 | (i & 0x3FF);
                 break;
             default: // invalid
+                _inputPtr = inPtr;
                 throw _constructReadException("Invalid byte 0x%02X in short Unicode text block", i);
             }
             outBuf[outPtr++] = (char) i;
@@ -3037,7 +3032,9 @@ currentToken(), firstCh);
         if ((d & 0xC0) != 0x080) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
-        return ((c & 0x1F) << 6) | (d & 0x3F);
+        c = ((c & 0x1F) << 6) | (d & 0x3F);
+        _verifyUTF8(c, 2);
+        return c;
     }
 
     private final int _decodeUtf8_3(int c1) throws IOException
@@ -3059,6 +3056,7 @@ currentToken(), firstCh);
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
         c = (c << 6) | (d & 0x3F);
+        _verifyUTF8(c, 3);
         return c;
     }
 
@@ -3075,6 +3073,7 @@ currentToken(), firstCh);
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
         c = (c << 6) | (d & 0x3F);
+        _verifyUTF8(c, 3);
         return c;
     }
 
@@ -3112,7 +3111,9 @@ currentToken(), firstCh);
         /* note: won't change it to negative here, since caller
          * already knows it'll need a surrogate
          */
-        return ((c << 6) | (d & 0x3F)) - 0x10000;
+        c = (c << 6) | (d & 0x3F);
+        _verifyUTF8(c, 4);
+        return c - 0x10000;
     }
 
     /*
