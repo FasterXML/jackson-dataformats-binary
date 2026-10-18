@@ -47,6 +47,9 @@ Active maintainers:
 #855: (avro) `arrayNext()` / `mapNext()` on `Decoder` passed to `@AvroEncode`
   `CustomEncoding` lose elements and the following field
  (fix by @cowtowncoder, w/ Claude code)
+#863: (protobuf) Invalid UTF-8 sequences (overlong, surrogates, > U+10FFFF, bad continuation
+  bytes) not rejected in strings
+ (fix by @pjfanning, w/ Claude code)
 
 2.22.4 (17-Oct-2026)
 
