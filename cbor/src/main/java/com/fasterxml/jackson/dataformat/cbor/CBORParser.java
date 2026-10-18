@@ -3481,7 +3481,13 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
             _quadBuffer[offset++] = q;
         } while ((len -= 4) > 3);
         // and then leftovers
-        if (len > 0) {
+        if (len == 0) {
+            // [dataformats-binary#868]: full last quad starting with 0xFF would match
+            //   padded last quad of a shorter name
+            if ((_quadBuffer[offset-1] >>> 24) == 0xFF) {
+                _reportInvalidInitial(0xFF);
+            }
+        } else {
             int q = _padQuadForNulls(inBuf[inPtr]);
             if (len > 1) {
                 q = (q << 8) + (inBuf[++inPtr] & 0xFF);
@@ -3520,8 +3526,15 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
     }
 
     // Helper method needed to fix [dataformats-binary#312], masking of 0x00 character
-    private final static int _padQuadForNulls(int firstByte) {
-        return (firstByte & 0xFF) | 0xFFFFFF00;
+    // 19-Oct-2026, pjfanning: [dataformats-binary#868] padding uses 0xFF bytes, so a
+    //   partial quad starting with 0xFF could match a shorter name in the symbol table,
+    //   skipping UTF-8 validation of the name; 0xFF is never valid in UTF-8, so reject it
+    private final int _padQuadForNulls(int firstByte) throws JsonParseException {
+        firstByte &= 0xFF;
+        if (firstByte == 0xFF) {
+            _reportInvalidInitial(firstByte);
+        }
+        return firstByte | 0xFFFFFF00;
     }
 
     /*
