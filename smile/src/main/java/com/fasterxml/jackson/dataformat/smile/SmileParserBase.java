@@ -875,6 +875,74 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
     }
 
     /**
+     * Helper method for decoding a multi-byte UTF-8 sequence fully contained in
+     * given buffer: lead byte {@code c} has already been read, and {@code needed}
+     * (1 - 3) continuation bytes start at {@code buf[ptr]}. Verifies continuation
+     * bytes as well as the decoded code point (see {@link #_verifyUTF8}).
+     *<p>
+     * NOTE: does not change {@code _inputPtr} since buffer need not be the
+     * input buffer.
+     *
+     * @return Decoded code point
+     *
+     * @since 2.23
+     */
+    protected final int _decodeUTF8InBuffer(byte[] buf, int ptr, int c, int needed)
+        throws JsonParseException
+    {
+        // Mask lead byte: 0x1F for 2-byte, 0x0F for 3-byte, 0x07 for 4-byte
+        c &= (0x3F >> needed);
+        for (int i = 0; i < needed; ++i) {
+            final int d = buf[ptr++];
+            if ((d & 0xC0) != 0x080) {
+                _reportError("Invalid UTF-8 middle byte 0x"+Integer.toHexString(d & 0xFF));
+            }
+            c = (c << 6) | (d & 0x3F);
+        }
+        _verifyUTF8(c, needed+1);
+        return c;
+    }
+
+    /**
+     * Helper method for verifying that decoded UTF-8 code point uses the shortest
+     * form, is not a surrogate and is at most U+10FFFF (RFC 3629).
+     *
+     * @param ch Decoded code point
+     * @param byteCount Number of bytes in the UTF-8 sequence (2 - 4)
+     *
+     * @since 2.23
+     */
+    protected final void _verifyUTF8(int ch, int byteCount) throws JsonParseException
+    {
+        final String problem;
+        if (byteCount == 2) {
+            if (ch >= 0x80) {
+                return;
+            }
+            problem = "overlong 2-byte encoding of 0x"+Integer.toHexString(ch);
+        } else if (byteCount == 3) {
+            if (ch >= 0x800) {
+                if (ch < 0xD800 || ch > 0xDFFF) {
+                    return;
+                }
+                problem = "Illegal surrogate character 0x"+Integer.toHexString(ch);
+            } else {
+                problem = "overlong 3-byte encoding of 0x"+Integer.toHexString(ch);
+            }
+        } else {
+            if (ch >= 0x10000) {
+                if (ch <= Character.MAX_CODE_POINT) {
+                    return;
+                }
+                problem = "code point 0x"+Integer.toHexString(ch)+" beyond U+10FFFF";
+            } else {
+                problem = "overlong 4-byte encoding of 0x"+Integer.toHexString(ch);
+            }
+        }
+        _reportError("Invalid UTF-8: "+problem);
+    }
+
+    /**
      * Helper method used to encapsulate logic of including (or not) of
      * "source reference" when constructing {@link JsonLocation} instances.
      *
