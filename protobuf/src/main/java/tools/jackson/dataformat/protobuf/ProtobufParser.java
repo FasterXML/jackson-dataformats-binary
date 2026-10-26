@@ -1444,6 +1444,11 @@ public class ProtobufParser extends ParserMinimalBase
     @Override
     public String nextName() throws JacksonException
     {
+        // As in nextToken(): skip the rest of a value that was not read [#874]
+        if (_tokenIncomplete) {
+            _tokenIncomplete = false;
+            _skipBytes(_decodedLength);
+        }
         if (_state == STATE_ROOT_KEY) {
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
@@ -1518,6 +1523,11 @@ public class ProtobufParser extends ParserMinimalBase
     @Override
     public boolean nextName(SerializableString sstr) throws JacksonException
     {
+        // As in nextToken(): skip the rest of a value that was not read [#874]
+        if (_tokenIncomplete) {
+            _tokenIncomplete = false;
+            _skipBytes(_decodedLength);
+        }
         if (_state == STATE_ROOT_KEY) {
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
@@ -1590,6 +1600,11 @@ public class ProtobufParser extends ParserMinimalBase
     @Override
     public int nextNameMatch(PropertyNameMatcher matcher) throws JacksonException
     {
+        // As in nextToken(): skip the rest of a value that was not read [#874]
+        if (_tokenIncomplete) {
+            _tokenIncomplete = false;
+            _skipBytes(_decodedLength);
+        }
         if (_state == STATE_ROOT_KEY) {
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
