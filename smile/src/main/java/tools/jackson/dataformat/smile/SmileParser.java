@@ -1140,22 +1140,25 @@ _typeAsInt);
         String name;
 
         if (_symbolsCanonical) {
-            switch (lenMarker >> 2) {
-            case 0:
+            final int qlen = (lenMarker + 3) >> 2;
+            switch (qlen) {
+            case 1:
                 name = _symbols.findName(_quad1);
                 break;
-            case 1:
+            case 2:
                 name = _symbols.findName(_quad1, _quad2);
                 break;
-            case 2:
+            case 3:
                 name = _symbols.findName(_quad1, _quad2, _quad3);
                 break;
             default:
-                name = _symbols.findName(_quadBuffer, (lenMarker + 3) >> 2);
+                name = _symbols.findName(_quadBuffer, qlen);
             }
             if (name == null) {
                 name = _decodeShortUnicodeName(lenMarker);
                 name = _addDecodedToSymbols(lenMarker, name);
+            } else {
+                _inputPtr += lenMarker;
             }
         } else {
             name = _decodeShortUnicodeName(lenMarker);
