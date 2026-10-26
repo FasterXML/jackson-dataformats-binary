@@ -23,6 +23,9 @@ No changes since 3.1
 #873: (smile) `SmileParser.nextNameMatch()` misreads short non-ASCII property names
   (input not advanced on symbol-table hit, wrong quad count)
  (fix by @cowtowncoder, w/ Claude code)
+#874: (protobuf) `nextName()` / `nextNameMatch()` do not skip an unread string value,
+  decode its bytes as the next tag
+ (fix by @cowtowncoder, w/ Claude code)
 #876: (cbor) `nextNameMatch()` may match property names differing only
   by leading NUL bytes
  (fix by @cowtowncoder, w/ Claude code)
