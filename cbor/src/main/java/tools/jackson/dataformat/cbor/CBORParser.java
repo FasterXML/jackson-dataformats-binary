@@ -1510,27 +1510,9 @@ public class CBORParser extends ParserBase
     private int _nextFieldDecodeAndAdd(PropertyNameMatcher matcher, int len) throws JacksonException
     {
         // 27-Nov-2017, tatu: May already be in main shared symbol table, need to check...
-        String name;
-        final int qlen = (len + 3) >> 2;
-        switch (qlen) {
-        case 1:
-            name = _symbols.findName(_quad1);
-            break;
-        case 2:
-            name = _symbols.findName(_quad1, _quad2);
-            break;
-        case 3:
-            name = _symbols.findName(_quad1, _quad2, _quad3);
-            break;
-        default:
-            name = _symbols.findName(_quadBuffer, qlen);
-        }
-        if (name == null) {
-            name = _decodeContiguousName(len);
-            name = _addDecodedToSymbols(len, name);
-        } else {
-            _inputPtr += len;
-        }
+        // [dataformats-binary#876]: must use same symbol table lookup (with NUL
+        // padding) as `nextToken()`, not quads built for `PropertyNameMatcher`
+        final String name = _decodeLongerName(len);
         _streamReadContext.setCurrentName(name);
         _updateToken(JsonToken.PROPERTY_NAME);
         // 07-Feb-2017, tatu: May actually have match in non-quad part (esp. for case-insensitive)
@@ -1580,6 +1562,12 @@ public class CBORParser extends ParserBase
         if ((_inputEnd - _inputPtr) < len) {
             _loadToHaveAtLeast(len);
         }
+        // [dataformats-binary#876]: quads are not padded, so a leading NUL byte
+        // in the last quad would be indistinguishable from a shorter name:
+        // force decoding (and match by String) instead
+        if (_inputBuffer[_inputPtr + ((len - 1) & ~3)] == 0) {
+            return PropertyNameMatcher.MATCH_UNKNOWN_NAME;
+        }
         // First: maybe we already have this name decoded?
         if (len < 5) {
             int inPtr = _inputPtr;
@@ -1594,7 +1582,6 @@ public class CBORParser extends ParserBase
                     }
                 }
             }
-            _quad1 = q;
             return matcher.matchByQuad(q);
         }
 
@@ -1619,8 +1606,6 @@ public class CBORParser extends ParserBase
                     }
                 }
             }
-            _quad1 = q1;
-            _quad2 = q2;
             return matcher.matchByQuad(q1, q2);
         }
 
@@ -1641,9 +1626,6 @@ public class CBORParser extends ParserBase
                     }
                 }
             }
-            _quad1 = q1;
-            _quad2 = q2;
-            _quad3 = q3;
             return matcher.matchByQuad(q1, q2, q3);
         }
         return _nextFieldFromSymbolsLong(matcher, len, q1, q2);
