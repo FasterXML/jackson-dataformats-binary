@@ -1504,27 +1504,9 @@ public class CBORParser extends ParserBase
     private int _nextFieldDecodeAndAdd(PropertyNameMatcher matcher, int len) throws JacksonException
     {
         // 27-Nov-2017, tatu: May already be in main shared symbol table, need to check...
-        String name;
-        final int qlen = (len + 3) >> 2;
-        switch (qlen) {
-        case 1:
-            name = _symbols.findName(_quad1);
-            break;
-        case 2:
-            name = _symbols.findName(_quad1, _quad2);
-            break;
-        case 3:
-            name = _symbols.findName(_quad1, _quad2, _quad3);
-            break;
-        default:
-            name = _symbols.findName(_quadBuffer, qlen);
-        }
-        if (name == null) {
-            name = _decodeContiguousName(len);
-            name = _addDecodedToSymbols(len, name);
-        } else {
-            _inputPtr += len;
-        }
+        // [dataformats-binary#876]: must use same symbol table lookup (with NUL
+        // padding) as `nextToken()`, not quads built for `PropertyNameMatcher`
+        final String name = _decodeLongerName(len);
         _streamReadContext.setCurrentName(name);
         _updateToken(JsonToken.PROPERTY_NAME);
         // 07-Feb-2017, tatu: May actually have match in non-quad part (esp. for case-insensitive)
@@ -1588,7 +1570,6 @@ public class CBORParser extends ParserBase
                     }
                 }
             }
-            _quad1 = q;
             return matcher.matchByQuad(q);
         }
 
@@ -1613,8 +1594,6 @@ public class CBORParser extends ParserBase
                     }
                 }
             }
-            _quad1 = q1;
-            _quad2 = q2;
             return matcher.matchByQuad(q1, q2);
         }
 
@@ -1635,9 +1614,6 @@ public class CBORParser extends ParserBase
                     }
                 }
             }
-            _quad1 = q1;
-            _quad2 = q2;
-            _quad3 = q3;
             return matcher.matchByQuad(q1, q2, q3);
         }
         return _nextFieldFromSymbolsLong(matcher, len, q1, q2);

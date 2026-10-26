@@ -18,6 +18,12 @@ implementations)
 
 No changes since 3.1
 
+3.1.9 (not yet released)
+
+#876: (cbor) `nextNameMatch()` mixes up unknown property names differing only
+  by NUL bytes (unpadded symbol-table lookup)
+ (fix by @cowtowncoder, w/ Claude code)
+
 3.1.8 (17-Oct-2026)
 
 #797: (avro) Apache decoder fails with `UnsupportedOperationException` when
