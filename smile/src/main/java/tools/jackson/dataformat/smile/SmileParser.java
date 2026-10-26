@@ -927,18 +927,11 @@ _typeAsInt);
                 int match = _nextNameOptimized(matcher, len);
                 if (match >= 0) { // gotcha! (expected case)
                     _inputPtr += len;
-                    final String name = matcher.nameLookup()[match];
-                    _streamReadContext.setCurrentName(name);
-                    if (_seenNames != null) {
-                        if (_seenNameCount >= _seenNames.length) {
-                            _seenNames = _expandSeenNames(_seenNames);
-                        }
-                        _seenNames[_seenNameCount++] = name;
-                    }
-                    _updateToken(JsonToken.PROPERTY_NAME);
-                    return match;
+                    return _nextNameMatchDecoded(matcher, match, matcher.nameLookup()[match]);
                 }
-                return _nextNameMatchDecoded(matcher, _findOrDecodeShortAsciiName(len));
+                // [dataformats-binary#873]: must use same symbol table lookup (with NUL
+                // padding) as `nextToken()`, not quads built for `PropertyNameMatcher`
+                return _nextNameMatchDecoded(matcher, match, _findOrDecodeShortAsciiName(len));
             }
         case 3: // short Unicode
             // all valid, except for 0xFF
@@ -956,18 +949,11 @@ _typeAsInt);
                 int match = _nextNameOptimized(matcher, len);
                 if (match >= 0) { // gotcha! (expected case)
                     _inputPtr += len;
-                    final String name = matcher.nameLookup()[match];
-                    _streamReadContext.setCurrentName(name);
-                    if (_seenNames != null) {
-                        if (_seenNameCount >= _seenNames.length) {
-                            _seenNames = _expandSeenNames(_seenNames);
-                        }
-                        _seenNames[_seenNameCount++] = name;
-                    }
-                    _updateToken(JsonToken.PROPERTY_NAME);
-                    return match;
+                    return _nextNameMatchDecoded(matcher, match, matcher.nameLookup()[match]);
                 }
-                return _nextNameMatchDecoded(matcher, _findOrDecodeShortUnicodeName(len));
+                // [dataformats-binary#873]: must use same symbol table lookup (with NUL
+                // padding) as `nextToken()`, not quads built for `PropertyNameMatcher`
+                return _nextNameMatchDecoded(matcher, match, _findOrDecodeShortUnicodeName(len));
             }
         }
         // Other byte values are illegal
@@ -995,7 +981,6 @@ _typeAsInt);
                     }
                 }
             }
-            _quad1 = q;
             return matcher.matchByQuad(q);
         }
 
@@ -1020,8 +1005,6 @@ _typeAsInt);
                     }
                 }
             }
-            _quad1 = q1;
-            _quad2 = q2;
             return matcher.matchByQuad(q1, q2);
         }
 
@@ -1042,9 +1025,6 @@ _typeAsInt);
                     }
                 }
             }
-            _quad1 = q1;
-            _quad2 = q2;
-            _quad3 = q3;
             return matcher.matchByQuad(q1, q2, q3);
         }
         return _nextNameFromSymbolsLong(matcher, len, q1, q2);
@@ -1094,9 +1074,7 @@ _typeAsInt);
         return matcher.matchByQuad(_quadBuffer, offset);
     }
 
-    // [dataformats-binary#873]: use the same symbol table lookup (with NUL padding)
-    // as `nextToken()`, instead of quads built for `PropertyNameMatcher`
-    private int _nextNameMatchDecoded(PropertyNameMatcher matcher, String name)
+    private int _nextNameMatchDecoded(PropertyNameMatcher matcher, int match, String name)
         throws JacksonException
     {
         if (_seenNames != null) {
@@ -1107,6 +1085,9 @@ _typeAsInt);
         }
         _streamReadContext.setCurrentName(name);
         _updateToken(JsonToken.PROPERTY_NAME);
+        if (match >= 0) {
+            return match;
+        }
         // 07-Feb-2017, tatu: May actually have match in non-quad part (esp. for case-insensitive)
         return matcher.matchName(name);
     }
