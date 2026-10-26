@@ -57,6 +57,9 @@ implementations)
 #823: (cbor) `maxStringLength` not consistently checked for chunked
   (indefinite-length) text values
  (fix by @pjfanning, w/ Claude code)
+#874: (protobuf) `nextName()` / `nextNameMatch()` do not skip an unread string value,
+  decode its bytes as the next tag
+ (fix by @cowtowncoder, w/ Claude code)
 #876: (cbor) `nextNameMatch()` may match property names differing only
   by leading NUL bytes
  (fix by @cowtowncoder, w/ Claude code)
