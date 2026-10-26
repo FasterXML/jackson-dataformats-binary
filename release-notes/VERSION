@@ -57,6 +57,9 @@ implementations)
 #823: (cbor) `maxStringLength` not consistently checked for chunked
   (indefinite-length) text values
  (fix by @pjfanning, w/ Claude code)
+#876: (cbor) `nextNameMatch()` may match property names differing only
+  by leading NUL bytes
+ (fix by @cowtowncoder, w/ Claude code)
 - (avro) Generated `array` schemas missing `java-class` for `java.util.List`,
   breaking round-trip via Apache `ReflectDatumReader`
 
