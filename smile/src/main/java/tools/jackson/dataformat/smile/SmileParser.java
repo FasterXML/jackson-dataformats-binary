@@ -951,18 +951,11 @@ _typeAsInt);
                 int match = _nextNameOptimized(matcher, len);
                 if (match >= 0) { // gotcha! (expected case)
                     _inputPtr += len;
-                    final String name = matcher.nameLookup()[match];
-                    _streamReadContext.setCurrentName(name);
-                    if (_seenNames != null) {
-                        if (_seenNameCount >= _seenNames.length) {
-                            _seenNames = _expandSeenNames(_seenNames);
-                        }
-                        _seenNames[_seenNameCount++] = name;
-                    }
-                    _updateToken(JsonToken.PROPERTY_NAME);
-                    return match;
+                    return _nextNameMatchDecoded(matcher, match, matcher.nameLookup()[match]);
                 }
-                return _nextNameAsciiDecodeAndAdd(matcher, len);
+                // [dataformats-binary#873]: must use same symbol table lookup (with NUL
+                // padding) as `nextToken()`, not quads built for `PropertyNameMatcher`
+                return _nextNameMatchDecoded(matcher, match, _findOrDecodeShortAsciiName(len));
             }
         case 3: // short Unicode
             // all valid, except for 0xFF
@@ -980,18 +973,11 @@ _typeAsInt);
                 int match = _nextNameOptimized(matcher, len);
                 if (match >= 0) { // gotcha! (expected case)
                     _inputPtr += len;
-                    final String name = matcher.nameLookup()[match];
-                    _streamReadContext.setCurrentName(name);
-                    if (_seenNames != null) {
-                        if (_seenNameCount >= _seenNames.length) {
-                            _seenNames = _expandSeenNames(_seenNames);
-                        }
-                        _seenNames[_seenNameCount++] = name;
-                    }
-                    _updateToken(JsonToken.PROPERTY_NAME);
-                    return match;
+                    return _nextNameMatchDecoded(matcher, match, matcher.nameLookup()[match]);
                 }
-                return _nextNameUnicodeDecodeAndAdd(matcher, len);
+                // [dataformats-binary#873]: must use same symbol table lookup (with NUL
+                // padding) as `nextToken()`, not quads built for `PropertyNameMatcher`
+                return _nextNameMatchDecoded(matcher, match, _findOrDecodeShortUnicodeName(len));
             }
         }
         // Other byte values are illegal
@@ -1019,7 +1005,6 @@ _typeAsInt);
                     }
                 }
             }
-            _quad1 = q;
             return matcher.matchByQuad(q);
         }
 
@@ -1044,8 +1029,6 @@ _typeAsInt);
                     }
                 }
             }
-            _quad1 = q1;
-            _quad2 = q2;
             return matcher.matchByQuad(q1, q2);
         }
 
@@ -1066,9 +1049,6 @@ _typeAsInt);
                     }
                 }
             }
-            _quad1 = q1;
-            _quad2 = q2;
-            _quad3 = q3;
             return matcher.matchByQuad(q1, q2, q3);
         }
         return _nextNameFromSymbolsLong(matcher, len, q1, q2);
@@ -1118,35 +1098,9 @@ _typeAsInt);
         return matcher.matchByQuad(_quadBuffer, offset);
     }
 
-    private int _nextNameAsciiDecodeAndAdd(PropertyNameMatcher matcher, int len)
+    private int _nextNameMatchDecoded(PropertyNameMatcher matcher, int match, String name)
         throws JacksonException
     {
-        String name;
-
-        if (_symbolsCanonical) {
-            final int qlen = (len + 3) >> 2;
-            switch (qlen) {
-            case 1:
-                name = _symbols.findName(_quad1);
-                break;
-            case 2:
-                name = _symbols.findName(_quad1, _quad2);
-                break;
-            case 3:
-                name = _symbols.findName(_quad1, _quad2, _quad3);
-                break;
-            default:
-                name = _symbols.findName(_quadBuffer, qlen);
-            }
-            if (name == null) {
-                name = _decodeShortAsciiName(len);
-                name = _addDecodedToSymbols(len, name);
-            } else {
-                _inputPtr += len;
-            }
-        } else {
-            name = _decodeShortAsciiName(len);
-        }
         if (_seenNames != null) {
             if (_seenNameCount >= _seenNames.length) {
                 _seenNames = _expandSeenNames(_seenNames);
@@ -1155,43 +1109,9 @@ _typeAsInt);
         }
         _streamReadContext.setCurrentName(name);
         _updateToken(JsonToken.PROPERTY_NAME);
-        // 07-Feb-2017, tatu: May actually have match in non-quad part (esp. for case-insensitive)
-        return matcher.matchName(name);
-    }
-
-    private int _nextNameUnicodeDecodeAndAdd(PropertyNameMatcher matcher, int lenMarker) throws JacksonException
-    {
-        String name;
-
-        if (_symbolsCanonical) {
-            switch (lenMarker >> 2) {
-            case 0:
-                name = _symbols.findName(_quad1);
-                break;
-            case 1:
-                name = _symbols.findName(_quad1, _quad2);
-                break;
-            case 2:
-                name = _symbols.findName(_quad1, _quad2, _quad3);
-                break;
-            default:
-                name = _symbols.findName(_quadBuffer, (lenMarker + 3) >> 2);
-            }
-            if (name == null) {
-                name = _decodeShortUnicodeName(lenMarker);
-                name = _addDecodedToSymbols(lenMarker, name);
-            }
-        } else {
-            name = _decodeShortUnicodeName(lenMarker);
+        if (match >= 0) {
+            return match;
         }
-        if (_seenNames != null) {
-            if (_seenNameCount >= _seenNames.length) {
-                _seenNames = _expandSeenNames(_seenNames);
-            }
-            _seenNames[_seenNameCount++] = name;
-        }
-        _streamReadContext.setCurrentName(name);
-        _updateToken(JsonToken.PROPERTY_NAME);
         // 07-Feb-2017, tatu: May actually have match in non-quad part (esp. for case-insensitive)
         return matcher.matchName(name);
     }
