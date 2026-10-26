@@ -1556,6 +1556,12 @@ public class CBORParser extends ParserBase
         if ((_inputEnd - _inputPtr) < len) {
             _loadToHaveAtLeast(len);
         }
+        // [dataformats-binary#876]: quads are not padded, so a leading NUL byte
+        // in the last quad would be indistinguishable from a shorter name:
+        // force decoding (and match by String) instead
+        if (_inputBuffer[_inputPtr + ((len - 1) & ~3)] == 0) {
+            return PropertyNameMatcher.MATCH_UNKNOWN_NAME;
+        }
         // First: maybe we already have this name decoded?
         if (len < 5) {
             int inPtr = _inputPtr;

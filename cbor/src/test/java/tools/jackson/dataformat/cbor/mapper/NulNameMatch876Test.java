@@ -54,6 +54,43 @@ public class NulNameMatch876Test extends CBORTestBase
         _verifyAnyBean(NON_CANONICAL_MAPPER, "é", "\u0000é");
     }
 
+    // Names differing from a declared property only by NUL bytes must
+    // not match that property
+    @Test
+    public void testLeadingNullsVsKnownProperty() throws Exception
+    {
+        _verifyKnownBean(MAPPER, "\u0000a");
+        _verifyKnownBean(MAPPER, "\u0000\u0000\u0000a");
+        _verifyKnownBean(MAPPER, "\u0000abcd");
+        _verifyKnownBean(MAPPER, "abcd\u0000e");
+        _verifyKnownBean(MAPPER, "abcdefghijkl\u0000m");
+        _verifyKnownBean(MAPPER, "abcdefghijklmnop\u0000q");
+        _verifyKnownBean(NON_CANONICAL_MAPPER, "abcd\u0000e");
+    }
+
+    static class KnownBean {
+        public int a, abcd, abcde, abcdefghijklm, abcdefghijklmnopq;
+        public Map<String, Object> other = new LinkedHashMap<>();
+
+        @JsonAnySetter
+        public void set(String k, Object v) { other.put(k, v); }
+    }
+
+    private void _verifyKnownBean(ObjectMapper mapper, String name) throws Exception
+    {
+        Map<String, Object> input = new LinkedHashMap<>();
+        // first name is read via `nextToken()`, only later ones via `nextNameMatch()`
+        input.put("z", 1);
+        input.put(name, 8);
+        byte[] doc = mapper.writeValueAsBytes(input);
+        for (int i = 0; i < 3; ++i) {
+            KnownBean bean = mapper.readValue(doc, KnownBean.class);
+            assertEquals(0, bean.a + bean.abcd + bean.abcde + bean.abcdefghijklm
+                    + bean.abcdefghijklmnopq, "read #" + i);
+            assertEquals(input, bean.other, "read #" + i);
+        }
+    }
+
     private void _verifyAnyBean(ObjectMapper mapper, String name1, String name2) throws Exception
     {
         Map<String, Object> input = new LinkedHashMap<>();
