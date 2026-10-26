@@ -35,7 +35,7 @@ public class NulNameMatch876Test extends CBORTestBase
     public void testLeadingNullsAscii() throws Exception
     {
         _verifyAnyBean(MAPPER, "x", "\u0000x");
-        _verifyAnyBean(MAPPER, "abcd", "\u0000abcd");
+        _verifyAnyBean(MAPPER, "abc", "\u0000abc");
         _verifyAnyBean(MAPPER, "abcde", "abcd\u0000e");
         _verifyAnyBean(MAPPER, "abcdefghijklm", "abcdefghijkl\u0000m");
     }
@@ -61,7 +61,7 @@ public class NulNameMatch876Test extends CBORTestBase
     {
         _verifyKnownBean(MAPPER, "\u0000a");
         _verifyKnownBean(MAPPER, "\u0000\u0000\u0000a");
-        _verifyKnownBean(MAPPER, "\u0000abcd");
+        _verifyKnownBean(MAPPER, "\u0000abc");
         _verifyKnownBean(MAPPER, "abcd\u0000e");
         _verifyKnownBean(MAPPER, "abcdefghijkl\u0000m");
         _verifyKnownBean(MAPPER, "abcdefghijklmnop\u0000q");
@@ -69,7 +69,7 @@ public class NulNameMatch876Test extends CBORTestBase
     }
 
     static class KnownBean {
-        public int a, abcd, abcde, abcdefghijklm, abcdefghijklmnopq;
+        public int a, abc, abcde, abcdefghijklm, abcdefghijklmnopq;
         public Map<String, Object> other = new LinkedHashMap<>();
 
         @JsonAnySetter
@@ -85,7 +85,7 @@ public class NulNameMatch876Test extends CBORTestBase
         byte[] doc = mapper.writeValueAsBytes(input);
         for (int i = 0; i < 3; ++i) {
             KnownBean bean = mapper.readValue(doc, KnownBean.class);
-            assertEquals(0, bean.a + bean.abcd + bean.abcde + bean.abcdefghijklm
+            assertEquals(0, bean.a + bean.abc + bean.abcde + bean.abcdefghijklm
                     + bean.abcdefghijklmnopq, "read #" + i);
             assertEquals(input, bean.other, "read #" + i);
         }

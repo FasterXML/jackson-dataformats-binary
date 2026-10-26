@@ -23,8 +23,8 @@ No changes since 3.1
 #873: (smile) `SmileParser.nextNameMatch()` misreads short non-ASCII property names
   (input not advanced on symbol-table hit, wrong quad count)
  (fix by @cowtowncoder, w/ Claude code)
-#876: (cbor) `nextNameMatch()` mixes up unknown property names differing only
-  by NUL bytes (unpadded symbol-table lookup)
+#876: (cbor) `nextNameMatch()` may match property names differing only
+  by leading NUL bytes
  (fix by @cowtowncoder, w/ Claude code)
 
 3.1.8 (17-Oct-2026)
