@@ -51,9 +51,9 @@ public class InvalidUTF8Text860Test extends CBORTestBase
     };
 
     private final static String[] VALID = {
-        "\u0080", "߿", "ࠀ", "퟿", "", "￿",
-        "𐀀", // U+10000
-        "􏿿", // U+10FFFF
+        "\u0080", "\u07FF", "\u0800", "\uD7FF", "\uE000", "\uFFFF",
+        "\uD800\uDC00", // U+10000
+        "\uDBFF\uDFFF", // U+10FFFF
     };
 
     @Test
@@ -74,6 +74,7 @@ public class InvalidUTF8Text860Test extends CBORTestBase
         for (int pad : PADDINGS) {
             for (int i = 0; i < INVALID.length; ++i) {
                 byte[] doc = textDoc(payload(pad, INVALID[i]), true);
+                _verifyFails(cborParser(doc), false, EXPECTED_MSG[i], pad);
                 _verifyFails(cborParser(new ByteArrayInputStream(doc)), false, EXPECTED_MSG[i], pad);
             }
         }
@@ -82,14 +83,15 @@ public class InvalidUTF8Text860Test extends CBORTestBase
     @Test
     public void testInvalidPropertyName() throws Exception
     {
-        // names longer than input buffer exceed default max name length,
-        // so only short and longer names
-        for (int pad : new int[] { 1, 100 }) {
+        // short names, longer names, and names longer than input buffer
+        // (but within default max name length)
+        for (int pad : new int[] { 1, 100, 10000 }) {
             for (int i = 0; i < INVALID.length; ++i) {
                 byte[] doc = nameDoc(payload(pad, INVALID[i]), false);
                 _verifyFails(cborParser(doc), true, EXPECTED_MSG[i], pad);
                 _verifyFails(cborParser(new ByteArrayInputStream(doc)), true, EXPECTED_MSG[i], pad);
                 doc = nameDoc(payload(pad, INVALID[i]), true);
+                _verifyFails(cborParser(doc), true, EXPECTED_MSG[i], pad);
                 _verifyFails(cborParser(new ByteArrayInputStream(doc)), true, EXPECTED_MSG[i], pad);
             }
         }
@@ -141,6 +143,10 @@ public class InvalidUTF8Text860Test extends CBORTestBase
             }
             fail("Should have failed (padding "+pad+"), did not, got: "+str.substring(pad));
         } catch (StreamReadException e) {
+            // bad continuation bytes reported as-is; others note property name
+            if (name && !expMsg.startsWith("Invalid UTF-8 middle byte")) {
+                expMsg = "Invalid UTF-8 in Object property name: "+expMsg;
+            }
             verifyException(e, expMsg);
         }
     }

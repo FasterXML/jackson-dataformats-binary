@@ -2551,7 +2551,7 @@ public class CBORParser extends ParserMinimalBase
                             _reportInvalidOther(c2 & 0xFF, inPtr);
                         }
                         i = ((i & 0x1F) << 6) | (c2 & 0x3F);
-                        _verifyUTF8(i, 2, inPtr);
+                        _verifyUTF8_2(i, inPtr, false);
                     }
                     break;
                     case 2: {
@@ -2564,7 +2564,7 @@ public class CBORParser extends ParserMinimalBase
                             _reportInvalidOther(c3 & 0xFF, inPtr);
                         }
                         i = ((i & 0x0F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
-                        _verifyUTF8(i, 3, inPtr);
+                        _verifyUTF8_3(i, inPtr, false);
                     }
                     break;
                     case 3: {
@@ -2583,7 +2583,7 @@ public class CBORParser extends ParserMinimalBase
                         }
                         i = ((i & 0x07) << 18) | ((c2 & 0x3F) << 12)
                             | ((c3 & 0x3F) << 6) | (c4 & 0x3F);
-                        _verifyUTF8(i, 4, inPtr);
+                        _verifyUTF8_4(i, inPtr, false);
                         // note: this is the codepoint value; need to split, too
                         i -= 0x10000;
                         outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
@@ -2657,14 +2657,14 @@ public class CBORParser extends ParserMinimalBase
                         _reportInvalidOther(d & 0xFF, _inputPtr);
                     }
                     c = ((c & 0x1F) << 6) | (d & 0x3F);
-                    _verifyUTF8(c, 2, _inputPtr);
+                    _verifyUTF8_2(c, _inputPtr, isName);
                 }
                 break;
             case 2: // 3-byte UTF
-                c = _decodeUTF8_3(c);
+                c = _decodeUTF8_3(c, isName);
                 break;
             case 3: // 4-byte UTF
-                c = _decodeUTF8_4(c);
+                c = _decodeUTF8_4(c, isName);
                 if (outPtr >= outBuf.length) {
                     outBuf = _textBuffer.finishCurrentSegment();
                     outPtr = 0;
@@ -2822,14 +2822,14 @@ public class CBORParser extends ParserMinimalBase
                         _reportInvalidOther(d & 0xFF, _inputPtr);
                     }
                     c = ((c & 0x1F) << 6) | (d & 0x3F);
-                    _verifyUTF8(c, 2, _inputPtr);
+                    _verifyUTF8_2(c, _inputPtr, isName);
                 }
                 break;
                 case 2: // 3-byte UTF
-                    c = _decodeChunkedUTF8_3(c);
+                    c = _decodeChunkedUTF8_3(c, isName);
                     break;
                 case 3: // 4-byte UTF
-                    c = _decodeChunkedUTF8_4(c);
+                    c = _decodeChunkedUTF8_4(c, isName);
                     // Let's add first part right away:
                     if (outPtr >= outBuf.length) {
                         outBuf = _textBuffer.finishCurrentSegment();
@@ -3274,7 +3274,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
                             _reportInvalidOther(c2 & 0xFF, inPtr);
                         }
                         i = ((i & 0x1F) << 6) | (c2 & 0x3F);
-                        _verifyUTF8(i, 2, inPtr);
+                        _verifyUTF8_2(i, inPtr, true);
                     }
                     break;
                 case 2:
@@ -3288,7 +3288,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
                             _reportInvalidOther(c3 & 0xFF, inPtr);
                         }
                         i = ((i & 0x0F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
-                        _verifyUTF8(i, 3, inPtr);
+                        _verifyUTF8_3(i, inPtr, true);
                     }
                     break;
                 case 3:
@@ -3308,7 +3308,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
                         }
                         i = ((i & 0x07) << 18) | ((c2 & 0x3F) << 12)
                             | ((c3 & 0x3F) << 6) | (c4 & 0x3F);
-                        _verifyUTF8(i, 4, inPtr);
+                        _verifyUTF8_4(i, inPtr, true);
                     }
                     // note: this is the codepoint value; need to split, too
                     i -= 0x10000;
@@ -3604,6 +3604,9 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
         // so that later string references can find it.
         // The finish methods will determine if the value should be added to the
         // reference table based on shouldReferenceString().
+        // [dataformats-binary#860]: Note that this means text is validated as UTF-8
+        // here (as decoded values may be returned via later references), but not by
+        // the plain skipping below, which does not decode content at all.
         if (!_stringRefs.empty()) {
             if (type == CBORConstants.MAJOR_TYPE_TEXT) {
                 // Need to actually read the text (which may add to stringRefs)
@@ -4009,7 +4012,7 @@ expType, type, ch));
     }
     */
 
-    private final int _decodeUTF8_3(int c1) throws IOException
+    private final int _decodeUTF8_3(int c1, boolean isName) throws IOException
     {
         c1 &= 0x0F;
         int d = _nextByte();
@@ -4022,11 +4025,11 @@ expType, type, ch));
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
         c = (c << 6) | (d & 0x3F);
-        _verifyUTF8(c, 3, _inputPtr);
+        _verifyUTF8_3(c, _inputPtr, isName);
         return c;
     }
 
-    private final int _decodeChunkedUTF8_3(int c1) throws IOException
+    private final int _decodeChunkedUTF8_3(int c1, boolean isName) throws IOException
     {
         c1 &= 0x0F;
         int d = _nextChunkedByte();
@@ -4039,7 +4042,7 @@ expType, type, ch));
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
         c = (c << 6) | (d & 0x3F);
-        _verifyUTF8(c, 3, _inputPtr);
+        _verifyUTF8_3(c, _inputPtr, isName);
         return c;
     }
 
@@ -4047,7 +4050,7 @@ expType, type, ch));
      * @return Character value <b>minus 0x10000</c>; this so that caller
      *    can readily expand it to actual surrogates
      */
-    private final int _decodeUTF8_4(int c) throws IOException
+    private final int _decodeUTF8_4(int c, boolean isName) throws IOException
     {
         int d = _nextByte();
         if ((d & 0xC0) != 0x080) {
@@ -4064,11 +4067,11 @@ expType, type, ch));
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
         c = (c << 6) | (d & 0x3F);
-        _verifyUTF8(c, 4, _inputPtr);
+        _verifyUTF8_4(c, _inputPtr, isName);
         return c - 0x10000;
     }
 
-    private final int _decodeChunkedUTF8_4(int c) throws IOException
+    private final int _decodeChunkedUTF8_4(int c, boolean isName) throws IOException
     {
         int d = _nextChunkedByte();
         if ((d & 0xC0) != 0x080) {
@@ -4085,7 +4088,7 @@ expType, type, ch));
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
         c = (c << 6) | (d & 0x3F);
-        _verifyUTF8(c, 4, _inputPtr);
+        _verifyUTF8_4(c, _inputPtr, isName);
         return c - 0x10000;
     }
 
@@ -4299,35 +4302,44 @@ expType, type, ch));
     // [dataformats-binary#860]: Decoded code point must use the shortest form,
     //   must not be a surrogate and must be at most U+10FFFF (RFC 3629).
     //   `ptr` is the input offset just past the sequence, for error location.
-    private void _verifyUTF8(int ch, int byteCount, int ptr) throws JsonParseException
+    //   Checks are kept minimal (called per non-ASCII char); failure handling
+    //   is in `_reportInvalidUTF8()`
+    private void _verifyUTF8_2(int ch, int ptr, boolean isName) throws JsonParseException
     {
+        if (ch < 0x80) {
+            _reportInvalidUTF8(ch, 2, ptr, isName);
+        }
+    }
+
+    private void _verifyUTF8_3(int ch, int ptr, boolean isName) throws JsonParseException
+    {
+        if ((ch < 0x800) || ((ch & 0xF800) == 0xD800)) {
+            _reportInvalidUTF8(ch, 3, ptr, isName);
+        }
+    }
+
+    private void _verifyUTF8_4(int ch, int ptr, boolean isName) throws JsonParseException
+    {
+        if ((ch < 0x10000) || (ch > Character.MAX_CODE_POINT)) {
+            _reportInvalidUTF8(ch, 4, ptr, isName);
+        }
+    }
+
+    private void _reportInvalidUTF8(int ch, int byteCount, int ptr, boolean isName)
+        throws JsonParseException
+    {
+        final String hex = Integer.toHexString(ch);
         final String problem;
-        if (byteCount == 2) {
-            if (ch >= 0x80) {
-                return;
-            }
-            problem = "overlong 2-byte encoding of 0x"+Integer.toHexString(ch);
-        } else if (byteCount == 3) {
-            if (ch >= 0x800) {
-                if (ch < 0xD800 || ch > 0xDFFF) {
-                    return;
-                }
-                problem = "Illegal surrogate character 0x"+Integer.toHexString(ch);
-            } else {
-                problem = "overlong 3-byte encoding of 0x"+Integer.toHexString(ch);
-            }
+        if ((byteCount == 3) && (ch >= 0x800)) {
+            problem = "Illegal surrogate character 0x"+hex;
+        } else if ((byteCount == 4) && (ch >= 0x10000)) {
+            problem = "code point 0x"+hex+" beyond U+10FFFF";
         } else {
-            if (ch >= 0x10000) {
-                if (ch <= Character.MAX_CODE_POINT) {
-                    return;
-                }
-                problem = "code point 0x"+Integer.toHexString(ch)+" beyond U+10FFFF";
-            } else {
-                problem = "overlong 4-byte encoding of 0x"+Integer.toHexString(ch);
-            }
+            problem = "overlong "+byteCount+"-byte encoding of 0x"+hex;
         }
         _inputPtr = ptr;
-        _reportError("Invalid UTF-8: "+problem);
+        _reportError(isName ? ("Invalid UTF-8 in Object property name: "+problem)
+                : ("Invalid UTF-8: "+problem));
     }
 
     // @since 2.12
