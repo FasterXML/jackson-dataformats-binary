@@ -63,6 +63,9 @@ implementations)
 #876: (cbor) `nextNameMatch()` may match property names differing only
   by leading NUL bytes
  (fix by @cowtowncoder, w/ Claude code)
+#879: (protobuf) `nextName()` / `nextNameMatch()` fast paths skip per-token state
+  reset done by `nextToken()` (stale number, wrong token location)
+ (fix by @cowtowncoder, w/ Claude code)
 - (avro) Generated `array` schemas missing `java-class` for `java.util.List`,
   breaking round-trip via Apache `ReflectDatumReader`
 
