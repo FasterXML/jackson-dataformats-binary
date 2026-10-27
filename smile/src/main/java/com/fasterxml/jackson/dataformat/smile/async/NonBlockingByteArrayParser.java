@@ -1816,6 +1816,8 @@ public class NonBlockingByteArrayParser
         int outPtr = 0;
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         final int[] codes = SmileConstants.sUtf8UnitLengths;
+        // may be decoding from copy buffer, offsets of which are not input offsets
+        final boolean inInputBuffer = (inBuf == _inputBuffer);
         for (final int end = inPtr + len; inPtr < end; ) {
             int i = inBuf[inPtr++] & 0xFF;
             int code = codes[i];
@@ -1834,11 +1836,11 @@ public class NonBlockingByteArrayParser
                 switch (code) {
                 case 1:
                 case 2:
-                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code);
+                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code, inInputBuffer);
                     inPtr += code;
                     break;
                 case 3:
-                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code);
+                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code, inInputBuffer);
                     inPtr += code;
                     // note: this is the codepoint value; need to split, too
                     i -= 0x10000;
@@ -1869,6 +1871,8 @@ public class NonBlockingByteArrayParser
         // since we only check expansion for multi-byte chars, there must be
         // enough room for remaining bytes as all-ASCII
         int estSlack = outBuf.length - len - 8;
+        // may be decoding from copy buffer, offsets of which are not input offsets
+        final boolean inInputBuffer = (inBuf == _inputBuffer);
 
         for (final int end = inPtr + len; inPtr < end; ) {
             int i = inBuf[inPtr++] & 0xFF;
@@ -1883,11 +1887,11 @@ public class NonBlockingByteArrayParser
                 switch (code) {
                 case 1:
                 case 2:
-                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code);
+                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code, inInputBuffer);
                     inPtr += code;
                     break;
                 case 3:
-                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code);
+                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code, inInputBuffer);
                     inPtr += code;
                     // note: this is the codepoint value; need to split, too
                     i -= 0x10000;

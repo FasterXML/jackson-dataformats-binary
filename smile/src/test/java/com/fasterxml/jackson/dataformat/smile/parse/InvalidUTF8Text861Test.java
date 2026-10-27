@@ -120,6 +120,62 @@ public class InvalidUTF8Text861Test extends BaseTestForSmile
         }
     }
 
+    // Error location should point right after the invalid byte (or sequence),
+    // regardless of whether name or value, blocking or non-blocking parser
+    @Test
+    public void testErrorLocation() throws Exception
+    {
+        // value: 4-byte header, token, 'a' (5), C3 (6), 41 (7)
+        _verifyErrorLocation(valueDoc(payload(1, new int[] { 0xC3, 0x41 })), false, 8L);
+        // value: 4-byte header, token, 'a' (5), ED (6), A0 (7), 80 (8)
+        _verifyErrorLocation(valueDoc(payload(1, new int[] { 0xED, 0xA0, 0x80 })), false, 9L);
+        // name: 4-byte header, START_OBJECT, token, 'a' (6), C3 (7), 41 (8)
+        _verifyErrorLocation(nameDoc(payload(1, new int[] { 0xC3, 0x41 })), true, 9L);
+        // name: 4-byte header, START_OBJECT, token, 'a' (6), ED (7), A0 (8), 80 (9)
+        _verifyErrorLocation(nameDoc(payload(1, new int[] { 0xED, 0xA0, 0x80 })), true, 10L);
+    }
+
+    // Invalid byte in short value must not leave parser pointing within the
+    // String (so that following content is not decoded from String bytes)
+    @Test
+    public void testParserStateAfterInvalidValue() throws Exception
+    {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        final byte[] doc = valueDoc(payload(1, new int[] { 0x80, 0x80 }));
+        out.write(doc, 0, doc.length);
+        out.write(0xC2); // small int 1
+        try (JsonParser p = _smileParser(out.toByteArray())) {
+            assertToken(JsonToken.VALUE_STRING, p.nextToken());
+            try {
+                p.getText();
+                fail("Should have failed");
+            } catch (StreamReadException e) {
+                verifyException(e, "Invalid byte 0x80 in short Unicode text block");
+                // 4-byte header, token, 'a' (5), 80 (6)
+                assertEquals(7L, e.getLocation().getByteOffset());
+            }
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(1, p.getIntValue());
+        }
+    }
+
+    private void _verifyErrorLocation(byte[] doc, boolean name, long expOffset) throws Exception
+    {
+        try {
+            _readBlocking(_smileParser(doc), name);
+            fail("Should have failed");
+        } catch (StreamReadException e) {
+            assertEquals(expOffset, e.getLocation().getByteOffset());
+        }
+        // non-blocking: only when fed all at once, decoding from input buffer
+        try {
+            _readAsync(doc, doc.length, name);
+            fail("Should have failed");
+        } catch (StreamReadException e) {
+            assertEquals(expOffset, e.getLocation().getByteOffset());
+        }
+    }
+
     private void _verifyFailsAll(byte[] doc, boolean name, String expMsg, int pad) throws Exception
     {
         _verifyFails(doc, name, expMsg, pad, 0);

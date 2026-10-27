@@ -1629,11 +1629,11 @@ versionBits));
                 switch (code) {
                 case 1:
                 case 2:
-                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code);
+                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code, true);
                     inPtr += code;
                     break;
                 case 3:
-                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code);
+                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code, true);
                     inPtr += code;
                     // note: this is the codepoint value; need to split, too
                     i -= 0x10000;
@@ -2526,11 +2526,11 @@ currentToken(), firstCh);
             switch (unitLen) {
             case 1:
             case 2:
-                i = _decodeUTF8InBuffer(inputBuf, inPtr, i, unitLen);
+                i = _decodeUTF8InBuffer(inputBuf, inPtr, i, unitLen, true);
                 inPtr += unitLen;
                 break;
             case 3:// trickiest one, need surrogate handling
-                i = _decodeUTF8InBuffer(inputBuf, inPtr, i, unitLen);
+                i = _decodeUTF8InBuffer(inputBuf, inPtr, i, unitLen, true);
                 inPtr += unitLen;
                 // note: this is the codepoint value; need to split, too
                 i -= 0x10000;
@@ -2538,8 +2538,10 @@ currentToken(), firstCh);
                 i = 0xDC00 | (i & 0x3FF);
                 break;
             default: // invalid
-                _inputPtr = inPtr;
-                throw _constructReadException("Invalid byte 0x%02X in short Unicode text block", i);
+                // NOTE: _inputPtr already points past the String; report the
+                //   invalid byte's location without moving it back
+                throw _constructReadExceptionAt(inPtr,
+                        String.format("Invalid byte 0x%02X in short Unicode text block", i));
             }
             outBuf[outPtr++] = (char) i;
         }
@@ -3144,15 +3146,6 @@ currentToken(), firstCh);
             _reportError("Encountered shared text value reference, even though document header did not declare shared text value references may be included");
         }
        _reportError("Invalid shared text value reference "+index+"; only got "+_seenStringValueCount+" names in buffer (invalid content)");
-    }
-
-    protected void _reportInvalidOther(int mask) throws JsonParseException {
-        _reportError("Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask));
-    }
-
-    protected void _reportInvalidOther(int mask, int ptr) throws JsonParseException {
-        _inputPtr = ptr;
-        _reportInvalidOther(mask);
     }
 
     // @since 2.12.3
