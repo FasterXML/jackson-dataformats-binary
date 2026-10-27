@@ -1441,6 +1441,8 @@ public class CBORParser extends ParserBase
         _sharedString = null;
         // completed the whole Object?
         if (!_streamReadContext.expectMoreValues()) {
+            // [dataformats-binary#882]: must pop String-ref nesting as well
+            _stringRefs.pop();
             _streamReadContext = _streamReadContext.getParent();
             _updateToken(JsonToken.END_OBJECT);
             return PropertyNameMatcher.MATCH_END_OBJECT;
@@ -1472,6 +1474,8 @@ public class CBORParser extends ParserBase
         if (type != CBORConstants.MAJOR_TYPE_TEXT) {
             if (ch == 0xFF) { // end-of-object, common
                 if (!_streamReadContext.hasExpectedLength()) {
+                    // [dataformats-binary#882]: must pop String-ref nesting as well
+                    _stringRefs.pop();
                     _streamReadContext = _streamReadContext.getParent();
                     _updateToken(JsonToken.END_OBJECT);
                     return PropertyNameMatcher.MATCH_END_OBJECT;
