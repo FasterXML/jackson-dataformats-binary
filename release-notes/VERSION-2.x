@@ -49,6 +49,14 @@ Active maintainers:
  (fix by @cowtowncoder, w/ Claude code)
 #860: (cbor) Invalid UTF-8 sequences (overlong, surrogates, > U+10FFFF) not rejected in text
  (fix by @pjfanning, w/ Claude code)
+#868: (cbor) Wrong cached property name returned for names containing 0xFF bytes
+ (fix by @pjfanning, w/ Claude code)
+
+2.22.5 (not yet released)
+
+#881: (protobuf) Known field after a skipped unknown field gets wrong wire type,
+  state or token location
+ (fix by @cowtowncoder, w/ Claude code)
 
 2.22.4 (17-Oct-2026)
 
@@ -129,6 +137,12 @@ Active maintainers:
 2.22.0 (31-May-2026)
 
 No changes since 2.21
+
+2.21.9 (not yet released)
+
+#881: (protobuf) Known field after a skipped unknown field gets wrong wire type,
+  state or token location
+ (fix by @cowtowncoder, w/ Claude code)
 
 2.21.8 (17-Oct-2026)
 

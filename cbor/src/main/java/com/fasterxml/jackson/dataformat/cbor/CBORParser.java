@@ -3317,8 +3317,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
                     break;
                 default: // invalid
                     _inputPtr = inPtr;
-                    throw _constructReadException("Invalid UTF-8 byte 0x%s in Object property name",
-                            Integer.toHexString(i));
+                    throw _invalidNameByte(i);
                 }
             }
             outBuf[outPtr++] = (char) i;
@@ -3514,7 +3513,13 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
             _quadBuffer[offset++] = q;
         } while ((len -= 4) > 3);
         // and then leftovers
-        if (len > 0) {
+        if (len == 0) {
+            // [dataformats-binary#868]: full last quad starting with 0xFF would match
+            //   padded last quad of a shorter name
+            if ((_quadBuffer[offset-1] >>> 24) == 0xFF) {
+                throw _invalidNameByte(0xFF);
+            }
+        } else {
             int q = _padQuadForNulls(inBuf[inPtr]);
             if (len > 1) {
                 q = (q << 8) + (inBuf[++inPtr] & 0xFF);
@@ -3553,8 +3558,23 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
     }
 
     // Helper method needed to fix [dataformats-binary#312], masking of 0x00 character
-    private final static int _padQuadForNulls(int firstByte) {
-        return (firstByte & 0xFF) | 0xFFFFFF00;
+    // 19-Oct-2026, pjfanning: [dataformats-binary#868] padding uses 0xFF bytes, so a
+    //   partial quad starting with 0xFF could match a shorter name in the symbol table,
+    //   skipping UTF-8 validation of the name; 0xFF is never valid in UTF-8, so reject it
+    private final int _padQuadForNulls(int firstByte) throws JsonParseException {
+        firstByte &= 0xFF;
+        if (firstByte == 0xFF) {
+            throw _invalidNameByte(firstByte);
+        }
+        return firstByte | 0xFFFFFF00;
+    }
+
+    // [dataformats-binary#868]: same failure for invalid name bytes whether caught
+    //   by symbol table lookup or by `_decodeContiguousName()` (chunked and
+    //   longer-than-buffer names are decoded as text, with different message)
+    private final JsonParseException _invalidNameByte(int b) {
+        return _constructReadException("Invalid UTF-8 byte 0x%s in Object property name",
+                Integer.toHexString(b));
     }
 
     /*
