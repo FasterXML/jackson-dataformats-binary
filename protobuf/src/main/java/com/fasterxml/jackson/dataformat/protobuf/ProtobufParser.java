@@ -601,15 +601,7 @@ public class ProtobufParser extends ParserMinimalBase
     @Override
     public JsonToken nextToken() throws IOException
     {
-        _numTypesValid = NR_UNKNOWN;
-        // For longer tokens (text, binary), we'll only read when requested
-        if (_tokenIncomplete) {
-            _tokenIncomplete = false;
-            _skipBytes(_decodedLength);
-        }
-        _tokenInputTotal = _currInputProcessed + _inputPtr;
-        // also: clear any data retained so far
-        _binaryValue = null;
+        _startNextToken();
 
         switch (_state) {
         case STATE_INITIAL:
@@ -804,6 +796,24 @@ public class ProtobufParser extends ParserMinimalBase
         return null;
     }
 
+    /**
+     * Common preamble for all token-advancing methods: skips the rest of an incomplete
+     * (unread) previous token, marks the start location of the next token and clears
+     * per-token state.
+     */
+    private void _startNextToken() throws IOException
+    {
+        _numTypesValid = NR_UNKNOWN;
+        // For longer tokens (text, binary), we'll only read when requested
+        if (_tokenIncomplete) {
+            _tokenIncomplete = false;
+            _skipBytes(_decodedLength);
+        }
+        _tokenInputTotal = _currInputProcessed + _inputPtr;
+        // also: clear any data retained so far
+        _binaryValue = null;
+    }
+
     private boolean _checkEnd() throws IOException
     {
         if (_inputPtr < _currentEndOffset) {
@@ -884,14 +894,6 @@ public class ProtobufParser extends ParserMinimalBase
             if ((f = _currentMessage.field(id)) == null) {
                 return _skipUnknownField(id, wireType);
             }
-        }
-
-        if ((_currentField == null) || (f = _currentField.nextOrThisIf(id)) == null) {
-            f = _currentMessage.field(id);
-        }
-        // Note: may be null; if so, value needs to be skipped
-        if (f == null) {
-            return _skipUnknownField(id, wireType);
         }
         _parsingContext.setCurrentName(f.name);
         if (!f.isValidFor(wireType)) {
@@ -1058,6 +1060,9 @@ public class ProtobufParser extends ParserMinimalBase
             _reportErrorF("Undefined property (id %d, wire type %d) for message type %s: not allowed to ignore, as `JsonParser.Feature.IGNORE_UNDEFINED` disabled",
                     tag, wireType, _currentMessage.getName());
         }
+        // [dataformats-binary#881]: root vs nested from context, not `_state`, which may
+        // also be STATE_ARRAY_END (key replayed after an unpacked array or map)
+        final boolean inRoot = _parsingContext.inRoot();
         while (true) {
             _skipUnknownValue(wireType);
             // 05-Dec-2017, tatu: as per [#126] seems like we need to check this not just for
@@ -1065,7 +1070,7 @@ public class ProtobufParser extends ParserMinimalBase
             if (_checkEnd()) { // updates _parsingContext
                 return _updateToken(JsonToken.END_OBJECT);
             }
-            if (_state == STATE_NESTED_KEY) {
+            if (!inRoot) {
                 if (_inputPtr >= _inputEnd) {
                     loadMoreGuaranteed();
                 }
@@ -1082,8 +1087,7 @@ public class ProtobufParser extends ParserMinimalBase
 
             wireType = (tag & 0x7);
             // Note: may be null; if so, value needs to be skipped
-            _currentField = _currentMessage.field(tag >> 3);
-            if (_currentField == null) {
+            if (_findField(tag >> 3) == null) {
                 continue;
             }
             _parsingContext.setCurrentName(_currentField.name);
@@ -1094,7 +1098,7 @@ public class ProtobufParser extends ParserMinimalBase
             // 30-Apr-2025, tatu: [dataformats-binary#584] may be called for root and nested
             // [dataformats-binary#881]: map / array / single value, from actual wire type
             _state = _stateAfterFieldName(_currentField, wireType,
-                    (_state == STATE_NESTED_KEY) ? STATE_NESTED_VALUE : STATE_ROOT_VALUE);
+                    inRoot ? STATE_ROOT_VALUE : STATE_NESTED_VALUE);
             return _updateToken(JsonToken.FIELD_NAME);
         }
     }
@@ -1425,6 +1429,8 @@ public class ProtobufParser extends ParserMinimalBase
     @Override
     public boolean nextFieldName(SerializableString sstr) throws IOException
     {
+        // [dataformats-binary#881]: same preamble as `nextToken()`
+        _startNextToken();
         if (_state == STATE_ROOT_KEY) {
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
@@ -1491,6 +1497,8 @@ public class ProtobufParser extends ParserMinimalBase
     @Override
     public String nextFieldName() throws IOException
     {
+        // [dataformats-binary#881]: same preamble as `nextToken()`
+        _startNextToken();
         if (_state == STATE_ROOT_KEY) {
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
@@ -1559,14 +1567,7 @@ public class ProtobufParser extends ParserMinimalBase
     @Override
     public String nextTextValue() throws IOException
     {
-        // Copied from `nexdtToken()`, as appropriate
-        _numTypesValid = NR_UNKNOWN;
-        if (_tokenIncomplete) {
-            _tokenIncomplete = false;
-            _skipBytes(_decodedLength);
-        }
-        _tokenInputTotal = _currInputProcessed + _inputPtr;
-        _binaryValue = null;
+        _startNextToken();
 
         switch (_state) {
         case STATE_ROOT_VALUE:
