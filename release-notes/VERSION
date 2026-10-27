@@ -29,6 +29,9 @@ No changes since 3.2
 #876: (cbor) `nextNameMatch()` may match property names differing only
   by leading NUL bytes
  (fix by @cowtowncoder, w/ Claude code)
+#879: (protobuf) `nextName()` / `nextNameMatch()` fast paths skip per-token state
+  reset done by `nextToken()` (stale number, wrong token location)
+ (fix by @cowtowncoder, w/ Claude code)
 
 3.2.4 (18-Oct-2026)
 
