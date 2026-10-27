@@ -57,6 +57,8 @@ implementations)
 #823: (cbor) `maxStringLength` not consistently checked for chunked
   (indefinite-length) text values
  (fix by @pjfanning, w/ Claude code)
+#868: (cbor) Wrong cached property name returned for names containing 0xFF bytes
+ (fix by @pjfanning, w/ Claude code)
 #874: (protobuf) `nextName()` / `nextNameMatch()` do not skip an unread string value,
   decode its bytes as the next tag
  (fix by @cowtowncoder, w/ Claude code)
@@ -77,6 +79,8 @@ implementations)
 
 3.2.5 (not yet released)
 
+#868: (cbor) Wrong cached property name returned for names containing 0xFF bytes
+ (fix by @pjfanning, w/ Claude code)
 #873: (smile) `SmileParser.nextNameMatch()` misreads short non-ASCII property names
   (input not advanced on symbol-table hit, wrong quad count)
  (fix by @cowtowncoder, w/ Claude code)
@@ -218,6 +222,8 @@ No changes since 3.2.0
 
 3.1.9 (not yet released)
 
+#868: (cbor) Wrong cached property name returned for names containing 0xFF bytes
+ (fix by @pjfanning, w/ Claude code)
 #873: (smile) `SmileParser.nextNameMatch()` misreads short non-ASCII property names
   (input not advanced on symbol-table hit, wrong quad count)
  (fix by @cowtowncoder, w/ Claude code)
