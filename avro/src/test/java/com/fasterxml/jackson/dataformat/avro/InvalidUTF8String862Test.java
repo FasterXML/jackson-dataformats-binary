@@ -2,6 +2,7 @@ package com.fasterxml.jackson.dataformat.avro;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 
@@ -52,9 +53,9 @@ public class InvalidUTF8String862Test extends AvroTestBase
     };
 
     private final static String[] VALID = {
-        "\u0080", "߿", "ࠀ", "퟿", "", "￿",
-        "𐀀", // U+10000
-        "􏿿", // U+10FFFF
+        "\u0080", "\u07FF", "\u0800", "\uD7FF", "\uE000", "\uFFFF",
+        "\uD800\uDC00", // U+10000
+        "\uDBFF\uDFFF", // U+10FFFF
     };
 
     private final AvroMapper MAPPER = newMapper();
@@ -87,15 +88,34 @@ public class InvalidUTF8String862Test extends AvroTestBase
         }
     }
 
+    // Stray continuation byte, or byte never valid in UTF-8: same error for
+    // short and long (past input buffer) text
     @Test
     public void testInvalidLeadByte() throws Exception
     {
-        byte[] doc = valueDoc(payload(1, new int[] { 0x80 }));
-        try {
-            _read(MAPPER.createParser(doc), false);
-            fail("Should have failed");
-        } catch (StreamReadException e) {
-            verifyException(e, "Invalid byte 0x80 in Unicode text block");
+        for (int pad : PADDINGS) {
+            for (int b : new int[] { 0x80, 0xBF, 0xF8, 0xFF }) {
+                byte[] doc = valueDoc(payload(pad, new int[] { b }));
+                _verifyFails(doc, false,
+                        String.format("Invalid byte 0x%02X in Unicode text block", b), pad);
+            }
+        }
+    }
+
+    // Multi-byte sequence truncated by end of text: message should
+    // indicate full length of sequence
+    @Test
+    public void testTruncatedAtEnd() throws Exception
+    {
+        final int[][] leads = { { 0xC3 }, { 0xE2, 0x82 }, { 0xF0, 0x9F, 0x98 } };
+        for (int pad : new int[] { 1, 100 }) {
+            for (int[] lead : leads) {
+                byte[] text = payload(pad, lead);
+                // drop the trailing 'b' so sequence is truncated by end of text
+                byte[] doc = valueDoc(Arrays.copyOf(text, text.length - 1));
+                final int expLen = lead.length + 1;
+                _verifyFails(doc, false, "Malformed "+expLen+"-byte UTF-8 character", pad);
+            }
         }
     }
 
