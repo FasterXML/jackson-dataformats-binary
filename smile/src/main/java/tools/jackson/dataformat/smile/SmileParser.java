@@ -789,7 +789,10 @@ _typeAsInt);
                 case 2: // short ASCII
                     {
                         int len = 1 + (ch & 0x3f);
-                        if (len == byteLen) {
+                        // [dataformats-binary#885]: can only match ASCII names here
+                        //   (byte length same as char length); otherwise fall back
+                        //   to regular handling, which validates ASCII-ness
+                        if (len == byteLen && byteLen == str.getValue().length()) {
                             for (int i = 0; i < len; ++i) {
                                 if (nameBytes[i] != _inputBuffer[ptr+i]) {
                                     break main_switch;
@@ -930,7 +933,7 @@ _typeAsInt);
         case 2: // short ASCII
             {
                 int len = 1 + (ch & 0x3f);
-                int match = _nextNameOptimized(matcher, len);
+                int match = _nextNameOptimized(matcher, len, true);
                 if (match >= 0) { // gotcha! (expected case)
                     _inputPtr += len;
                     return _nextNameMatchDecoded(matcher, match, matcher.nameLookup()[match]);
@@ -952,7 +955,7 @@ _typeAsInt);
                 break;
             } else {
                 final int len = ch + 2; // values from 2 to 57...
-                int match = _nextNameOptimized(matcher, len);
+                int match = _nextNameOptimized(matcher, len, false);
                 if (match >= 0) { // gotcha! (expected case)
                     _inputPtr += len;
                     return _nextNameMatchDecoded(matcher, match, matcher.nameLookup()[match]);
@@ -968,19 +971,28 @@ _typeAsInt);
 _typeAsInt);
     }
 
-    private final int _nextNameOptimized(PropertyNameMatcher matcher, int len) throws JacksonException
+    /**
+     * @param ascii Whether name is a "short ASCII" name, in which case all bytes
+     *    are verified to be 7-bit ASCII ([dataformats-binary#885]) before matching
+     */
+    private final int _nextNameOptimized(PropertyNameMatcher matcher, int len,
+            boolean ascii)
+        throws JacksonException
     {
         if ((_inputEnd - _inputPtr) < len) {
             _loadToHaveAtLeast(len);
         }
-        // First: maybe we already have this name decoded?
-        if (len < 5) {
-            int q = _decodePartialQuad(_inputBuffer, _inputPtr, len);
-            return matcher.matchByQuad(q);
-        }
-
         final byte[] inBuf = _inputBuffer;
         int inPtr = _inputPtr;
+
+        // First: maybe we already have this name decoded?
+        if (len < 5) {
+            int q = _decodePartialQuad(inBuf, inPtr, len);
+            if (ascii && (q & NON_ASCII_QUAD_MASK) != 0) {
+                _reportInvalidShortAsciiName(inBuf, inPtr, len);
+            }
+            return matcher.matchByQuad(q);
+        }
 
         // First quadbyte is easy
         int q1 = _decodeQuad(inBuf, inPtr);
@@ -988,6 +1000,9 @@ _typeAsInt);
 
         if (len < 9) {
             int q2 = _decodePartialQuad(inBuf, inPtr, len - 4);
+            if (ascii && ((q1 | q2) & NON_ASCII_QUAD_MASK) != 0) {
+                _reportInvalidShortAsciiName(inBuf, _inputPtr, len);
+            }
             return matcher.matchByQuad(q1, q2);
         }
 
@@ -996,16 +1011,19 @@ _typeAsInt);
 
         if (len < 13) {
             int q3 = _decodePartialQuad(inBuf, inPtr, len - 8);
+            if (ascii && ((q1 | q2 | q3) & NON_ASCII_QUAD_MASK) != 0) {
+                _reportInvalidShortAsciiName(inBuf, _inputPtr, len);
+            }
             return matcher.matchByQuad(q1, q2, q3);
         }
-        return _nextNameFromSymbolsLong(matcher, len, q1, q2);
+        return _nextNameFromSymbolsLong(matcher, len, q1, q2, ascii);
     }
 
     /**
      * Method for locating names longer than 8 bytes (in UTF-8)
      */
     private final int _nextNameFromSymbolsLong(PropertyNameMatcher matcher,
-            int len, int q1, int q2)
+            int len, int q1, int q2, boolean ascii)
         throws JacksonException
     {
         // first, need enough buffer to store bytes as ints:
@@ -1019,18 +1037,28 @@ _typeAsInt);
         _quadBuffer[1] = q2;
 
         // then decode, full quads first
+        final int fullLen = len;
         int offset = 2;
         int inPtr = _inputPtr+8;
         len -= 8;
 
         final byte[] inBuf = _inputBuffer;
+        int or = q1 | q2;
         do {
-            _quadBuffer[offset++] = _decodeQuad(inBuf, inPtr);
+            int q = _decodeQuad(inBuf, inPtr);
+            _quadBuffer[offset++] = q;
+            or |= q;
             inPtr += 4;
         } while ((len -= 4) > 3);
         // and then leftovers
         if (len > 0) {
-            _quadBuffer[offset++] = _decodePartialQuad(inBuf, inPtr, len);
+            int q = _decodePartialQuad(inBuf, inPtr, len);
+            _quadBuffer[offset++] = q;
+            or |= q;
+        }
+        // [dataformats-binary#885]
+        if (ascii && (or & NON_ASCII_QUAD_MASK) != 0) {
+            _reportInvalidShortAsciiName(inBuf, _inputPtr, fullLen);
         }
         return matcher.matchByQuad(_quadBuffer, offset);
     }
@@ -1659,7 +1687,8 @@ _typeAsInt);
             _loadToHaveAtLeast(len);
         }
         if (_symbolsCanonical) {
-            String name = _findDecodedFromSymbols(len);
+            // [dataformats-binary#885]: ASCII-ness verified during lookup
+            String name = _findDecodedFromSymbols(len, true);
             if (name != null) {
                 _inputPtr += len;
             } else {
@@ -1668,7 +1697,9 @@ _typeAsInt);
             }
             return name;
         }
-        // if not canonicalizing, much simpler:
+        // if not canonicalizing, much simpler -- but still need to verify
+        // [dataformats-binary#885]: all bytes are ASCII
+        _verifyShortAsciiName(len);
         return _decodeShortAsciiName(len);
     }
 
@@ -1681,7 +1712,7 @@ _typeAsInt);
             _loadToHaveAtLeast(len);
         }
         if (_symbolsCanonical) {
-            String name = _findDecodedFromSymbols(len);
+            String name = _findDecodedFromSymbols(len, false);
             if (name != null) {
                 _inputPtr += len;
             } else {
@@ -1728,6 +1759,21 @@ _typeAsInt);
         }
         int qlen = (len + 3) >> 2;
         return _symbols.addName(name, _quadBuffer, qlen);
+    }
+
+    // [dataformats-binary#885]: verify that a short ASCII name contains no
+    // non-ASCII bytes, when not done as part of symbol table lookup
+    private final void _verifyShortAsciiName(int len) throws JacksonException
+    {
+        final byte[] inBuf = _inputBuffer;
+        final int inPtr = _inputPtr;
+        int or = 0;
+        for (int i = 0; i < len; ++i) {
+            or |= inBuf[inPtr+i];
+        }
+        if (or < 0) {
+            _reportInvalidShortAsciiName(inBuf, inPtr, len);
+        }
     }
 
     private final String _decodeShortAsciiName(int len) throws JacksonException
@@ -1997,25 +2043,39 @@ _typeAsInt);
      * from symbol table; if successful avoids actual decoding to String.
      *<p>
      * NOTE: caller MUST ensure input buffer has enough content.
+     *
+     * @param ascii Whether name is a "short ASCII" name, in which case all bytes
+     *    are verified to be 7-bit ASCII ([dataformats-binary#885]) before lookup
+     *    (and before padding of the last quad, which would otherwise report 0xFF
+     *    with a different error message)
      */
-    private final String _findDecodedFromSymbols(final int len) throws JacksonException
+    private final String _findDecodedFromSymbols(final int len, final boolean ascii)
+        throws JacksonException
     {
+        final byte[] inBuf = _inputBuffer;
+        int inPtr = _inputPtr;
+
         // First: maybe we already have this name decoded?
         if (len < 5) {
-            int q = _decodePartialQuadForNulls(_inputBuffer, _inputPtr, len);
+            int q = _decodePartialQuad(inBuf, inPtr, len);
+            if (ascii && (q & NON_ASCII_QUAD_MASK) != 0) {
+                _reportInvalidShortAsciiName(inBuf, inPtr, len);
+            }
+            q = _padLastQuad(q, len);
             _quad1 = q;
             return _symbols.findName(q);
         }
-
-        final byte[] inBuf = _inputBuffer;
-        int inPtr = _inputPtr;
 
         // First quadbyte is easy
         int q1 = _decodeQuad(inBuf, inPtr);
         inPtr += 4;
 
         if (len < 9) {
-            int q2 = _decodePartialQuadForNulls(inBuf, inPtr, len - 4);
+            int q2 = _decodePartialQuad(inBuf, inPtr, len - 4);
+            if (ascii && ((q1 | q2) & NON_ASCII_QUAD_MASK) != 0) {
+                _reportInvalidShortAsciiName(inBuf, _inputPtr, len);
+            }
+            q2 = _padLastQuad(q2, len - 4);
             _quad1 = q1;
             _quad2 = q2;
             return _symbols.findName(q1, q2);
@@ -2025,19 +2085,24 @@ _typeAsInt);
         inPtr += 4;
 
         if (len < 13) {
-            int q3 = _decodePartialQuadForNulls(inBuf, inPtr, len - 8);
+            int q3 = _decodePartialQuad(inBuf, inPtr, len - 8);
+            if (ascii && ((q1 | q2 | q3) & NON_ASCII_QUAD_MASK) != 0) {
+                _reportInvalidShortAsciiName(inBuf, _inputPtr, len);
+            }
+            q3 = _padLastQuad(q3, len - 8);
             _quad1 = q1;
             _quad2 = q2;
             _quad3 = q3;
             return _symbols.findName(q1, q2, q3);
         }
-        return _findDecodedFixed12(len, q1, q2);
+        return _findDecodedFixed12(len, q1, q2, ascii);
     }
 
     /**
      * Method for locating names longer than 12 bytes (in UTF-8)
      */
-    private final String _findDecodedFixed12(int len, int q1, int q2) throws JacksonException
+    private final String _findDecodedFixed12(int len, int q1, int q2, boolean ascii)
+        throws JacksonException
     {
         // first, need enough buffer to store bytes as ints:
         {
@@ -2050,18 +2115,31 @@ _typeAsInt);
         _quadBuffer[1] = q2;
 
         // then decode, full quads first
+        final int fullLen = len;
         int offset = 2;
         int inPtr = _inputPtr+8;
         len -= 8;
 
         final byte[] inBuf = _inputBuffer;
+        int or = q1 | q2;
         do {
-            _quadBuffer[offset++] = _decodeQuad(inBuf, inPtr);
+            int q = _decodeQuad(inBuf, inPtr);
+            _quadBuffer[offset++] = q;
+            or |= q;
             inPtr += 4;
         } while ((len -= 4) > 3);
         // and then leftovers
+        int lastQ = 0;
         if (len > 0) {
-            _quadBuffer[offset++] = _decodePartialQuadForNulls(inBuf, inPtr, len);
+            lastQ = _decodePartialQuad(inBuf, inPtr, len);
+            or |= lastQ;
+        }
+        // [dataformats-binary#885]: verify ASCII-ness before 0xFF checks
+        if (ascii && (or & NON_ASCII_QUAD_MASK) != 0) {
+            _reportInvalidShortAsciiName(inBuf, _inputPtr, fullLen);
+        }
+        if (len > 0) {
+            _quadBuffer[offset++] = _padLastQuad(lastQ, len);
         } else {
             _verifyLastFullQuad(_quadBuffer[offset-1]);
         }

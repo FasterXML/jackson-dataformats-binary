@@ -106,7 +106,12 @@ public class PropertyName0xFF869Test extends BaseTestForSmile
             String names = _names(f, doc, mode);
             fail("Should have failed for name length "+(len+1)+", tokens "+tokens+", mode "+mode+"; got names: "+names);
         } catch (StreamReadException e) {
-            verifyException(e, "Invalid UTF-8 start byte 0xff");
+            // [dataformats-binary#885]: short ASCII names report non-ASCII bytes
+            if (tokens == TOKENS_ASCII && (len + 1) <= 64) {
+                verifyException(e, "Invalid byte 0xFF in short ASCII property name");
+            } else {
+                verifyException(e, "Invalid UTF-8 start byte 0xff");
+            }
         }
     }
 
