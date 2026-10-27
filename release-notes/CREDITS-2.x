@@ -486,6 +486,10 @@ PJ Fanning (@pjfanning)
  (2.21.7)
 * Fixed #816: (avro) `UnionReader.nextToken()` does not validate union index
  (2.21.8)
+* Fixed #868: (cbor) Wrong cached property name returned for names containing 0xFF bytes
+ (2.23.0)
+* Fixed #869: (smile) Wrong cached property name returned for names containing 0xFF bytes
+ (2.23.0)
 
 DongNyoung Lee (@Dongnyoung)
 
