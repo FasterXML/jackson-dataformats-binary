@@ -862,12 +862,12 @@ public class ProtobufParser extends ParserMinimalBase
         if (_currentField != null) {
             if ((f = _currentField.nextOrThisIf(id)) == null) {
                 if ((f = _currentMessage.field(id)) == null) {
-                    return _skipUnknownField(id, wireType, false);
+                    return _skipUnknownField(id, wireType);
                 }
             }
         } else {
             if ((f = _currentMessage.field(id)) == null) {
-                return _skipUnknownField(id, wireType, false);
+                return _skipUnknownField(id, wireType);
             }
         }
         _streamReadContext.setCurrentName(f.name);
@@ -890,21 +890,13 @@ public class ProtobufParser extends ParserMinimalBase
         if (_currentField != null) {
             if ((f = _currentField.nextOrThisIf(id)) == null) {
                 if ((f = _currentMessage.field(id)) == null) {
-                    return _skipUnknownField(id, wireType, true);
+                    return _skipUnknownField(id, wireType);
                 }
             }
         } else {
             if ((f = _currentMessage.field(id)) == null) {
-                return _skipUnknownField(id, wireType, true);
+                return _skipUnknownField(id, wireType);
             }
-        }
-
-        if ((_currentField == null) || (f = _currentField.nextOrThisIf(id)) == null) {
-            f = _currentMessage.field(id);
-        }
-        // Note: may be null; if so, value needs to be skipped
-        if (f == null) {
-            return _skipUnknownField(id, wireType, true);
         }
         _streamReadContext.setCurrentName(f.name);
         if (!f.isValidFor(wireType)) {
@@ -1070,15 +1062,16 @@ public class ProtobufParser extends ParserMinimalBase
         return type;
     }
 
-    private JsonToken _skipUnknownField(int tag, int wireType, boolean nestedField) throws JacksonException
+    private JsonToken _skipUnknownField(int tag, int wireType) throws JacksonException
     {
-//System.out.println(" _skipUnknownField(tag="+tag+", wireType="+wireType+")");
-
         // First: is this even allowed?
         if (!isEnabled(StreamReadFeature.IGNORE_UNDEFINED)) {
             _reportErrorF("Undefined property (id %d, wire type %d) for message type %s: not allowed to ignore, as `StreamReadFeature.IGNORE_UNDEFINED` disabled",
                     tag, wireType, _currentMessage.getName());
         }
+        // [dataformats-binary#881]: root vs nested from context, not `_state`, which may
+        // also be STATE_ARRAY_END (key replayed after an unpacked array or map)
+        final boolean inRoot = _streamReadContext.inRoot();
         while (true) {
             _skipUnknownValue(wireType);
             // 05-Dec-2017, tatu: as per [#126] seems like we need to check this not just for
@@ -1086,7 +1079,7 @@ public class ProtobufParser extends ParserMinimalBase
             if (_checkEnd()) { // updates _streamReadContext
                 return _updateToken(JsonToken.END_OBJECT);
             }
-            if (nestedField) {
+            if (!inRoot) {
                 if (_inputPtr >= _inputEnd) {
                     loadMoreGuaranteed();
                 }
@@ -1103,23 +1096,18 @@ public class ProtobufParser extends ParserMinimalBase
 
             wireType = (tag & 0x7);
             // Note: may be null; if so, value needs to be skipped
-            _currentField = _currentMessage.field(tag >> 3);
-            if (_currentField == null) {
+            if (_findField(tag >> 3) == null) {
                 continue;
             }
             _streamReadContext.setCurrentName(_currentField.name);
-
-            // 30-Apr-2025, tatu: [dataformats-binary#584] may be called for root and nested
-            if (nestedField) {
-                _state = STATE_NESTED_VALUE;
-            } else {
-                _state = STATE_ROOT_VALUE;
-            }
-
             // otherwise quickly validate compatibility
             if (!_currentField.isValidFor(wireType)) {
                 _reportIncompatibleType(_currentField, wireType);
             }
+            // 30-Apr-2025, tatu: [dataformats-binary#584] may be called for root and nested
+            // [dataformats-binary#881]: map / array / single value, from actual wire type
+            _state = _stateAfterFieldName(_currentField, wireType,
+                    inRoot ? STATE_ROOT_VALUE : STATE_NESTED_VALUE);
             return _updateToken(JsonToken.PROPERTY_NAME);
         }
     }
@@ -1477,10 +1465,9 @@ public class ProtobufParser extends ParserMinimalBase
 
             ProtobufField f = _findField(id);
             if (f == null) {
-                if (_skipUnknownField(id, wireType, false) != JsonToken.PROPERTY_NAME) {
-                    return null;
-                }
-                // sub-optimal as skip method already set it, but:
+                // [dataformats-binary#881]: skip method fully handles following field, if any
+                return (_skipUnknownField(id, wireType) == JsonToken.PROPERTY_NAME)
+                        ? _currentField.name : null;
             }
             String name = _currentField.name;
             _streamReadContext.setCurrentName(name);
@@ -1506,10 +1493,9 @@ public class ProtobufParser extends ParserMinimalBase
 
             ProtobufField f = _findField(id);
             if (f == null) {
-                if (_skipUnknownField(id, wireType, true) != JsonToken.PROPERTY_NAME) {
-                    return null;
-                }
-                // sub-optimal as skip method already set it, but:
+                // [dataformats-binary#881]: skip method fully handles following field, if any
+                return (_skipUnknownField(id, wireType) == JsonToken.PROPERTY_NAME)
+                        ? _currentField.name : null;
             }
             final String name = _currentField.name;
             _streamReadContext.setCurrentName(name);
@@ -1554,9 +1540,9 @@ public class ProtobufParser extends ParserMinimalBase
 
             ProtobufField f = _findField(id);
             if (f == null) {
-                _skipUnknownField(id, wireType, false);
-                // may or may not match, but let caller figure it out
-                return false;
+                // [dataformats-binary#881]: skip method fully handles following field, if any
+                return (_skipUnknownField(id, wireType) == JsonToken.PROPERTY_NAME)
+                        && _currentField.name.equals(sstr.getValue());
             }
             String name = _currentField.name;
             _streamReadContext.setCurrentName(name);
@@ -1582,9 +1568,9 @@ public class ProtobufParser extends ParserMinimalBase
 
             ProtobufField f = _findField(id);
             if (f == null) {
-                _skipUnknownField(id, wireType, true);
-                // may or may not match, but let caller figure it out
-                return false;
+                // [dataformats-binary#881]: skip method fully handles following field, if any
+                return (_skipUnknownField(id, wireType) == JsonToken.PROPERTY_NAME)
+                        && _currentField.name.equals(sstr.getValue());
             }
             final String name = _currentField.name;
             _streamReadContext.setCurrentName(name);
@@ -1629,14 +1615,14 @@ public class ProtobufParser extends ParserMinimalBase
 
             ProtobufField f = _findField(id);
             if (f == null) {
-                JsonToken t = _skipUnknownField(id, wireType, false);
+                JsonToken t = _skipUnknownField(id, wireType);
+                // [dataformats-binary#881]: skip method fully handles following field, if any
+                // (replaces [dataformats-binary#202] wire type reset)
                 if (t != JsonToken.PROPERTY_NAME) {
                     return (t == JsonToken.END_OBJECT)
                             ? PropertyNameMatcher.MATCH_END_OBJECT : PropertyNameMatcher.MATCH_ODD_TOKEN;
                 }
-                // sub-optimal as skip method already set it, but:
-                // [dataformats-binary#202]: need to reset after skipping
-                wireType = _currentField.wireType;
+                return matcher.matchName(_currentField.name);
             }
             String name = _currentField.name;
             _streamReadContext.setCurrentName(name);
@@ -1662,14 +1648,14 @@ public class ProtobufParser extends ParserMinimalBase
 
             ProtobufField f = _findField(id);
             if (f == null) {
-                JsonToken t = _skipUnknownField(id, wireType, true);
+                JsonToken t = _skipUnknownField(id, wireType);
+                // [dataformats-binary#881]: skip method fully handles following field, if any
+                // (replaces [dataformats-binary#202] wire type reset)
                 if (t != JsonToken.PROPERTY_NAME) {
                     return (t == JsonToken.END_OBJECT)
                             ? PropertyNameMatcher.MATCH_END_OBJECT : PropertyNameMatcher.MATCH_ODD_TOKEN;
                 }
-                // sub-optimal as skip method already set it, but:
-                // [dataformats-binary#202]: need to reset after skipping
-                wireType = _currentField.wireType;
+                return matcher.matchName(_currentField.name);
             }
             final String name = _currentField.name;
             _streamReadContext.setCurrentName(name);
