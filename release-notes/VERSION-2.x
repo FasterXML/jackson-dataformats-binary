@@ -48,6 +48,8 @@ Active maintainers:
   `CustomEncoding` lose elements and the following field
  (fix by @cowtowncoder, w/ Claude code)
 #860: (cbor) Invalid UTF-8 sequences (overlong, surrogates, > U+10FFFF) not rejected in text
+  (NOTE: no option to accept such content, including CESU-8 / "Modified UTF-8"
+  encoded text, which earlier versions decoded)
  (fix by @pjfanning, w/ Claude code)
 #868: (cbor) Wrong cached property name returned for names containing 0xFF bytes
  (fix by @pjfanning, w/ Claude code)
