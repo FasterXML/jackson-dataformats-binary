@@ -533,17 +533,15 @@ public class CBORParser extends ParserBase
                 _tagValues.clear();
                 // completed the whole Object?
                 if (!_streamReadContext.expectMoreValues()) {
-                    _stringRefs.pop();
-                    _streamReadContext = _streamReadContext.getParent();
+                    _closeScope();
                     return _updateToken(JsonToken.END_OBJECT);
                 }
                 return _updateToken(_decodePropertyName());
             }
         } else {
             if (!_streamReadContext.expectMoreValues()) {
-                _stringRefs.pop();
                 _tagValues.clear();
-                _streamReadContext = _streamReadContext.getParent();
+                _closeScope();
                 return _updateToken(JsonToken.END_ARRAY);
             }
         }
@@ -728,8 +726,7 @@ public class CBORParser extends ParserBase
             case 31: // Break
                 if (_streamReadContext.inArray()) {
                     if (!_streamReadContext.hasExpectedLength()) {
-                        _stringRefs.pop();
-                        _streamReadContext = _streamReadContext.getParent();
+                        _closeScope();
                         return _updateToken(JsonToken.END_ARRAY);
                     }
                 }
@@ -984,8 +981,7 @@ public class CBORParser extends ParserBase
         // We know we are in array, with length prefix so:
         if (!_streamReadContext.expectMoreValues()) {
             _tagValues.clear();
-            _stringRefs.pop();
-            _streamReadContext = _streamReadContext.getParent();
+            _closeScope();
             _updateToken(JsonToken.END_ARRAY);
             return false;
         }
@@ -1133,8 +1129,7 @@ public class CBORParser extends ParserBase
         // We know we are in array, with length prefix, and this is where we should be:
         if (!_streamReadContext.expectMoreValues()) {
             _tagValues.clear();
-            _stringRefs.pop();
-            _streamReadContext = _streamReadContext.getParent();
+            _closeScope();
             _updateToken(JsonToken.END_ARRAY);
             return true;
         }
@@ -1196,8 +1191,7 @@ public class CBORParser extends ParserBase
             _tagValues.clear();
             // completed the whole Object?
             if (!_streamReadContext.expectMoreValues()) {
-                _stringRefs.pop();
-                _streamReadContext = _streamReadContext.getParent();
+                _closeScope();
                 _updateToken(JsonToken.END_OBJECT);
                 return false;
             }
@@ -1273,8 +1267,7 @@ public class CBORParser extends ParserBase
             _tagValues.clear();
             // completed the whole Object?
             if (!_streamReadContext.expectMoreValues()) {
-                _stringRefs.pop();
-                _streamReadContext = _streamReadContext.getParent();
+                _closeScope();
                 _updateToken(JsonToken.END_OBJECT);
                 return null;
             }
@@ -1307,8 +1300,7 @@ public class CBORParser extends ParserBase
             if (type != CBORConstants.MAJOR_TYPE_TEXT) {
                 if (ch == 0xFF) { // end-of-object, common
                     if (!_streamReadContext.hasExpectedLength()) {
-                        _stringRefs.pop();
-                        _streamReadContext = _streamReadContext.getParent();
+                        _closeScope();
                         _updateToken(JsonToken.END_OBJECT);
                         return null;
                     }
@@ -1447,7 +1439,7 @@ public class CBORParser extends ParserBase
         _sharedString = null;
         // completed the whole Object?
         if (!_streamReadContext.expectMoreValues()) {
-            _streamReadContext = _streamReadContext.getParent();
+            _closeScope();
             _updateToken(JsonToken.END_OBJECT);
             return PropertyNameMatcher.MATCH_END_OBJECT;
         }
@@ -1478,7 +1470,7 @@ public class CBORParser extends ParserBase
         if (type != CBORConstants.MAJOR_TYPE_TEXT) {
             if (ch == 0xFF) { // end-of-object, common
                 if (!_streamReadContext.hasExpectedLength()) {
-                    _streamReadContext = _streamReadContext.getParent();
+                    _closeScope();
                     _updateToken(JsonToken.END_OBJECT);
                     return PropertyNameMatcher.MATCH_END_OBJECT;
                 }
@@ -3094,8 +3086,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
         if (type != CBORConstants.MAJOR_TYPE_TEXT) { // the usual case
             if (ch == 0xFF) {
                 if (!_streamReadContext.hasExpectedLength()) {
-                    _stringRefs.pop();
-                    _streamReadContext = _streamReadContext.getParent();
+                    _closeScope();
                     return JsonToken.END_OBJECT;
                 }
                 _reportUnexpectedBreak();
@@ -4232,6 +4223,13 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
     protected void createChildObjectContext(final int len) throws JacksonException {
         _streamReadContext = _streamReadContext.createChildObjectContext(len);
         _streamReadConstraints.validateNestingDepth(_streamReadContext.getNestingDepth());
+    }
+
+    // [dataformats-binary#882]: closing an Object or Array must always pop
+    // String-ref nesting along with read context, so do both in one place
+    private void _closeScope() {
+        _stringRefs.pop();
+        _streamReadContext = _streamReadContext.getParent();
     }
 
     // @since 2.20
