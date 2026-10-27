@@ -14,6 +14,12 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.21.9 (not yet released)
+
+#881: (protobuf) Known field after a skipped unknown field gets wrong wire type,
+  state or token location
+ (fix by @cowtowncoder, w/ Claude code)
+
 2.21.8 (17-Oct-2026)
 
 #816: (avro) `UnionReader.nextToken()` does not validate union index, throws
