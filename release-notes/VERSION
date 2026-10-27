@@ -29,6 +29,9 @@ No changes since 3.1
 #876: (cbor) `nextNameMatch()` may match property names differing only
   by leading NUL bytes
  (fix by @cowtowncoder, w/ Claude code)
+#879: (protobuf) `nextName()` / `nextNameMatch()` fast paths skip per-token state
+  reset done by `nextToken()` (stale number, wrong token location)
+ (fix by @cowtowncoder, w/ Claude code)
 #882: (cbor) `nextNameMatch()` does not pop stringref nesting on `END_OBJECT`,
   resolves later stringrefs against wrong namespace
  (fix by @cowtowncoder, w/ Claude code)
