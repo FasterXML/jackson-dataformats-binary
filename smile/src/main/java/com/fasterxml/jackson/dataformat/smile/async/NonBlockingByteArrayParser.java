@@ -279,6 +279,9 @@ public class NonBlockingByteArrayParser
                 if (avail >= needed) { // got it all
                     System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, _inputCopyLen, needed);
                     _inputPtr += needed;
+                    if (_minorState == MINOR_FIELD_NAME_SHORT_ASCII) {
+                        _verifyShortAsciiName(_inputCopy, 0, fullLen);
+                    }
                     String name = _findDecodedFromSymbols(_inputCopy, 0, fullLen);
                     if (name == null) {
                         name = (_minorState == MINOR_FIELD_NAME_SHORT_ASCII)
@@ -723,6 +726,7 @@ public class NonBlockingByteArrayParser
                 final int inputPtr = _inputPtr;
                 final int left = _inputEnd - inputPtr;
                 if (len <= left) { // gotcha!
+                    _verifyShortAsciiName(_inputBuffer, inputPtr, len);
                     _inputPtr = inputPtr + len;
                     String name = _findDecodedFromSymbols(_inputBuffer, inputPtr, len);
                     if (name == null) {

@@ -732,7 +732,9 @@ versionBits));
                 case 2: // short ASCII
                     {
                         int len = 1 + (ch & 0x3f);
-                        if (len == byteLen) {
+                        // [dataformats-binary#869]: can only match if name is ASCII
+                        //   (UTF-8 length same as char length)
+                        if (len == byteLen && byteLen == str.getValue().length()) {
                             int i = 0;
                             for (; i < len; ++i) {
                                 if (nameBytes[i] != _inputBuffer[ptr+i]) {
@@ -1501,6 +1503,7 @@ versionBits));
         if ((_inputEnd - _inputPtr) < len) {
             _loadToHaveAtLeast(len);
         }
+        _verifyShortAsciiName(_inputBuffer, _inputPtr, len);
         if (_symbolsCanonical) {
             String name = _findDecodedFromSymbols(len);
             if (name != null) {

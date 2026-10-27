@@ -50,6 +50,7 @@ Active maintainers:
 #868: (cbor) Wrong cached property name returned for names containing 0xFF bytes
  (fix by @pjfanning, w/ Claude code)
 #869: (smile) Wrong cached property name returned for names containing 0xFF bytes
+ (NOTE: short ASCII property names with non-ASCII bytes are now rejected)
  (fix by @pjfanning, w/ Claude code)
 
 2.22.5 (not yet released)

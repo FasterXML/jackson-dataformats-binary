@@ -932,6 +932,26 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
         }
     }
 
+    /**
+     * Helper method for verifying that a short ASCII property name only contains
+     * 7-bit ASCII bytes. Must be called before symbol table lookup: otherwise
+     * non-ASCII bytes could match a name decoded from a (short Unicode) name,
+     * or a name could be added that skipped UTF-8 validation
+     * ([dataformats-binary#869]).
+     *
+     * @since 2.23
+     */
+    protected final void _verifyShortAsciiName(byte[] inBuf, int inPtr, int len)
+        throws JsonParseException
+    {
+        for (final int end = inPtr + len; inPtr < end; ++inPtr) {
+            if (inBuf[inPtr] < 0) {
+                _reportError("Invalid byte 0x%02X in short ASCII property name",
+                        inBuf[inPtr] & 0xFF);
+            }
+        }
+    }
+
     protected void _reportInvalidInitial(int mask) throws JsonParseException {
         _reportError("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask));
     }
