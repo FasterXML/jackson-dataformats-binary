@@ -707,10 +707,6 @@ public abstract class NonBlockingParserBase
                index, _seenStringValueCount);
     }
 
-    protected void _reportInvalidInitial(int mask) throws JsonParseException {
-        _reportError("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask));
-    }
-
     protected void _reportInvalidOther(int mask, int ptr) throws JsonParseException {
         _inputPtr = ptr;
         _reportError("Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask));

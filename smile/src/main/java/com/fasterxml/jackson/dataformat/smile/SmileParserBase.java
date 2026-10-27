@@ -914,7 +914,7 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
     protected final int _padAndValidateQuad(int firstByte) throws JsonParseException {
         firstByte &= 0xFF;
         if (firstByte == 0xFF) {
-            _reportInvalidUTF8StartFF();
+            _reportInvalidInitial(firstByte);
         }
         return firstByte | 0xFFFFFF00;
     }
@@ -928,11 +928,11 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
      */
     protected final void _verifyLastFullQuad(int q) throws JsonParseException {
         if ((q >>> 24) == 0xFF) {
-            _reportInvalidUTF8StartFF();
+            _reportInvalidInitial(0xFF);
         }
     }
 
-    private void _reportInvalidUTF8StartFF() throws JsonParseException {
-        _reportError("Invalid UTF-8 start byte 0xff");
+    protected void _reportInvalidInitial(int mask) throws JsonParseException {
+        _reportError("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask));
     }
 }

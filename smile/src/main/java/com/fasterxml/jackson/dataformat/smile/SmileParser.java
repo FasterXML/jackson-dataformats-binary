@@ -1816,22 +1816,22 @@ versionBits));
             }
             _quadBuffer[quads++] = q;
         }
+        final int byteLen = (quads << 2) + bytes;
+        // [dataformats-binary#726]: verify name length before looking it up or
+        //   decoding it: must be checked before symbol table lookup since a hit
+        //   would otherwise bypass validation for all but the first occurrence
+        //   (and before content checks, so over-long names report length violation)
+        _streamReadConstraints.validateNameLength(byteLen);
         // and if we have more bytes, append those too
-        int byteLen = (quads << 2);
         if (bytes > 0) {
             if (quads >= _quadBuffer.length) {
                 _quadBuffer = _growNameDecodeBuffer(_quadBuffer, 256);
             }
             q = _padLastQuad(q, bytes);
             _quadBuffer[quads++] = q;
-            byteLen += bytes;
         } else if (quads > 0) {
             _verifyLastFullQuad(_quadBuffer[quads-1]);
         }
-        // [dataformats-binary#726]: verify name length before looking it up or
-        //   decoding it: must be checked before symbol table lookup since a hit
-        //   would otherwise bypass validation for all but the first occurrence
-        _streamReadConstraints.validateNameLength(byteLen);
         // Know this name already?
         String name = _symbolsCanonical ?
             _symbols.findName(_quadBuffer, quads) : null;
@@ -3143,10 +3143,6 @@ currentToken(), firstCh);
             _reportError("Encountered shared text value reference, even though document header did not declare shared text value references may be included");
         }
        _reportError("Invalid shared text value reference "+index+"; only got "+_seenStringValueCount+" names in buffer (invalid content)");
-    }
-
-    protected void _reportInvalidInitial(int mask) throws JsonParseException {
-        _reportError("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask));
     }
 
     protected void _reportInvalidOther(int mask) throws JsonParseException {
