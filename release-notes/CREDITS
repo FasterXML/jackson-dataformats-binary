@@ -89,6 +89,8 @@ PJ Fanning (@pjfanning)
  (3.3.0)
 * Fixed #868: (cbor) Wrong cached property name returned for names containing 0xFF bytes
  (3.1.9)
+* Fixed #869: (smile) Wrong cached property name returned for names containing 0xFF bytes
+ (3.1.9)
 
 DongNyoung Lee (@Dongnyoung)
 

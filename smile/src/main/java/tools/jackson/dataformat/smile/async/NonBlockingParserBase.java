@@ -473,6 +473,8 @@ public abstract class NonBlockingParserBase
         // and then leftovers
         if (len > 0) {
             _quadBuffer[offset++] = _decodePartialQuadForNulls(inBuf, inPtr, len);
+        } else {
+            _verifyLastFullQuad(_quadBuffer[offset-1]);
         }
         return _symbols.findName(_quadBuffer, offset);
     }
@@ -648,10 +650,6 @@ public abstract class NonBlockingParserBase
         }
         throw _constructReadException("Invalid shared text value reference %d; only got %s names in buffer (invalid content)",
                index, _seenStringValueCount);
-    }
-
-    protected void _reportInvalidInitial(int mask) throws StreamReadException {
-        throw _constructReadException("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask));
     }
 
     protected void _reportInvalidOther(int mask, int ptr) throws StreamReadException {

@@ -884,10 +884,18 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
     /**
      * Helper method that pads the unused high bytes of a partial quad with 1s
      * rather than 0s ([dataformats-binary#312]).
+     *<p>
+     * Since padding uses 0xFF bytes, a last quad starting with 0xFF could match
+     * a shorter name in the symbol table (or, if full, the padded last quad of
+     * a name one byte shorter), skipping UTF-8 validation of the name
+     * ([dataformats-binary#869]); 0xFF is never valid in UTF-8 so it is rejected.
      *
      * @param bytes Number of bytes actually decoded; must be between 1 and 4
      */
-    protected final static int _padLastQuad(int q, int bytes) {
+    protected final int _padLastQuad(int q, int bytes) throws StreamReadException {
+        if (((q >>> ((bytes - 1) << 3)) & 0xFF) == 0xFF) {
+            _reportInvalidInitial(0xFF);
+        }
         return (bytes == 4) ? q : (q | (-1 << (bytes << 3)));
     }
 
@@ -903,8 +911,27 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
      *
      * @since 3.3
      */
-    protected final static int _decodePartialQuadForNulls(byte[] buffer, int offset, int len) {
+    protected final int _decodePartialQuadForNulls(byte[] buffer, int offset, int len)
+        throws StreamReadException
+    {
         return _padLastQuad(_decodePartialQuad(buffer, offset, len), len);
+    }
+
+    /**
+     * Helper method for verifying that the last quad of a name, when full (not
+     * padded), does not start with 0xFF: if it did, it could match the padded
+     * last quad of a name one byte shorter ([dataformats-binary#869]).
+     *
+     * @since 3.1.9
+     */
+    protected final void _verifyLastFullQuad(int q) throws StreamReadException {
+        if ((q >>> 24) == 0xFF) {
+            _reportInvalidInitial(0xFF);
+        }
+    }
+
+    protected void _reportInvalidInitial(int mask) throws StreamReadException {
+        throw _constructReadException("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask));
     }
 
     /**

@@ -866,6 +866,8 @@ public class NonBlockingByteArrayParser
         // and possibly more... ?
         if (in < outPtr) { // 1 - 3 bytes left over
             quads[quadCount++] = _decodePartialQuadForNulls(copyBuffer, in, outPtr - in);
+        } else if (quadCount > 0) {
+            _verifyLastFullQuad(quads[quadCount-1]);
         }
 
         String name = _symbols.findName(quads, quadCount);

@@ -1959,20 +1959,22 @@ _typeAsInt);
             }
             _quadBuffer[quads++] = q;
         }
+        final int byteLen = (quads << 2) + bytes;
+        // [dataformats-binary#726]: verify name length before looking it up or
+        //   decoding it: must be checked before symbol table lookup since a hit
+        //   would otherwise bypass validation for all but the first occurrence
+        //   (and before content checks, so over-long names report length violation)
+        _streamReadConstraints.validateNameLength(byteLen);
         // and if we have more bytes, append those too
-        int byteLen = (quads << 2);
         if (bytes > 0) {
             if (quads >= _quadBuffer.length) {
                 _quadBuffer = _growNameDecodeBuffer(_quadBuffer, 256);
             }
             q = _padLastQuad(q, bytes);
             _quadBuffer[quads++] = q;
-            byteLen += bytes;
+        } else if (quads > 0) {
+            _verifyLastFullQuad(_quadBuffer[quads-1]);
         }
-        // [dataformats-binary#726]: verify name length before looking it up or
-        //   decoding it: must be checked before symbol table lookup since a hit
-        //   would otherwise bypass validation for all but the first occurrence
-        _streamReadConstraints.validateNameLength(byteLen);
         // Know this name already?
         String name = _symbolsCanonical ?
             _symbols.findName(_quadBuffer, quads) : null;
@@ -2060,6 +2062,8 @@ _typeAsInt);
         // and then leftovers
         if (len > 0) {
             _quadBuffer[offset++] = _decodePartialQuadForNulls(inBuf, inPtr, len);
+        } else {
+            _verifyLastFullQuad(_quadBuffer[offset-1]);
         }
         return _symbols.findName(_quadBuffer, offset);
     }
@@ -3323,10 +3327,6 @@ currentToken(), firstCh);
         }
         throw _constructReadException("Invalid shared text value reference %d; only got %s names in buffer (invalid content)",
                 index, _seenStringValueCount);
-    }
-
-    protected void _reportInvalidInitial(int mask) throws StreamReadException {
-        throw _constructReadException("Invalid UTF-8 start byte 0x02X", mask);
     }
 
     protected void _reportInvalidOther(int mask, int ptr) throws StreamReadException {

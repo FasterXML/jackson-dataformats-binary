@@ -49,6 +49,8 @@ Active maintainers:
  (fix by @cowtowncoder, w/ Claude code)
 #868: (cbor) Wrong cached property name returned for names containing 0xFF bytes
  (fix by @pjfanning, w/ Claude code)
+#869: (smile) Wrong cached property name returned for names containing 0xFF bytes
+ (fix by @pjfanning, w/ Claude code)
 
 2.22.5 (not yet released)
 

@@ -81,6 +81,8 @@ implementations)
 
 #868: (cbor) Wrong cached property name returned for names containing 0xFF bytes
  (fix by @pjfanning, w/ Claude code)
+#869: (smile) Wrong cached property name returned for names containing 0xFF bytes
+ (fix by @pjfanning, w/ Claude code)
 #873: (smile) `SmileParser.nextNameMatch()` misreads short non-ASCII property names
   (input not advanced on symbol-table hit, wrong quad count)
  (fix by @cowtowncoder, w/ Claude code)
@@ -223,6 +225,8 @@ No changes since 3.2.0
 3.1.9 (not yet released)
 
 #868: (cbor) Wrong cached property name returned for names containing 0xFF bytes
+ (fix by @pjfanning, w/ Claude code)
+#869: (smile) Wrong cached property name returned for names containing 0xFF bytes
  (fix by @pjfanning, w/ Claude code)
 #873: (smile) `SmileParser.nextNameMatch()` misreads short non-ASCII property names
   (input not advanced on symbol-table hit, wrong quad count)
