@@ -66,6 +66,9 @@ implementations)
 #879: (protobuf) `nextName()` / `nextNameMatch()` fast paths skip per-token state
   reset done by `nextToken()` (stale number, wrong token location)
  (fix by @cowtowncoder, w/ Claude code)
+#882: (cbor) `nextNameMatch()` does not pop stringref nesting on `END_OBJECT`,
+  resolves later stringrefs against wrong namespace
+ (fix by @cowtowncoder, w/ Claude code)
 - (avro) Generated `array` schemas missing `java-class` for `java.util.List`,
   breaking round-trip via Apache `ReflectDatumReader`
 
