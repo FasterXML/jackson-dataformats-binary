@@ -3284,8 +3284,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
                     i = 0xDC00 | (i & 0x3FF);
                     break;
                 default: // invalid
-                    throw _constructReadException("Invalid UTF-8 byte 0x%s in Object property name",
-                            Integer.toHexString(i));
+                    throw _invalidNameByte(i);
                 }
             }
             outBuf[outPtr++] = (char) i;
@@ -3485,7 +3484,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
             // [dataformats-binary#868]: full last quad starting with 0xFF would match
             //   padded last quad of a shorter name
             if ((_quadBuffer[offset-1] >>> 24) == 0xFF) {
-                _reportInvalidInitial(0xFF);
+                throw _invalidNameByte(0xFF);
             }
         } else {
             int q = _padQuadForNulls(inBuf[inPtr]);
@@ -3532,9 +3531,17 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
     private final int _padQuadForNulls(int firstByte) throws JsonParseException {
         firstByte &= 0xFF;
         if (firstByte == 0xFF) {
-            _reportInvalidInitial(firstByte);
+            throw _invalidNameByte(firstByte);
         }
         return firstByte | 0xFFFFFF00;
+    }
+
+    // [dataformats-binary#868]: same failure for invalid name bytes whether caught
+    //   by symbol table lookup or by `_decodeContiguousName()` (chunked and
+    //   longer-than-buffer names are decoded as text, with different message)
+    private final JsonParseException _invalidNameByte(int b) {
+        return _constructReadException("Invalid UTF-8 byte 0x%s in Object property name",
+                Integer.toHexString(b));
     }
 
     /*
