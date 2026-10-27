@@ -26,16 +26,26 @@ public class NextNameTokenState879Test extends ProtobufTestBase
             +" optional int32 c = 1;\n"
             +" optional bytes b = 2;\n"
             +" optional int32 a = 3;\n"
+            +" optional N n = 4;\n"
+            +"}\n"
+            +"message N {\n"
+            +" optional int32 x = 1;\n"
+            +" optional bytes y = 2;\n"
+            +" optional int32 z = 3;\n"
             +"}\n"
     ;
 
-    final static List<String> NAMES = Arrays.asList("c", "b", "a");
+    final static List<String> NAMES = Arrays.asList("c", "b", "a", "n", "x", "y", "z");
 
     // c=7 (tag at 0), b=[1,2,3] (tag at 2), a=5 (tag at 7)
     final static byte[] DOC = new byte[] { 8, 7, 18, 3, 1, 2, 3, 24, 5 };
 
     // c=7 (tag at 0), unknown #9=1 (tag at 2), a=5 (tag at 4)
     final static byte[] DOC_WITH_UNKNOWN = new byte[] { 8, 7, 72, 1, 24, 5 };
+
+    // n (tag at 0) = { x=7 (tag at 2), y=[1,2] (tag at 4), unknown #9=1 (tag at 8),
+    //   z=5 (tag at 10) }
+    final static byte[] DOC_NESTED = new byte[] { 34, 10, 8, 7, 18, 2, 1, 2, 72, 1, 24, 5 };
 
     interface NameReader {
         String nextName(JsonParser p);
@@ -87,6 +97,7 @@ public class NextNameTokenState879Test extends ProtobufTestBase
     {
         _verifyKnown(r);
         _verifyUnknownSkipped(r);
+        _verifyNested(r);
         _verifyCloseWithUnreadValue(r);
     }
 
@@ -108,6 +119,8 @@ public class NextNameTokenState879Test extends ProtobufTestBase
 
             assertEquals("a", r.nextName(p));
             assertEquals(7, p.currentTokenLocation().getByteOffset());
+            // not observable via API, so check directly
+            assertNull(((ProtobufParser) p)._binaryValue);
             assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
             assertEquals(5, p.getIntValue());
 
@@ -135,6 +148,42 @@ public class NextNameTokenState879Test extends ProtobufTestBase
             assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
             assertEquals(5, p.getIntValue());
 
+            assertNull(r.nextName(p));
+            assertToken(JsonToken.END_OBJECT, p.currentToken());
+            assertNull(p.nextToken());
+        }
+    }
+
+    // Same checks for fields of a nested message, which use a separate code path
+    private void _verifyNested(NameReader r) throws Exception
+    {
+        try (JsonParser p = MAPPER.reader(SCHEMA)
+                .with(StreamReadFeature.IGNORE_UNDEFINED)
+                .createParser(DOC_NESTED)) {
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertEquals("n", r.nextName(p));
+            assertEquals(0, p.currentTokenLocation().getByteOffset());
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+
+            assertEquals("x", r.nextName(p));
+            assertEquals(2, p.currentTokenLocation().getByteOffset());
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(7, p.getIntValue());
+
+            assertEquals("y", r.nextName(p));
+            assertEquals(4, p.currentTokenLocation().getByteOffset());
+            assertThrows(StreamReadException.class, () -> p.getIntValue());
+            assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
+            assertArrayEquals(new byte[] { 1, 2 }, p.getBinaryValue());
+
+            assertEquals("z", r.nextName(p));
+            assertEquals(10, p.currentTokenLocation().getByteOffset());
+            assertNull(((ProtobufParser) p)._binaryValue);
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(5, p.getIntValue());
+
+            assertNull(r.nextName(p));
+            assertToken(JsonToken.END_OBJECT, p.currentToken());
             assertNull(r.nextName(p));
             assertToken(JsonToken.END_OBJECT, p.currentToken());
             assertNull(p.nextToken());
