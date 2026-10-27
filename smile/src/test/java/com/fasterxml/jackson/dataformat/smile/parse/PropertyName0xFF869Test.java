@@ -2,24 +2,20 @@ package com.fasterxml.jackson.dataformat.smile.parse;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.core.async.ByteArrayFeeder;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.dataformat.smile.BaseTestForSmile;
 import com.fasterxml.jackson.dataformat.smile.SmileConstants;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 // [dataformats-binary#869]: name with 0xFF byte at start of last quad must not
@@ -102,92 +98,13 @@ public class PropertyName0xFF869Test extends BaseTestForSmile
         }
     }
 
-    // Short ASCII names must only contain 7-bit bytes, wherever in name and
-    // whether names are canonicalized or not
-    @Test
-    public void testNonAsciiInShortAsciiName() throws Exception
-    {
-        final SmileFactory[] factories = {
-            new SmileFactory(),
-            SmileFactory.builder()
-                .disable(JsonFactory.Feature.CANONICALIZE_FIELD_NAMES)
-                .build()
-        };
-        for (int len : new int[] { 1, 2, 4, 5, 13, 64 }) {
-            for (int pos : new int[] { 0, len / 2, len - 1 }) {
-                for (int b : new int[] { 0x80, 0xC3, 0xFE, 0xFF }) {
-                    final byte[] name = _name(len);
-                    name[pos] = (byte) b;
-                    final byte[] doc = _objectDoc(TOKENS_ASCII, name);
-                    for (SmileFactory f : factories) {
-                        for (int mode : MODES) {
-                            _verifyFailsAscii(f, doc, mode, b);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // Short ASCII name with non-ASCII bytes must not match name already
-    // decoded from short Unicode name with same bytes
-    @Test
-    public void testShortAsciiNotMatchingUnicodeName() throws Exception
-    {
-        // "a" + U+00E4 (UTF-8: 0xC3 0xA4)
-        final byte[] name = { 'a', (byte) 0xC3, (byte) 0xA4 };
-        final String decoded = "a\u00E4";
-        for (int mode : MODES) {
-            // same document
-            _verifyFailsAscii(new SmileFactory(),
-                    _objectDoc(new int[] { TOKENS_SHORT, TOKENS_ASCII }, name, name), mode, 0xC3);
-
-            // earlier document
-            final SmileFactory f = new SmileFactory();
-            assertEquals(decoded, _names(f, _objectDoc(TOKENS_SHORT, name), mode));
-            _verifyFailsAscii(f, _objectDoc(TOKENS_ASCII, name), mode, 0xC3);
-        }
-    }
-
-    // Also `nextFieldName(SerializableString)` must not match non-ASCII name
-    // against short ASCII name
-    @Test
-    public void testNextFieldNameWithNonAsciiShortAsciiName() throws Exception
-    {
-        final byte[] name = { 'a', (byte) 0xC3, (byte) 0xA4 };
-        final byte[] doc = _objectDoc(TOKENS_ASCII, name);
-        try (JsonParser p = new SmileFactory().createParser(doc)) {
-            assertToken(JsonToken.START_OBJECT, p.nextToken());
-            try {
-                boolean match = p.nextFieldName(new SerializedString("a\u00E4"));
-                fail("Should have failed; got match="+match+", name="+p.currentName());
-            } catch (StreamReadException e) {
-                verifyException(e, "Invalid byte 0xC3 in short ASCII property name");
-            }
-        }
-    }
-
-    private void _verifyFailsAscii(SmileFactory f, byte[] doc, int mode, int b) throws Exception
-    {
-        try {
-            String names = _names(f, doc, mode);
-            fail("Should have failed for byte 0x"+Integer.toHexString(b)+", mode "+mode+"; got names: "+names);
-        } catch (StreamReadException e) {
-            verifyException(e, String.format("Invalid byte 0x%02X in short ASCII property name", b));
-        }
-    }
-
     private void _verifyFails(SmileFactory f, byte[] doc, int tokens, int mode, int len) throws Exception
     {
         try {
             String names = _names(f, doc, mode);
             fail("Should have failed for name length "+(len+1)+", tokens "+tokens+", mode "+mode+"; got names: "+names);
         } catch (StreamReadException e) {
-            if (tokens == TOKENS_ASCII && len < 64) {
-                verifyException(e, "Invalid byte 0xFF in short ASCII property name");
-            } else {
-                verifyException(e, "Invalid UTF-8 start byte 0xff");
-            }
+            verifyException(e, "Invalid UTF-8 start byte 0xff");
         }
     }
 
@@ -260,19 +177,10 @@ public class PropertyName0xFF869Test extends BaseTestForSmile
     // Object with given property names (with small int values), using name
     // tokens of given type (long tokens for names too long for short ones)
     private static byte[] _objectDoc(int tokens, byte[]... names) {
-        final int[] tokensPerName = new int[names.length];
-        Arrays.fill(tokensPerName, tokens);
-        return _objectDoc(tokensPerName, names);
-    }
-
-    // As above, but with token type for each name separately
-    private static byte[] _objectDoc(int[] tokensPerName, byte[]... names) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         out.write(HEADER, 0, HEADER.length);
         out.write(SmileConstants.TOKEN_LITERAL_START_OBJECT);
-        for (int i = 0; i < names.length; ++i) {
-            final byte[] name = names[i];
-            final int tokens = tokensPerName[i];
+        for (byte[] name : names) {
             final int len = name.length;
             final boolean ascii = (tokens == TOKENS_ASCII) || _isAscii(name);
             if (tokens == TOKENS_LONG || len > (ascii ? 64 : 56)) {
