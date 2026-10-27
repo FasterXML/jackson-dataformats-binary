@@ -370,6 +370,8 @@ public class ProtobufParser extends ParserMinimalBase
     {
         super.close();
         _state = STATE_CLOSED;
+        // no more input to skip unread value from
+        _tokenIncomplete = false;
         // 17-Jan-2024, tatu: Most code paths won't update context so:
         if (!_streamReadContext.inRoot()) {
             _streamReadContext = _streamReadContext.getParent();
@@ -549,15 +551,7 @@ public class ProtobufParser extends ParserMinimalBase
     @Override
     public JsonToken nextToken() throws JacksonException
     {
-        _numTypesValid = NR_UNKNOWN;
-        // For longer tokens (text, binary), we'll only read when requested
-        if (_tokenIncomplete) {
-            _tokenIncomplete = false;
-            _skipBytes(_decodedLength);
-        }
-        _tokenInputTotal = _currInputProcessed + _inputPtr;
-        // also: clear any data retained so far
-        _binaryValue = null;
+        _startNextToken();
 
         switch (_state) {
         case STATE_INITIAL:
@@ -750,6 +744,23 @@ public class ProtobufParser extends ParserMinimalBase
         }
         VersionUtil.throwInternal();
         return null;
+    }
+
+    /**
+     * Per-token state reset shared by {@link #nextToken()}, {@link #nextStringValue()}
+     * and the optimized {@code nextName*()} methods [#879].
+     */
+    private void _startNextToken() throws JacksonException
+    {
+        _numTypesValid = NR_UNKNOWN;
+        // For longer tokens (text, binary), we'll only read when requested
+        if (_tokenIncomplete) {
+            _tokenIncomplete = false;
+            _skipBytes(_decodedLength);
+        }
+        _tokenInputTotal = _currInputProcessed + _inputPtr;
+        // also: clear any data retained so far
+        _binaryValue = null;
     }
 
     private boolean _checkEnd() throws JacksonException
@@ -1026,6 +1037,8 @@ public class ProtobufParser extends ParserMinimalBase
                     return _updateToken(JsonToken.END_OBJECT);
                 }
             }
+            // Token location is that of the next field's tag, not the skipped one's
+            _tokenInputTotal = _currInputProcessed + _inputPtr;
             tag = _decodeVInt();
 
             wireType = (tag & 0x7);
@@ -1377,11 +1390,9 @@ public class ProtobufParser extends ParserMinimalBase
     @Override
     public String nextName() throws JacksonException
     {
-        // As in nextToken(): skip the rest of a value that was not read [#874]
-        if (_tokenIncomplete) {
-            _tokenIncomplete = false;
-            _skipBytes(_decodedLength);
-        }
+        // As in nextToken(): skip the rest of a value that was not read [#874],
+        // reset per-token state [#879]
+        _startNextToken();
         if (_state == STATE_ROOT_KEY) {
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
@@ -1456,11 +1467,9 @@ public class ProtobufParser extends ParserMinimalBase
     @Override
     public boolean nextName(SerializableString sstr) throws JacksonException
     {
-        // As in nextToken(): skip the rest of a value that was not read [#874]
-        if (_tokenIncomplete) {
-            _tokenIncomplete = false;
-            _skipBytes(_decodedLength);
-        }
+        // As in nextToken(): skip the rest of a value that was not read [#874],
+        // reset per-token state [#879]
+        _startNextToken();
         if (_state == STATE_ROOT_KEY) {
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
@@ -1533,11 +1542,9 @@ public class ProtobufParser extends ParserMinimalBase
     @Override
     public int nextNameMatch(PropertyNameMatcher matcher) throws JacksonException
     {
-        // As in nextToken(): skip the rest of a value that was not read [#874]
-        if (_tokenIncomplete) {
-            _tokenIncomplete = false;
-            _skipBytes(_decodedLength);
-        }
+        // As in nextToken(): skip the rest of a value that was not read [#874],
+        // reset per-token state [#879]
+        _startNextToken();
         if (_state == STATE_ROOT_KEY) {
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
@@ -1639,14 +1646,8 @@ public class ProtobufParser extends ParserMinimalBase
     @Override
     public String nextStringValue() throws JacksonException
     {
-        // Copied from `nexdtToken()`, as appropriate
-        _numTypesValid = NR_UNKNOWN;
-        if (_tokenIncomplete) {
-            _tokenIncomplete = false;
-            _skipBytes(_decodedLength);
-        }
-        _tokenInputTotal = _currInputProcessed + _inputPtr;
-        _binaryValue = null;
+        // As in nextToken()
+        _startNextToken();
 
         switch (_state) {
         case STATE_ROOT_VALUE:
