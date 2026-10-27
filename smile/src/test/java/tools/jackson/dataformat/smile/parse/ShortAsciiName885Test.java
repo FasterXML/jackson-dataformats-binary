@@ -115,6 +115,38 @@ public class ShortAsciiName885Test extends BaseTestForSmile
         }
     }
 
+    // `nextName(SerializableString)` must compare against raw, not JSON-escaped,
+    // bytes of expected name
+    @Test
+    public void testNextNameWithEscapedChars() throws Exception
+    {
+        // Short Unicode name `é\"` (literal backslash) must not match expected `é"`,
+        // even though its bytes equal the JSON-escaped form of the latter
+        _verifyNextName(_doc(_unicodeName(utf8Bytes("\u00E9\\\""))),
+                "\u00E9\"", false, "\u00E9\\\"");
+        // Same for short ASCII names
+        _verifyNextName(_doc(_asciiName(utf8Bytes("a\\\"b"))),
+                "a\"b", false, "a\\\"b");
+        // And names with chars that need escaping must still match
+        _verifyNextName(_doc(_asciiName(utf8Bytes("a\"b"))),
+                "a\"b", true, "a\"b");
+        _verifyNextName(_doc(_unicodeName(utf8Bytes("\u00E9\"\n"))),
+                "\u00E9\"\n", true, "\u00E9\"\n");
+    }
+
+    private void _verifyNextName(byte[] doc, String expName, boolean expMatch,
+            String actualName) throws Exception
+    {
+        for (SmileFactory f : new SmileFactory[] { CANON_F, NO_CANON_F }) {
+            try (JsonParser p = new SmileMapper(f).createParser(doc)) {
+                assertEquals(JsonToken.START_OBJECT, p.nextToken());
+                assertEquals(expMatch, p.nextName(new SerializedString(expName)));
+                assertEquals(JsonToken.PROPERTY_NAME, p.currentToken());
+                assertEquals(actualName, p.currentName());
+            }
+        }
+    }
+
     // `nextNameMatch()` (used by POJO deserialization) must not match either
     @Test
     public void testNextNameMatch() throws Exception
