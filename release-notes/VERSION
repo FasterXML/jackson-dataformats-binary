@@ -32,6 +32,9 @@ No changes since 3.1
 #879: (protobuf) `nextName()` / `nextNameMatch()` fast paths skip per-token state
   reset done by `nextToken()` (stale number, wrong token location)
  (fix by @cowtowncoder, w/ Claude code)
+#881: (protobuf) Known field after a skipped unknown field gets wrong wire type,
+  state or token location
+ (fix by @cowtowncoder, w/ Claude code)
 #882: (cbor) `nextNameMatch()` does not pop stringref nesting on `END_OBJECT`,
   resolves later stringrefs against wrong namespace
  (fix by @cowtowncoder, w/ Claude code)
