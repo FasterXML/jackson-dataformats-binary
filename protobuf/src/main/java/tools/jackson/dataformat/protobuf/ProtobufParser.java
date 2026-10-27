@@ -370,6 +370,8 @@ public class ProtobufParser extends ParserMinimalBase
     {
         super.close();
         _state = STATE_CLOSED;
+        // no more input to skip unread value from
+        _tokenIncomplete = false;
         // 17-Jan-2024, tatu: Most code paths won't update context so:
         if (!_streamReadContext.inRoot()) {
             _streamReadContext = _streamReadContext.getParent();
@@ -1035,6 +1037,8 @@ public class ProtobufParser extends ParserMinimalBase
                     return _updateToken(JsonToken.END_OBJECT);
                 }
             }
+            // Token location is that of the next field's tag, not the skipped one's
+            _tokenInputTotal = _currInputProcessed + _inputPtr;
             tag = _decodeVInt();
 
             wireType = (tag & 0x7);

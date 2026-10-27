@@ -1,16 +1,19 @@
 package tools.jackson.dataformat.protobuf;
 
+import java.io.ByteArrayInputStream;
 import java.util.*;
 
 import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
+import tools.jackson.core.StreamReadFeature;
 import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.core.io.SerializedString;
 import tools.jackson.core.sym.PropertyNameMatcher;
 import tools.jackson.core.sym.SimpleNameMatcher;
 import tools.jackson.dataformat.protobuf.schema.ProtobufSchema;
+import tools.jackson.dataformat.protobuf.testutil.LimitingInputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,6 +33,9 @@ public class NextNameTokenState879Test extends ProtobufTestBase
 
     // c=7 (tag at 0), b=[1,2,3] (tag at 2), a=5 (tag at 7)
     final static byte[] DOC = new byte[] { 8, 7, 18, 3, 1, 2, 3, 24, 5 };
+
+    // c=7 (tag at 0), unknown #9=1 (tag at 2), a=5 (tag at 4)
+    final static byte[] DOC_WITH_UNKNOWN = new byte[] { 8, 7, 72, 1, 24, 5 };
 
     interface NameReader {
         String nextName(JsonParser p);
@@ -68,12 +74,23 @@ public class NextNameTokenState879Test extends ProtobufTestBase
             if (ix >= 0) {
                 return NAMES.get(ix);
             }
-            assertEquals(PropertyNameMatcher.MATCH_END_OBJECT, ix);
+            if (p.currentToken() == null) { // closed
+                assertEquals(PropertyNameMatcher.MATCH_ODD_TOKEN, ix);
+            } else {
+                assertEquals(PropertyNameMatcher.MATCH_END_OBJECT, ix);
+            }
             return null;
         });
     }
 
     private void _verify(NameReader r) throws Exception
+    {
+        _verifyKnown(r);
+        _verifyUnknownSkipped(r);
+        _verifyCloseWithUnreadValue(r);
+    }
+
+    private void _verifyKnown(NameReader r) throws Exception
     {
         try (JsonParser p = MAPPER.reader(SCHEMA).createParser(DOC)) {
             assertToken(JsonToken.START_OBJECT, p.nextToken());
@@ -98,6 +115,49 @@ public class NextNameTokenState879Test extends ProtobufTestBase
             assertToken(JsonToken.END_OBJECT, p.currentToken());
             assertNull(p.nextToken());
         }
+    }
+
+    // Location of a property name must point to its own tag, not to that
+    // of the unknown field skipped before it
+    private void _verifyUnknownSkipped(NameReader r) throws Exception
+    {
+        try (JsonParser p = MAPPER.reader(SCHEMA)
+                .with(StreamReadFeature.IGNORE_UNDEFINED)
+                .createParser(DOC_WITH_UNKNOWN)) {
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertEquals("c", r.nextName(p));
+            assertEquals(0, p.currentTokenLocation().getByteOffset());
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(7, p.getIntValue());
+
+            assertEquals("a", r.nextName(p));
+            assertEquals(4, p.currentTokenLocation().getByteOffset());
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(5, p.getIntValue());
+
+            assertNull(r.nextName(p));
+            assertToken(JsonToken.END_OBJECT, p.currentToken());
+            assertNull(p.nextToken());
+        }
+    }
+
+    // Closing parser with an unread (lazily skipped) value must not leave
+    // a pending skip to be done against closed input
+    private void _verifyCloseWithUnreadValue(NameReader r) throws Exception
+    {
+        final byte[] bytes = new byte[100];
+        final byte[] doc = new byte[2 + bytes.length];
+        doc[0] = 18; // b
+        doc[1] = (byte) bytes.length;
+        // small reads so that the value is not fully buffered
+        JsonParser p = MAPPER.reader(SCHEMA).createParser(
+                new LimitingInputStream(new ByteArrayInputStream(doc), 1));
+        assertToken(JsonToken.START_OBJECT, p.nextToken());
+        assertEquals("b", r.nextName(p));
+        assertToken(JsonToken.VALUE_EMBEDDED_OBJECT, p.nextToken());
+        p.close();
+        assertNull(r.nextName(p));
+        assertNull(p.nextToken());
     }
 
     private ProtobufSchema _schema() {
