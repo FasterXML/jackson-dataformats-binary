@@ -681,9 +681,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
                         _reportInvalidOther(d & 0xFF, _inputPtr);
                     }
                     c = ((c & 0x1F) << 6) | (d & 0x3F);
-                    if (c < 0x80) { // overlong
-                        _verifyUTF8(c, 2);
-                    }
+                    _verifyUTF8(c, 2);
                 }
                 break;
             case 2: // 3-byte UTF
@@ -729,10 +727,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
         c = (c << 6) | (d & 0x3F);
-        // overlong or surrogate? (cheap check first, to keep error reporting off hot path)
-        if ((c < 0x800) || ((c & 0xF800) == 0xD800)) {
-            _verifyUTF8(c, 3);
-        }
+        _verifyUTF8(c, 3);
         return c;
     }
 
@@ -753,10 +748,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
         c = (c << 6) | (d & 0x3F);
-        // overlong or beyond U+10FFFF?
-        if ((c < 0x10000) || (c > Character.MAX_CODE_POINT)) {
-            _verifyUTF8(c, 4);
-        }
+        _verifyUTF8(c, 4);
         return c - 0x10000;
     }
 
