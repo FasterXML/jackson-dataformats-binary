@@ -1628,13 +1628,16 @@ versionBits));
                 // [dataformats-binary#861]: validate continuation bytes, code point
                 switch (code) {
                 case 1:
+                    i = _decodeUTF8InBuffer2(inBuf, inPtr, i, true);
+                    ++inPtr;
+                    break;
                 case 2:
-                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code, true);
-                    inPtr += code;
+                    i = _decodeUTF8InBuffer3(inBuf, inPtr, i, true);
+                    inPtr += 2;
                     break;
                 case 3:
-                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code, true);
-                    inPtr += code;
+                    i = _decodeUTF8InBuffer4(inBuf, inPtr, i, true);
+                    inPtr += 3;
                     // note: this is the codepoint value; need to split, too
                     i -= 0x10000;
                     outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
@@ -2525,13 +2528,16 @@ currentToken(), firstCh);
             // [dataformats-binary#861]: validate continuation bytes, code point
             switch (unitLen) {
             case 1:
+                i = _decodeUTF8InBuffer2(inputBuf, inPtr, i, true);
+                ++inPtr;
+                break;
             case 2:
-                i = _decodeUTF8InBuffer(inputBuf, inPtr, i, unitLen, true);
-                inPtr += unitLen;
+                i = _decodeUTF8InBuffer3(inputBuf, inPtr, i, true);
+                inPtr += 2;
                 break;
             case 3:// trickiest one, need surrogate handling
-                i = _decodeUTF8InBuffer(inputBuf, inPtr, i, unitLen, true);
-                inPtr += unitLen;
+                i = _decodeUTF8InBuffer4(inputBuf, inPtr, i, true);
+                inPtr += 3;
                 // note: this is the codepoint value; need to split, too
                 i -= 0x10000;
                 outBuf[outPtr++] = (char) (0xD800 | (i >> 10));

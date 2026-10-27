@@ -1835,13 +1835,16 @@ public class NonBlockingByteArrayParser
                 // [dataformats-binary#861]: validate continuation bytes, code point
                 switch (code) {
                 case 1:
+                    i = _decodeUTF8InBuffer2(inBuf, inPtr, i, inInputBuffer);
+                    ++inPtr;
+                    break;
                 case 2:
-                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code, inInputBuffer);
-                    inPtr += code;
+                    i = _decodeUTF8InBuffer3(inBuf, inPtr, i, inInputBuffer);
+                    inPtr += 2;
                     break;
                 case 3:
-                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code, inInputBuffer);
-                    inPtr += code;
+                    i = _decodeUTF8InBuffer4(inBuf, inPtr, i, inInputBuffer);
+                    inPtr += 3;
                     // note: this is the codepoint value; need to split, too
                     i -= 0x10000;
                     outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
@@ -1886,13 +1889,16 @@ public class NonBlockingByteArrayParser
                 // [dataformats-binary#861]: validate continuation bytes, code point
                 switch (code) {
                 case 1:
+                    i = _decodeUTF8InBuffer2(inBuf, inPtr, i, inInputBuffer);
+                    ++inPtr;
+                    break;
                 case 2:
-                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code, inInputBuffer);
-                    inPtr += code;
+                    i = _decodeUTF8InBuffer3(inBuf, inPtr, i, inInputBuffer);
+                    inPtr += 2;
                     break;
                 case 3:
-                    i = _decodeUTF8InBuffer(inBuf, inPtr, i, code, inInputBuffer);
-                    inPtr += code;
+                    i = _decodeUTF8InBuffer4(inBuf, inPtr, i, inInputBuffer);
+                    inPtr += 3;
                     // note: this is the codepoint value; need to split, too
                     i -= 0x10000;
                     outBuf[outPtr++] = (char) (0xD800 | (i >> 10));

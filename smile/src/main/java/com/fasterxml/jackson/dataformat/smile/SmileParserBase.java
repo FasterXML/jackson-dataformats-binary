@@ -875,10 +875,10 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
     }
 
     /**
-     * Helper method for decoding a multi-byte UTF-8 sequence fully contained in
-     * given buffer: lead byte {@code c} has already been read, and {@code needed}
-     * (1 - 3) continuation bytes start at {@code buf[ptr]}. Verifies continuation
-     * bytes as well as the decoded code point (see {@link #_verifyUTF8}).
+     * Helper method for decoding a 2-byte UTF-8 sequence fully contained in
+     * given buffer: lead byte {@code c} has already been read, and continuation
+     * byte is at {@code buf[ptr]}. Verifies continuation byte(s) as well as the
+     * decoded code point (see {@link #_verifyUTF8}).
      *<p>
      * NOTE: does not change {@code _inputPtr}, not even on error: caller has
      * usually already advanced it past the whole String, and leaving it there
@@ -893,7 +893,67 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
      *
      * @since 2.23
      */
-    protected final int _decodeUTF8InBuffer(byte[] buf, int ptr, int c, int needed,
+    protected final int _decodeUTF8InBuffer2(byte[] buf, int ptr, int c,
+            boolean inInputBuffer)
+        throws JsonParseException
+    {
+        // NOTE: separate small methods per length, with only cheap checks, so that
+        // they get inlined (a generic loop was measurably slower); invalid sequences
+        // are decoded again for error reporting
+        final int d = buf[ptr];
+        final int ch = ((c & 0x1F) << 6) | (d & 0x3F);
+        if (((d & 0xC0) != 0x80) || (ch < 0x80)) {
+            _reportInvalidUTF8InBuffer(buf, ptr, c, 1, inInputBuffer);
+        }
+        return ch;
+    }
+
+    /**
+     * Same as {@link #_decodeUTF8InBuffer2} but for 3-byte sequences.
+     *
+     * @since 2.23
+     */
+    protected final int _decodeUTF8InBuffer3(byte[] buf, int ptr, int c,
+            boolean inInputBuffer)
+        throws JsonParseException
+    {
+        final int d = buf[ptr];
+        final int e = buf[ptr+1];
+        final int ch = ((c & 0x0F) << 12) | ((d & 0x3F) << 6) | (e & 0x3F);
+        // continuation bytes must be 10xxxxxx; no overlong forms or surrogates
+        if ((((d & e) & 0xC0) != 0x80) || (((d | e) & 0x40) != 0)
+                || (ch < 0x800) || ((ch & 0xF800) == 0xD800)) {
+            _reportInvalidUTF8InBuffer(buf, ptr, c, 2, inInputBuffer);
+        }
+        return ch;
+    }
+
+    /**
+     * Same as {@link #_decodeUTF8InBuffer2} but for 4-byte sequences.
+     *
+     * @return Decoded code point (not split into surrogate pair)
+     *
+     * @since 2.23
+     */
+    protected final int _decodeUTF8InBuffer4(byte[] buf, int ptr, int c,
+            boolean inInputBuffer)
+        throws JsonParseException
+    {
+        final int d = buf[ptr];
+        final int e = buf[ptr+1];
+        final int f = buf[ptr+2];
+        final int ch = ((c & 0x07) << 18) | ((d & 0x3F) << 12) | ((e & 0x3F) << 6) | (f & 0x3F);
+        // continuation bytes must be 10xxxxxx; no overlong forms, max U+10FFFF
+        if ((((d & e & f) & 0xC0) != 0x80) || (((d | e | f) & 0x40) != 0)
+                || (ch < 0x10000) || (ch > Character.MAX_CODE_POINT)) {
+            _reportInvalidUTF8InBuffer(buf, ptr, c, 3, inInputBuffer);
+        }
+        return ch;
+    }
+
+    // Called when one of _decodeUTF8InBufferN found a problem: decodes the
+    // sequence again to find and report the first problem
+    private void _reportInvalidUTF8InBuffer(byte[] buf, int ptr, int c, int needed,
             boolean inInputBuffer)
         throws JsonParseException
     {
@@ -912,7 +972,6 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
             throw _constructUTF8InBufferException(inInputBuffer, ptr,
                     _invalidUTF8Message(problem));
         }
-        return c;
     }
 
     private JsonParseException _constructUTF8InBufferException(boolean inInputBuffer,
