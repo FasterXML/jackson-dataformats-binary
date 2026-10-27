@@ -439,7 +439,7 @@ public abstract class NonBlockingParserBase
         if (len < 5) {
             // [dataformats-binary#761] / #312: pad unused high bytes so a short name
             // cannot collide with a longer NUL-prefixed one in ByteQuadsCanonicalizer
-            int q = _padQuadForNulls(inBuf[inPtr]);
+            int q = _padAndValidateQuad(inBuf[inPtr]);
             if (len > 1) {
                 q = (q << 8) + (inBuf[++inPtr] & 0xFF);
                 if (len > 2) {
@@ -460,7 +460,7 @@ public abstract class NonBlockingParserBase
             q1 += (inBuf[++inPtr] & 0xFF);
             q1 <<= 8;
             q1 += (inBuf[++inPtr] & 0xFF);
-            int q2 = _padQuadForNulls(inBuf[++inPtr]);
+            int q2 = _padAndValidateQuad(inBuf[++inPtr]);
             int left = len - 5;
             if (left > 0) {
                 q2 = (q2 << 8) + (inBuf[++inPtr] & 0xFF);
@@ -500,8 +500,10 @@ public abstract class NonBlockingParserBase
             _quadBuffer[offset++] = q;
         } while ((len -= 4) > 3);
         // and then leftovers
-        if (len > 0) {
-            int q = _padQuadForNulls(inBuf[inPtr]);
+        if (len == 0) {
+            _verifyLastFullQuad(_quadBuffer[offset-1]);
+        } else {
+            int q = _padAndValidateQuad(inBuf[inPtr]);
             if (--len > 0) {
                 q = (q << 8) + (inBuf[++inPtr] & 0xFF);
                 if (--len > 0) {
@@ -684,10 +686,6 @@ public abstract class NonBlockingParserBase
         }
         throw _constructReadException("Invalid shared text value reference %d; only got %s names in buffer (invalid content)",
                index, _seenStringValueCount);
-    }
-
-    protected void _reportInvalidInitial(int mask) throws StreamReadException {
-        throw _constructReadException("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask));
     }
 
     protected void _reportInvalidOther(int mask, int ptr) throws StreamReadException {
