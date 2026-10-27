@@ -962,8 +962,45 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
      * {@code ByteQuadsCanonicalizer}.
      *
      * @since 2.21.7
+     * @deprecated Since 2.23 use {@link #_padAndValidateQuad} instead
      */
+    @Deprecated
     protected final static int _padQuadForNulls(int firstByte) {
         return (firstByte & 0xFF) | 0xFFFFFF00;
+    }
+
+    /**
+     * Helper method for padding unused high bytes of a partial name quad with 1s
+     * (see {@link #_padQuadForNulls}), given the first byte of the quad.
+     *<p>
+     * Since padding uses 0xFF bytes, a partial quad starting with 0xFF could match
+     * a shorter name in the symbol table, skipping UTF-8 validation of the name
+     * ([dataformats-binary#869]); 0xFF is never valid in UTF-8 so it is rejected.
+     *
+     * @since 2.23
+     */
+    protected final int _padAndValidateQuad(int firstByte) throws JsonParseException {
+        firstByte &= 0xFF;
+        if (firstByte == 0xFF) {
+            _reportInvalidInitial(firstByte);
+        }
+        return firstByte | 0xFFFFFF00;
+    }
+
+    /**
+     * Helper method for verifying that the last quad of a name, when full (not
+     * padded), does not start with 0xFF: if it did, it could match the padded
+     * last quad of a name one byte shorter ([dataformats-binary#869]).
+     *
+     * @since 2.23
+     */
+    protected final void _verifyLastFullQuad(int q) throws JsonParseException {
+        if ((q >>> 24) == 0xFF) {
+            _reportInvalidInitial(0xFF);
+        }
+    }
+
+    protected void _reportInvalidInitial(int mask) throws JsonParseException {
+        _reportError("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask));
     }
 }

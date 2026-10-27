@@ -858,7 +858,7 @@ public class NonBlockingByteArrayParser
         }
         // and possibly more... ?
         if (in < outPtr) { // at least 1
-            int q = _padQuadForNulls(copyBuffer[in++]);
+            int q = _padAndValidateQuad(copyBuffer[in++]);
             if (in < outPtr) { // at least 2
                 q = (q << 8) | (copyBuffer[in++] & 0xFF);
                 if (in < outPtr) { // 3 (can't be more)
@@ -866,6 +866,8 @@ public class NonBlockingByteArrayParser
                 }
             }
             quads[quadCount++] = q;
+        } else if (quadCount > 0) {
+            _verifyLastFullQuad(quads[quadCount-1]);
         }
 
         String name = _symbols.findName(quads, quadCount);

@@ -1814,20 +1814,22 @@ versionBits));
             }
             _quadBuffer[quads++] = q;
         }
+        final int byteLen = (quads << 2) + bytes;
+        // [dataformats-binary#726]: verify name length before looking it up or
+        //   decoding it: must be checked before symbol table lookup since a hit
+        //   would otherwise bypass validation for all but the first occurrence
+        //   (and before content checks, so over-long names report length violation)
+        _streamReadConstraints.validateNameLength(byteLen);
         // and if we have more bytes, append those too
-        int byteLen = (quads << 2);
         if (bytes > 0) {
             if (quads >= _quadBuffer.length) {
                 _quadBuffer = _growNameDecodeBuffer(_quadBuffer, 256);
             }
             q = _padLastQuad(q, bytes);
             _quadBuffer[quads++] = q;
-            byteLen += bytes;
+        } else if (quads > 0) {
+            _verifyLastFullQuad(_quadBuffer[quads-1]);
         }
-        // [dataformats-binary#726]: verify name length before looking it up or
-        //   decoding it: must be checked before symbol table lookup since a hit
-        //   would otherwise bypass validation for all but the first occurrence
-        _streamReadConstraints.validateNameLength(byteLen);
         // Know this name already?
         String name = _symbolsCanonical ?
             _symbols.findName(_quadBuffer, quads) : null;
@@ -1857,7 +1859,7 @@ versionBits));
         if (len < 5) {
             int inPtr = _inputPtr;
             final byte[] inBuf = _inputBuffer;
-            int q = _padQuadForNulls(inBuf[inPtr]);
+            int q = _padAndValidateQuad(inBuf[inPtr]);
             if (len > 1) {
                 q = (q << 8) + (inBuf[++inPtr] & 0xFF);
                 if (len > 2) {
@@ -1881,7 +1883,7 @@ versionBits));
         q1 =  (q1 << 8) | (inBuf[inPtr++] & 0xFF);
 
         if (len < 9) {
-            int q2 = _padQuadForNulls(inBuf[inPtr++]);
+            int q2 = _padAndValidateQuad(inBuf[inPtr++]);
             int left = len - 5;
             if (left > 0) {
                 q2 = (q2 << 8) + (inBuf[inPtr++] & 0xFF);
@@ -1903,7 +1905,7 @@ versionBits));
         q2 = (q2 << 8) | (inBuf[inPtr++] & 0xFF);
 
         if (len < 13) {
-            int q3 = _padQuadForNulls(inBuf[inPtr++]);
+            int q3 = _padAndValidateQuad(inBuf[inPtr++]);
             int left = len - 9;
             if (left > 0) {
                 q3 = (q3 << 8) + (inBuf[inPtr++] & 0xFF);
@@ -1951,8 +1953,10 @@ versionBits));
             _quadBuffer[offset++] = q;
         } while ((len -= 4) > 3);
         // and then leftovers
-        if (len > 0) {
-            int q = _padQuadForNulls(inBuf[inPtr]);
+        if (len == 0) {
+            _verifyLastFullQuad(_quadBuffer[offset-1]);
+        } else {
+            int q = _padAndValidateQuad(inBuf[inPtr]);
             if (len > 1) {
                 q = (q << 8) + (inBuf[++inPtr] & 0xFF);
                 if (len > 2) {
@@ -1992,9 +1996,13 @@ versionBits));
     }
 
     // Helper method needed to fix [dataformats-binary#312], masking of 0x00 character
-    // (see also `_padQuadForNulls()` in `SmileParserBase`)
-
-    private final static int _padLastQuad(int q, int bytes) {
+    // (see also `_padAndValidateQuad()` in `SmileParserBase`)
+    // [dataformats-binary#869]: reject 0xFF first byte, which could otherwise
+    //   match a shorter name once padded
+    private final int _padLastQuad(int q, int bytes) throws JsonParseException {
+        if (((q >>> ((bytes - 1) << 3)) & 0xFF) == 0xFF) {
+            _reportInvalidInitial(0xFF);
+        }
         return (bytes == 4) ? q : (q | (-1 << (bytes << 3)));
     }
 
@@ -3136,10 +3144,6 @@ currentToken(), firstCh);
             _reportError("Encountered shared text value reference, even though document header did not declare shared text value references may be included");
         }
        _reportError("Invalid shared text value reference "+index+"; only got "+_seenStringValueCount+" names in buffer (invalid content)");
-    }
-
-    protected void _reportInvalidInitial(int mask) throws JsonParseException {
-        _reportError("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask));
     }
 
     protected void _reportInvalidOther(int mask) throws JsonParseException {
