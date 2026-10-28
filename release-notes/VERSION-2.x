@@ -47,6 +47,11 @@ Active maintainers:
 #855: (avro) `arrayNext()` / `mapNext()` on `Decoder` passed to `@AvroEncode`
   `CustomEncoding` lose elements and the following field
  (fix by @cowtowncoder, w/ Claude code)
+#860: (cbor) Invalid UTF-8 sequences (overlong, surrogates, > U+10FFFF) not rejected in text
+  (NOTE: no option to accept such content, including CESU-8 / "Modified UTF-8"
+  encoded text, which earlier versions decoded; also note that validation is done
+  when text is decoded: skipped text values are not validated)
+ (fix by @pjfanning, w/ Claude code)
 #862: (avro) Invalid UTF-8 sequences (overlong, surrogates, > U+10FFFF, bad continuation
   bytes) not rejected in strings
  (fix by @pjfanning, w/ Claude code)
