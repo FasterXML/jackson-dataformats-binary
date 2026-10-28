@@ -1310,9 +1310,7 @@ public class NonBlockingByteArrayParser
         if ((d & 0xC0) != 0x080) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
-        c = ((c & 0x1F) << 6) | (d & 0x3F);
-        _verifyUTF8(c, 2);
-        return c;
+        return ((c & 0x1F) << 6) | (d & 0x3F);
     }
 
     private final int _decodeUTF8_3(int c, int d, int e) throws IOException
@@ -1326,7 +1324,7 @@ public class NonBlockingByteArrayParser
             _reportInvalidOther(e & 0xFF, _inputPtr);
         }
         c = (c << 6) | (e & 0x3F);
-        _verifyUTF8(c, 3);
+        _verifyUTF8_3(c, false);
         return c;
     }
 
@@ -1346,7 +1344,7 @@ public class NonBlockingByteArrayParser
             _reportInvalidOther(f & 0xFF, _inputPtr);
         }
         c = (c << 6) | (f & 0x3F);
-        _verifyUTF8(c, 4);
+        _verifyUTF8_4(c, false);
         return c - 0x10000;
     }
 
@@ -1835,15 +1833,15 @@ public class NonBlockingByteArrayParser
                 // [dataformats-binary#861]: validate continuation bytes, code point
                 switch (code) {
                 case 1:
-                    i = _decodeUTF8InBuffer2(inBuf, inPtr, i, inInputBuffer);
+                    i = _decodeUTF8InBuffer2(inBuf, inPtr, i, inInputBuffer, isName);
                     ++inPtr;
                     break;
                 case 2:
-                    i = _decodeUTF8InBuffer3(inBuf, inPtr, i, inInputBuffer);
+                    i = _decodeUTF8InBuffer3(inBuf, inPtr, i, inInputBuffer, isName);
                     inPtr += 2;
                     break;
                 case 3:
-                    i = _decodeUTF8InBuffer4(inBuf, inPtr, i, inInputBuffer);
+                    i = _decodeUTF8InBuffer4(inBuf, inPtr, i, inInputBuffer, isName);
                     inPtr += 3;
                     // note: this is the codepoint value; need to split, too
                     i -= 0x10000;
@@ -1889,15 +1887,15 @@ public class NonBlockingByteArrayParser
                 // [dataformats-binary#861]: validate continuation bytes, code point
                 switch (code) {
                 case 1:
-                    i = _decodeUTF8InBuffer2(inBuf, inPtr, i, inInputBuffer);
+                    i = _decodeUTF8InBuffer2(inBuf, inPtr, i, inInputBuffer, true);
                     ++inPtr;
                     break;
                 case 2:
-                    i = _decodeUTF8InBuffer3(inBuf, inPtr, i, inInputBuffer);
+                    i = _decodeUTF8InBuffer3(inBuf, inPtr, i, inInputBuffer, true);
                     inPtr += 2;
                     break;
                 case 3:
-                    i = _decodeUTF8InBuffer4(inBuf, inPtr, i, inInputBuffer);
+                    i = _decodeUTF8InBuffer4(inBuf, inPtr, i, inInputBuffer, true);
                     inPtr += 3;
                     // note: this is the codepoint value; need to split, too
                     i -= 0x10000;

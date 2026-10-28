@@ -878,34 +878,39 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
      * Helper method for decoding a 2-byte UTF-8 sequence fully contained in
      * given buffer: lead byte {@code c} has already been read, and continuation
      * byte is at {@code buf[ptr]}. Verifies continuation byte(s) as well as the
-     * decoded code point (see {@link #_verifyUTF8}).
+     * decoded code point (see {@link #_verifyUTF8_3} and {@link #_verifyUTF8_4}).
      *<p>
      * NOTE: does not change {@code _inputPtr}, not even on error: caller has
-     * usually already advanced it past the whole String, and leaving it there
+     * already advanced it past the whole String, and leaving it there
      * keeps parser state consistent.
+     *<p>
+     * NOTE: no code point check needed for 2-byte sequences, since lead bytes
+     * 0xC0 and 0xC1 (overlong encodings) are marked invalid in
+     * {@link SmileConstants#sUtf8UnitLengths}.
      *
      * @param inInputBuffer Whether {@code buf} is the input buffer (that is,
      *    {@code ptr} is an offset within current input): if so, error location
      *    points to the invalid byte; if not (copy buffer), it is the current
      *    input location.
+     * @param isName Whether text being decoded is an Object property name
+     *    (for error reporting)
      *
      * @return Decoded code point
      *
      * @since 2.23
      */
     protected final int _decodeUTF8InBuffer2(byte[] buf, int ptr, int c,
-            boolean inInputBuffer)
+            boolean inInputBuffer, boolean isName)
         throws JsonParseException
     {
         // NOTE: separate small methods per length, with only cheap checks, so that
         // they get inlined (a generic loop was measurably slower); invalid sequences
         // are decoded again for error reporting
         final int d = buf[ptr];
-        final int ch = ((c & 0x1F) << 6) | (d & 0x3F);
-        if (((d & 0xC0) != 0x80) || (ch < 0x80)) {
-            _reportInvalidUTF8InBuffer(buf, ptr, c, 1, inInputBuffer);
+        if ((d & 0xC0) != 0x80) {
+            _reportInvalidUTF8InBuffer(buf, ptr, c, 1, inInputBuffer, isName);
         }
-        return ch;
+        return ((c & 0x1F) << 6) | (d & 0x3F);
     }
 
     /**
@@ -914,7 +919,7 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
      * @since 2.23
      */
     protected final int _decodeUTF8InBuffer3(byte[] buf, int ptr, int c,
-            boolean inInputBuffer)
+            boolean inInputBuffer, boolean isName)
         throws JsonParseException
     {
         final int d = buf[ptr];
@@ -923,7 +928,7 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
         // continuation bytes must be 10xxxxxx; no overlong forms or surrogates
         if ((((d & e) & 0xC0) != 0x80) || (((d | e) & 0x40) != 0)
                 || (ch < 0x800) || ((ch & 0xF800) == 0xD800)) {
-            _reportInvalidUTF8InBuffer(buf, ptr, c, 2, inInputBuffer);
+            _reportInvalidUTF8InBuffer(buf, ptr, c, 2, inInputBuffer, isName);
         }
         return ch;
     }
@@ -936,7 +941,7 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
      * @since 2.23
      */
     protected final int _decodeUTF8InBuffer4(byte[] buf, int ptr, int c,
-            boolean inInputBuffer)
+            boolean inInputBuffer, boolean isName)
         throws JsonParseException
     {
         final int d = buf[ptr];
@@ -946,7 +951,7 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
         // continuation bytes must be 10xxxxxx; no overlong forms, max U+10FFFF
         if ((((d & e & f) & 0xC0) != 0x80) || (((d | e | f) & 0x40) != 0)
                 || (ch < 0x10000) || (ch > Character.MAX_CODE_POINT)) {
-            _reportInvalidUTF8InBuffer(buf, ptr, c, 3, inInputBuffer);
+            _reportInvalidUTF8InBuffer(buf, ptr, c, 3, inInputBuffer, isName);
         }
         return ch;
     }
@@ -954,7 +959,7 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
     // Called when one of _decodeUTF8InBufferN found a problem: decodes the
     // sequence again to find and report the first problem
     private void _reportInvalidUTF8InBuffer(byte[] buf, int ptr, int c, int needed,
-            boolean inInputBuffer)
+            boolean inInputBuffer, boolean isName)
         throws JsonParseException
     {
         // Mask lead byte: 0x1F for 2-byte, 0x0F for 3-byte, 0x07 for 4-byte
@@ -963,15 +968,19 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
             final int d = buf[ptr++];
             if ((d & 0xC0) != 0x080) {
                 throw _constructUTF8InBufferException(inInputBuffer, ptr,
-                        _invalidOtherMessage(d & 0xFF));
+                        _invalidOtherMessage(d & 0xFF, isName));
             }
             c = (c << 6) | (d & 0x3F);
         }
         final String problem = _invalidUTF8Problem(c, needed+1);
         if (problem != null) {
             throw _constructUTF8InBufferException(inInputBuffer, ptr,
-                    _invalidUTF8Message(problem));
+                    _invalidUTF8Message(problem, isName));
         }
+        // Should never get here: fast and slow path checks disagree
+        throw new IllegalStateException(String.format(
+"Internal error: UTF-8 sequence of %d bytes reported as invalid, but no problem found (code point 0x%x)",
+                needed+1, c));
     }
 
     private JsonParseException _constructUTF8InBufferException(boolean inInputBuffer,
@@ -984,30 +993,58 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
     }
 
     /**
-     * Helper method for verifying that decoded UTF-8 code point uses the shortest
-     * form, is not a surrogate and is at most U+10FFFF (RFC 3629).
+     * Helper method for verifying that decoded 3-byte UTF-8 code point uses
+     * the shortest form and is not a surrogate (RFC 3629).
+     * Error, if any, is reported at the current input location.
+     *<p>
+     * NOTE: no such check is needed for 2-byte sequences, since lead bytes
+     * 0xC0 and 0xC1 (overlong encodings) are marked invalid in
+     * {@link SmileConstants#sUtf8UnitLengths}.
      *
      * @param ch Decoded code point
-     * @param byteCount Number of bytes in the UTF-8 sequence (2 - 4)
+     * @param isName Whether text being decoded is an Object property name
+     *    (for error reporting)
      *
      * @since 2.23
      */
-    protected final void _verifyUTF8(int ch, int byteCount) throws JsonParseException
+    protected final void _verifyUTF8_3(int ch, boolean isName) throws JsonParseException
     {
-        final String problem = _invalidUTF8Problem(ch, byteCount);
-        if (problem != null) {
-            _reportError(_invalidUTF8Message(problem));
+        if ((ch < 0x800) || ((ch & 0xF800) == 0xD800)) {
+            _reportInvalidUTF8(ch, 3, isName);
         }
+    }
+
+    /**
+     * Helper method for verifying that decoded 4-byte UTF-8 code point uses
+     * the shortest form and is at most U+10FFFF (RFC 3629).
+     * Error, if any, is reported at the current input location.
+     *
+     * @param ch Decoded code point
+     * @param isName Whether text being decoded is an Object property name
+     *    (for error reporting)
+     *
+     * @since 2.23
+     */
+    protected final void _verifyUTF8_4(int ch, boolean isName) throws JsonParseException
+    {
+        if ((ch < 0x10000) || (ch > Character.MAX_CODE_POINT)) {
+            _reportInvalidUTF8(ch, 4, isName);
+        }
+    }
+
+    private void _reportInvalidUTF8(int ch, int byteCount, boolean isName)
+        throws JsonParseException
+    {
+        _reportError(_invalidUTF8Message(_invalidUTF8Problem(ch, byteCount), isName));
     }
 
     // @return Description of problem with decoded code point, if any; null if valid
     private static String _invalidUTF8Problem(int ch, int byteCount)
     {
+        // NOTE: 2-byte sequences can not be invalid, as lead bytes 0xC0 and 0xC1
+        //   are rejected via `sUtf8UnitLengths`
         if (byteCount == 2) {
-            if (ch >= 0x80) {
-                return null;
-            }
-            return "overlong 2-byte encoding of 0x"+Integer.toHexString(ch);
+            return null;
         }
         if (byteCount == 3) {
             if (ch >= 0x800) {
@@ -1027,7 +1064,10 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
         return "overlong 4-byte encoding of 0x"+Integer.toHexString(ch);
     }
 
-    private static String _invalidUTF8Message(String problem) {
+    private static String _invalidUTF8Message(String problem, boolean isName) {
+        if (isName) {
+            return "Invalid UTF-8 in Object property name: "+problem;
+        }
         return "Invalid UTF-8: "+problem;
     }
 
@@ -1127,7 +1167,18 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
      * @since 2.23 (moved from {@code SmileParser})
      */
     protected void _reportInvalidOther(int mask) throws JsonParseException {
-        _reportError(_invalidOtherMessage(mask));
+        _reportError(_invalidOtherMessage(mask, false));
+    }
+
+    /**
+     * Same as {@link #_reportInvalidOther(int)} but for Object property names.
+     *
+     * @param mask Value of the invalid byte (0x00 - 0xFF)
+     *
+     * @since 2.23
+     */
+    protected void _reportInvalidOtherInName(int mask) throws JsonParseException {
+        _reportError(_invalidOtherMessage(mask, true));
     }
 
     /**
@@ -1144,7 +1195,11 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
         _reportInvalidOther(mask);
     }
 
-    private static String _invalidOtherMessage(int mask) {
+    private static String _invalidOtherMessage(int mask, boolean isName) {
+        if (isName) {
+            return "Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask)
+                +" in Object property name";
+        }
         return "Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask);
     }
 }

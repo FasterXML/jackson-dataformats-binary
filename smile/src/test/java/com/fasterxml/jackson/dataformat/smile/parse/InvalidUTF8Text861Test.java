@@ -50,9 +50,12 @@ public class InvalidUTF8Text861Test extends BaseTestForSmile
         { 0xF0, 0x9F, 0x98, 0x41 }, // bad last continuation byte
     };
 
+    // NOTE: lead bytes 0xC0, 0xC1 and 0xF5 - 0xF7 are invalid as such; message
+    //   varies by code path ("Invalid byte 0xC0 in short Unicode text block",
+    //   "Invalid UTF-8 start byte 0xc0"), matched case-insensitively
     private final static String[] EXPECTED_MSG = {
-        "overlong 2-byte encoding of 0x2f",
-        "overlong 2-byte encoding of 0x7f",
+        "byte 0xc0",
+        "byte 0xc1",
         "overlong 3-byte encoding of 0x2f",
         "overlong 3-byte encoding of 0x7ff",
         "overlong 4-byte encoding of 0x2f",
@@ -60,7 +63,7 @@ public class InvalidUTF8Text861Test extends BaseTestForSmile
         "Illegal surrogate character 0xd800",
         "Illegal surrogate character 0xdfff",
         "code point 0x110000 beyond U+10FFFF",
-        "code point 0x140000 beyond U+10FFFF",
+        "byte 0xf5",
         "Invalid UTF-8 middle byte 0x41",
         "Invalid UTF-8 middle byte 0x41",
         "Invalid UTF-8 middle byte 0x41",
@@ -156,6 +159,49 @@ public class InvalidUTF8Text861Test extends BaseTestForSmile
             }
             assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
             assertEquals(1, p.getIntValue());
+        }
+    }
+
+    // Errors in property names should be distinguishable from ones in values
+    @Test
+    public void testInvalidPropertyNameMessage() throws Exception
+    {
+        for (int pad : NAME_PADDINGS) {
+            _verifyFailsAll(nameDoc(payload(pad, new int[] { 0xED, 0xA0, 0x80 })), true,
+                    "Invalid UTF-8 in Object property name: Illegal surrogate character 0xd800", pad);
+            _verifyFailsAll(nameDoc(payload(pad, new int[] { 0xF4, 0x90, 0x80, 0x80 })), true,
+                    "Invalid UTF-8 in Object property name: code point 0x110000 beyond U+10FFFF", pad);
+            _verifyFailsAll(nameDoc(payload(pad, new int[] { 0xC3, 0x41 })), true,
+                    "Invalid UTF-8 middle byte 0x41 in Object property name", pad);
+        }
+    }
+
+    // Invalid short name must not leave parser pointing within the name
+    // (so that following content is not decoded from name bytes)
+    @Test
+    public void testParserStateAfterInvalidName() throws Exception
+    {
+        _verifyParserStateAfterInvalidName(new int[] { 0x80, 0x80 },
+                "Invalid byte 0x80 in short Unicode text block");
+        _verifyParserStateAfterInvalidName(new int[] { 0xC3, 0x41 },
+                "Invalid UTF-8 middle byte 0x41");
+        _verifyParserStateAfterInvalidName(new int[] { 0xED, 0xA0, 0x80 },
+                "Illegal surrogate character 0xd800");
+    }
+
+    private void _verifyParserStateAfterInvalidName(int[] seq, String expMsg) throws Exception
+    {
+        // 4-byte header, START_OBJECT, token, then 'a', sequence, 'b'
+        final long expOffset = 6L + 1 + seq.length + 1;
+        try (JsonParser p = _smileParser(nameDoc(payload(1, seq)))) {
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            try {
+                p.nextToken();
+                fail("Should have failed");
+            } catch (StreamReadException e) {
+                verifyException(e, expMsg);
+            }
+            assertEquals(expOffset, p.currentLocation().getByteOffset());
         }
     }
 
