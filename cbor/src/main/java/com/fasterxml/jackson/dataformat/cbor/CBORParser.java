@@ -1529,7 +1529,10 @@ public class CBORParser extends ParserMinimalBase
                 _updateToken(JsonToken.END_OBJECT);
                 return false;
             }
-            byte[] nameBytes = str.asQuotedUTF8();
+            // Must compare raw UTF-8 bytes: CBOR has no escaping, so JSON-quoted
+            // bytes (`asQuotedUTF8()`) would falsely match a name containing the
+            // escaped form (like `a\"b` for `a"b`)
+            byte[] nameBytes = str.asUnquotedUTF8();
             final int byteLen = nameBytes.length;
             // NOTE: [dataformats-binary#725] `maxNameLength` deliberately NOT
             //   enforced by the fast path below: length matched is that of the
@@ -2563,21 +2566,34 @@ public class CBORParser extends ParserMinimalBase
                             _reportInvalidOther(c3 & 0xFF, inPtr);
                         }
                         i = ((i & 0x0F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
+                        _verifyUTF8_3(i, inPtr, false);
                     }
                     break;
-                    case 3:
-                        // 30-Jan-2021, tatu: TODO - validate these too?
-                        i = ((i & 0x07) << 18)
-                            | ((inputBuf[inPtr++] & 0x3F) << 12)
-                            | ((inputBuf[inPtr++] & 0x3F) << 6)
-                            | (inputBuf[inPtr++] & 0x3F);
+                    case 3: {
+                        // [dataformats-binary#860]: validate continuation bytes too
+                        final int c2 = inputBuf[inPtr++];
+                        if ((c2 & 0xC0) != 0x080) {
+                            _reportInvalidOther(c2 & 0xFF, inPtr);
+                        }
+                        final int c3 = inputBuf[inPtr++];
+                        if ((c3 & 0xC0) != 0x080) {
+                            _reportInvalidOther(c3 & 0xFF, inPtr);
+                        }
+                        final int c4 = inputBuf[inPtr++];
+                        if ((c4 & 0xC0) != 0x080) {
+                            _reportInvalidOther(c4 & 0xFF, inPtr);
+                        }
+                        i = ((i & 0x07) << 18) | ((c2 & 0x3F) << 12)
+                            | ((c3 & 0x3F) << 6) | (c4 & 0x3F);
+                        _verifyUTF8_4(i, inPtr, false);
                         // note: this is the codepoint value; need to split, too
                         i -= 0x10000;
                         outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
                         i = 0xDC00 | (i & 0x3FF);
-                        break;
+                    }
+                    break;
                     default: // invalid
-                        _reportInvalidInitial(i);
+                        _reportInvalidInitial(i, inPtr);
                 }
             }
             outBuf[outPtr++] = (char) i;
@@ -2645,10 +2661,10 @@ public class CBORParser extends ParserMinimalBase
                 }
                 break;
             case 2: // 3-byte UTF
-                c = _decodeUTF8_3(c);
+                c = _decodeUTF8_3(c, isName);
                 break;
             case 3: // 4-byte UTF
-                c = _decodeUTF8_4(c);
+                c = _decodeUTF8_4(c, isName);
                 if (outPtr >= outBuf.length) {
                     outBuf = _textBuffer.finishCurrentSegment();
                     outPtr = 0;
@@ -2809,10 +2825,10 @@ public class CBORParser extends ParserMinimalBase
                 }
                 break;
                 case 2: // 3-byte UTF
-                    c = _decodeChunkedUTF8_3(c);
+                    c = _decodeChunkedUTF8_3(c, isName);
                     break;
                 case 3: // 4-byte UTF
-                    c = _decodeChunkedUTF8_4(c);
+                    c = _decodeChunkedUTF8_4(c, isName);
                     // Let's add first part right away:
                     if (outPtr >= outBuf.length) {
                         outBuf = _textBuffer.finishCurrentSegment();
@@ -3270,21 +3286,37 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
                             _reportInvalidOther(c3 & 0xFF, inPtr);
                         }
                         i = ((i & 0x0F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
+                        _verifyUTF8_3(i, inPtr, true);
                     }
                     break;
                 case 3:
-                    // 30-Jan-2021, tatu: TODO - validate surrogate case too?
-                    i = ((i & 0x07) << 18)
-                        | ((inBuf[inPtr++] & 0x3F) << 12)
-                        | ((inBuf[inPtr++] & 0x3F) << 6)
-                        | (inBuf[inPtr++] & 0x3F);
+                    {
+                        // [dataformats-binary#860]: validate continuation bytes too
+                        final int c2 = inBuf[inPtr++];
+                        if ((c2 & 0xC0) != 0x080) {
+                            _reportInvalidOther(c2 & 0xFF, inPtr);
+                        }
+                        final int c3 = inBuf[inPtr++];
+                        if ((c3 & 0xC0) != 0x080) {
+                            _reportInvalidOther(c3 & 0xFF, inPtr);
+                        }
+                        final int c4 = inBuf[inPtr++];
+                        if ((c4 & 0xC0) != 0x080) {
+                            _reportInvalidOther(c4 & 0xFF, inPtr);
+                        }
+                        i = ((i & 0x07) << 18) | ((c2 & 0x3F) << 12)
+                            | ((c3 & 0x3F) << 6) | (c4 & 0x3F);
+                        _verifyUTF8_4(i, inPtr, true);
+                    }
                     // note: this is the codepoint value; need to split, too
                     i -= 0x10000;
                     outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
                     i = 0xDC00 | (i & 0x3FF);
                     break;
                 default: // invalid
-                    throw _invalidNameByte(i);
+                    throw _constructErrorAt(String.format(
+                            "Invalid UTF-8 byte 0x%s in Object property name",
+                            Integer.toHexString(i)), inPtr);
                 }
             }
             outBuf[outPtr++] = (char) i;
@@ -3571,6 +3603,12 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
         // so that later string references can find it.
         // The finish methods will determine if the value should be added to the
         // reference table based on shouldReferenceString().
+        // [dataformats-binary#860]: Note that this means text is validated as UTF-8
+        // here (as decoded values may be returned via later references), but not by
+        // the plain skipping below, which does not decode content at all.
+        // This is intentional: UTF-8 validity is checked when text is decoded, and
+        // skipped values are not decoded (validating them would add a pass over
+        // every skipped String).
         if (!_stringRefs.empty()) {
             if (type == CBORConstants.MAJOR_TYPE_TEXT) {
                 // Need to actually read the text (which may add to stringRefs)
@@ -3976,7 +4014,7 @@ expType, type, ch));
     }
     */
 
-    private final int _decodeUTF8_3(int c1) throws IOException
+    private final int _decodeUTF8_3(int c1, boolean isName) throws IOException
     {
         c1 &= 0x0F;
         int d = _nextByte();
@@ -3989,10 +4027,11 @@ expType, type, ch));
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
         c = (c << 6) | (d & 0x3F);
+        _verifyUTF8_3(c, _inputPtr, isName);
         return c;
     }
 
-    private final int _decodeChunkedUTF8_3(int c1) throws IOException
+    private final int _decodeChunkedUTF8_3(int c1, boolean isName) throws IOException
     {
         c1 &= 0x0F;
         int d = _nextChunkedByte();
@@ -4005,6 +4044,7 @@ expType, type, ch));
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
         c = (c << 6) | (d & 0x3F);
+        _verifyUTF8_3(c, _inputPtr, isName);
         return c;
     }
 
@@ -4012,7 +4052,7 @@ expType, type, ch));
      * @return Character value <b>minus 0x10000</c>; this so that caller
      *    can readily expand it to actual surrogates
      */
-    private final int _decodeUTF8_4(int c) throws IOException
+    private final int _decodeUTF8_4(int c, boolean isName) throws IOException
     {
         int d = _nextByte();
         if ((d & 0xC0) != 0x080) {
@@ -4028,10 +4068,12 @@ expType, type, ch));
         if ((d & 0xC0) != 0x080) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
-        return ((c << 6) | (d & 0x3F)) - 0x10000;
+        c = (c << 6) | (d & 0x3F);
+        _verifyUTF8_4(c, _inputPtr, isName);
+        return c - 0x10000;
     }
 
-    private final int _decodeChunkedUTF8_4(int c) throws IOException
+    private final int _decodeChunkedUTF8_4(int c, boolean isName) throws IOException
     {
         int d = _nextChunkedByte();
         if ((d & 0xC0) != 0x080) {
@@ -4047,7 +4089,9 @@ expType, type, ch));
         if ((d & 0xC0) != 0x080) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
-        return ((c << 6) | (d & 0x3F)) - 0x10000;
+        c = (c << 6) | (d & 0x3F);
+        _verifyUTF8_4(c, _inputPtr, isName);
+        return c - 0x10000;
     }
 
     /*
@@ -4253,8 +4297,65 @@ expType, type, ch));
     }
 
     protected void _reportInvalidOther(int mask, int ptr) throws JsonParseException {
-        _inputPtr = ptr;
-        _reportInvalidOther(mask);
+        throw _constructErrorAt("Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask), ptr);
+    }
+
+    private void _reportInvalidInitial(int mask, int ptr) throws JsonParseException {
+        throw _constructErrorAt("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask), ptr);
+    }
+
+    // [dataformats-binary#860]: Error located at given input offset, but without
+    //   moving `_inputPtr`: in-buffer decoders have already advanced it past the
+    //   whole String, so that parsing can continue with the following token
+    //   (rewinding would resume parsing from within String contents)
+    private JsonParseException _constructErrorAt(String msg, int ptr) {
+        final long offset = _currInputProcessed + ptr;
+        return new JsonParseException(this, msg,
+                new JsonLocation(_ioContext.contentReference(),
+                        offset, -1, -1, (int) offset));
+    }
+
+    // [dataformats-binary#860]: Decoded code point must use the shortest form,
+    //   must not be a surrogate and must be at most U+10FFFF (RFC 3629).
+    //   `ptr` is the input offset just past the sequence, for error location.
+    //   Checks are kept minimal (called per non-ASCII char); each failing check
+    //   names its own problem, and messages are only built on failure.
+    //   No check needed for 2-byte sequences: overlong lead bytes 0xC0/0xC1
+    //   are rejected via `UTF8_UNIT_CODES`.
+    private void _verifyUTF8_3(int ch, int ptr, boolean isName) throws JsonParseException
+    {
+        if (ch < 0x800) {
+            _reportOverlongUTF8(ch, 3, ptr, isName);
+        }
+        if ((ch & 0xF800) == 0xD800) {
+            _reportInvalidUTF8("Illegal surrogate character 0x"+Integer.toHexString(ch),
+                    ptr, isName);
+        }
+    }
+
+    private void _verifyUTF8_4(int ch, int ptr, boolean isName) throws JsonParseException
+    {
+        if (ch < 0x10000) {
+            _reportOverlongUTF8(ch, 4, ptr, isName);
+        }
+        if (ch > Character.MAX_CODE_POINT) {
+            _reportInvalidUTF8("code point 0x"+Integer.toHexString(ch)+" beyond U+10FFFF",
+                    ptr, isName);
+        }
+    }
+
+    private void _reportOverlongUTF8(int ch, int byteCount, int ptr, boolean isName)
+        throws JsonParseException
+    {
+        _reportInvalidUTF8("overlong "+byteCount+"-byte encoding of 0x"+Integer.toHexString(ch),
+                ptr, isName);
+    }
+
+    private void _reportInvalidUTF8(String problem, int ptr, boolean isName)
+        throws JsonParseException
+    {
+        throw _constructErrorAt(isName ? ("Invalid UTF-8 in Object property name: "+problem)
+                : ("Invalid UTF-8: "+problem), ptr);
     }
 
     // @since 2.12
