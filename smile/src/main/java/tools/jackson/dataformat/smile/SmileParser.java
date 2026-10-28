@@ -673,7 +673,7 @@ versionBits);
         case 2: // short ASCII
             {
                 final int len = 1 + (ch & 0x3f);
-                final String name = _findOrDecodeShortAsciiName(len, true);
+                final String name = _findOrDecodeShortAsciiName(len);
                 if (_seenNames != null) {
                     if (_seenNameCount >= _seenNames.length) {
                         _seenNames = _expandSeenNames(_seenNames);
@@ -795,7 +795,7 @@ _typeAsInt);
                         // [dataformats-binary#885]: can only match ASCII names here
                         //   (UTF-8 byte length same as char length); otherwise fall
                         //   back to regular handling, which validates ASCII-ness
-                        if (len == byteLen && byteLen == str.getValue().length()) {
+                        if (len == byteLen && byteLen == str.charLength()) {
                             for (int i = 0; i < len; ++i) {
                                 if (nameBytes[i] != _inputBuffer[ptr+i]) {
                                     break main_switch;
@@ -943,8 +943,7 @@ _typeAsInt);
                 }
                 // [dataformats-binary#873]: must use same symbol table lookup (with NUL
                 // padding) as `nextToken()`, not quads built for `PropertyNameMatcher`
-                // (ASCII-ness already verified by `_nextNameOptimized()`)
-                return _nextNameMatchDecoded(matcher, match, _findOrDecodeShortAsciiName(len, false));
+                return _nextNameMatchDecoded(matcher, match, _findOrDecodeShortAsciiName(len));
             }
         case 3: // short Unicode
             // all valid, except for 0xFF
@@ -1635,7 +1634,7 @@ _typeAsInt);
         case 2: // short ASCII
             {
                 final int len = 1 + (ch & 0x3f);
-                final String name = _findOrDecodeShortAsciiName(len, true);
+                final String name = _findOrDecodeShortAsciiName(len);
                 if (_seenNames != null) {
                     if (_seenNameCount >= _seenNames.length) {
                         _seenNames = _expandSeenNames(_seenNames);
@@ -1684,18 +1683,15 @@ _typeAsInt);
     //   length field of the type byte, so it is not attacker-controlled beyond
     //   that; longer names use the "long name" encoding, decoded by
     //   `_handleLongFieldName()`, which does enforce the limit
-    // @param verifyAscii Whether to verify that all bytes are 7-bit ASCII
-    //   ([dataformats-binary#885]); false only if caller has already done so
-    private String _findOrDecodeShortAsciiName(final int len, final boolean verifyAscii)
-        throws JacksonException
+    private String _findOrDecodeShortAsciiName(final int len) throws JacksonException
     {
         // First things first: must ensure all in buffer
         if ((_inputEnd - _inputPtr) < len) {
             _loadToHaveAtLeast(len);
         }
         if (_symbolsCanonical) {
-            // [dataformats-binary#885]: ASCII-ness verified during lookup (if needed)
-            String name = _findDecodedFromSymbols(len, verifyAscii);
+            // [dataformats-binary#885]: ASCII-ness verified during lookup
+            String name = _findDecodedFromSymbols(len, true);
             if (name != null) {
                 _inputPtr += len;
             } else {
@@ -1709,7 +1705,7 @@ _typeAsInt);
         // non-ASCII bytes to U+FFFD, which cannot otherwise occur; and check is
         // cheap for valid (Latin-1 coded) Strings
         final String name = _decodeShortAsciiName(len);
-        if (verifyAscii && name.indexOf(0xFFFD) >= 0) {
+        if (name.indexOf(0xFFFD) >= 0) {
             _inputPtr -= len; // for error location to point to start of name
             _reportInvalidShortAsciiName(_inputBuffer, _inputPtr, len);
         }
