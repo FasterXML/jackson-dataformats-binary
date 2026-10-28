@@ -941,8 +941,7 @@ _typeAsInt);
                     _inputPtr += len;
                     return _nextNameMatchDecoded(matcher, match, matcher.nameLookup()[match]);
                 }
-                // [dataformats-binary#873]: must use same symbol table lookup (with NUL
-                // padding) as `nextToken()`, not quads built for `PropertyNameMatcher`
+                // [dataformats-binary#873]: decode via same symbol table lookup as `nextToken()`
                 return _nextNameMatchDecoded(matcher, match, _findOrDecodeShortAsciiName(len));
             }
         case 3: // short Unicode
@@ -963,8 +962,7 @@ _typeAsInt);
                     _inputPtr += len;
                     return _nextNameMatchDecoded(matcher, match, matcher.nameLookup()[match]);
                 }
-                // [dataformats-binary#873]: must use same symbol table lookup (with NUL
-                // padding) as `nextToken()`, not quads built for `PropertyNameMatcher`
+                // [dataformats-binary#873]: decode via same symbol table lookup as `nextToken()`
                 return _nextNameMatchDecoded(matcher, match, _findOrDecodeShortUnicodeName(len));
             }
         }
@@ -988,13 +986,17 @@ _typeAsInt);
         final byte[] inBuf = _inputBuffer;
         int inPtr = _inputPtr;
 
+        // [dataformats-binary#887]: last quad padded (same as with symbol table
+        // lookups; after ASCII check), as expected by `BinaryNameMatcher` constructed
+        // by `SmileFactory`; otherwise leading NUL bytes of last quad would be lost
+
         // First: maybe we already have this name decoded?
         if (len < 5) {
             int q = _decodePartialQuad(inBuf, inPtr, len);
             if (ascii && (q & NON_ASCII_QUAD_MASK) != 0) {
                 _reportInvalidShortAsciiName(inBuf, inPtr, len);
             }
-            return matcher.matchByQuad(q);
+            return matcher.matchByQuad(_padLastQuad(q, len));
         }
 
         // First quadbyte is easy
@@ -1006,7 +1008,7 @@ _typeAsInt);
             if (ascii && ((q1 | q2) & NON_ASCII_QUAD_MASK) != 0) {
                 _reportInvalidShortAsciiName(inBuf, _inputPtr, len);
             }
-            return matcher.matchByQuad(q1, q2);
+            return matcher.matchByQuad(q1, _padLastQuad(q2, len - 4));
         }
 
         int q2 = _decodeQuad(inBuf, inPtr);
@@ -1017,7 +1019,7 @@ _typeAsInt);
             if (ascii && ((q1 | q2 | q3) & NON_ASCII_QUAD_MASK) != 0) {
                 _reportInvalidShortAsciiName(inBuf, _inputPtr, len);
             }
-            return matcher.matchByQuad(q1, q2, q3);
+            return matcher.matchByQuad(q1, q2, _padLastQuad(q3, len - 8));
         }
         return _nextNameFromSymbolsLong(matcher, len, q1, q2, ascii);
     }
@@ -1054,14 +1056,19 @@ _typeAsInt);
             inPtr += 4;
         } while ((len -= 4) > 3);
         // and then leftovers
+        int lastQ = 0;
         if (len > 0) {
-            int q = _decodePartialQuad(inBuf, inPtr, len);
-            _quadBuffer[offset++] = q;
-            or |= q;
+            lastQ = _decodePartialQuad(inBuf, inPtr, len);
+            or |= lastQ;
         }
-        // [dataformats-binary#885]
+        // [dataformats-binary#885]: verify ASCII-ness before 0xFF checks
         if (ascii && (or & NON_ASCII_QUAD_MASK) != 0) {
             _reportInvalidShortAsciiName(inBuf, _inputPtr, fullLen);
+        }
+        if (len > 0) {
+            _quadBuffer[offset++] = _padLastQuad(lastQ, len);
+        } else {
+            _verifyLastFullQuad(_quadBuffer[offset-1]);
         }
         return matcher.matchByQuad(_quadBuffer, offset);
     }
