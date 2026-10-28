@@ -2357,26 +2357,64 @@ public class ProtobufParser extends ParserMinimalBase
         }
 
         final int[] codes = UTF8_UNIT_CODES;
+        // [dataformats-binary#863]: must not read past end of String; must
+        //   validate continuation bytes and decoded code point
         do {
             i = inputBuf[inPtr++] & 0xFF;
-            final int code = codes[i];
-            // [dataformats-binary#863]: must not read past end of String
-            if ((inPtr + code) > end) {
-                throw _constructError(String.format(
-                        "Malformed %d-byte UTF-8 character at the end of Unicode text block", code+1));
-            }
-            // [dataformats-binary#863]: validate continuation bytes, code point
-            switch (code) {
+            switch (codes[i]) {
             case 0:
                 break;
             case 1:
+                {
+                    if (inPtr >= end) {
+                        _reportTruncatedShortText(2);
+                    }
+                    final int d = inputBuf[inPtr++];
+                    if ((d & 0xC0) != 0x080) {
+                        _reportInvalidOther(d & 0xFF);
+                    }
+                    i = ((i & 0x1F) << 6) | (d & 0x3F);
+                    _verifyUTF8(i, 2);
+                }
+                break;
             case 2:
-                i = _decodeUTF8InBuffer(inputBuf, inPtr, i, code);
-                inPtr += code;
+                {
+                    if ((inPtr + 2) > end) {
+                        _reportTruncatedShortText(3);
+                    }
+                    final int d1 = inputBuf[inPtr++];
+                    if ((d1 & 0xC0) != 0x080) {
+                        _reportInvalidOther(d1 & 0xFF);
+                    }
+                    final int d2 = inputBuf[inPtr++];
+                    if ((d2 & 0xC0) != 0x080) {
+                        _reportInvalidOther(d2 & 0xFF);
+                    }
+                    i = ((i & 0x0F) << 12) | ((d1 & 0x3F) << 6) | (d2 & 0x3F);
+                    _verifyUTF8(i, 3);
+                }
                 break;
             case 3:
-                i = _decodeUTF8InBuffer(inputBuf, inPtr, i, code);
-                inPtr += code;
+                {
+                    if ((inPtr + 3) > end) {
+                        _reportTruncatedShortText(4);
+                    }
+                    final int d1 = inputBuf[inPtr++];
+                    if ((d1 & 0xC0) != 0x080) {
+                        _reportInvalidOther(d1 & 0xFF);
+                    }
+                    final int d2 = inputBuf[inPtr++];
+                    if ((d2 & 0xC0) != 0x080) {
+                        _reportInvalidOther(d2 & 0xFF);
+                    }
+                    final int d3 = inputBuf[inPtr++];
+                    if ((d3 & 0xC0) != 0x080) {
+                        _reportInvalidOther(d3 & 0xFF);
+                    }
+                    i = ((i & 0x07) << 18) | ((d1 & 0x3F) << 12)
+                            | ((d2 & 0x3F) << 6) | (d3 & 0x3F);
+                    _verifyUTF8(i, 4);
+                }
                 // note: this is the codepoint value; need to split, too
                 i -= 0x10000;
                 outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
@@ -2998,23 +3036,9 @@ public class ProtobufParser extends ParserMinimalBase
         _reportError("Too long tag VLong: tenth byte 0x%x", fifth);
     }
 
-    // [dataformats-binary#863]: Decodes multi-byte UTF-8 sequence fully contained in
-    //   buffer: lead byte `c` already read, `needed` (1 - 3) continuation bytes start
-    //   at `buf[ptr]`. Verifies continuation bytes and decoded code point.
-    private int _decodeUTF8InBuffer(byte[] buf, int ptr, int c, int needed)
-        throws JsonParseException
-    {
-        // Mask lead byte: 0x1F for 2-byte, 0x0F for 3-byte, 0x07 for 4-byte
-        c &= (0x3F >> needed);
-        for (int i = 0; i < needed; ++i) {
-            final int d = buf[ptr++];
-            if ((d & 0xC0) != 0x080) {
-                _reportInvalidOther(d & 0xFF);
-            }
-            c = (c << 6) | (d & 0x3F);
-        }
-        _verifyUTF8(c, needed+1);
-        return c;
+    private void _reportTruncatedShortText(int byteCount) throws JsonParseException {
+        _reportError(String.format(
+                "Malformed %d-byte UTF-8 character at the end of Unicode text block", byteCount));
     }
 
     // [dataformats-binary#863]: Decoded code point must use the shortest form,
