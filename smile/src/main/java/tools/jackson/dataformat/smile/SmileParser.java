@@ -941,8 +941,7 @@ _typeAsInt);
                     _inputPtr += len;
                     return _nextNameMatchDecoded(matcher, match, matcher.nameLookup()[match]);
                 }
-                // [dataformats-binary#873]: must use same symbol table lookup (with NUL
-                // padding) as `nextToken()`, not quads built for `PropertyNameMatcher`
+                // [dataformats-binary#873]: decode via same symbol table lookup as `nextToken()`
                 return _nextNameMatchDecoded(matcher, match, _findOrDecodeShortAsciiName(len));
             }
         case 3: // short Unicode
@@ -963,8 +962,7 @@ _typeAsInt);
                     _inputPtr += len;
                     return _nextNameMatchDecoded(matcher, match, matcher.nameLookup()[match]);
                 }
-                // [dataformats-binary#873]: must use same symbol table lookup (with NUL
-                // padding) as `nextToken()`, not quads built for `PropertyNameMatcher`
+                // [dataformats-binary#873]: decode via same symbol table lookup as `nextToken()`
                 return _nextNameMatchDecoded(matcher, match, _findOrDecodeShortUnicodeName(len));
             }
         }

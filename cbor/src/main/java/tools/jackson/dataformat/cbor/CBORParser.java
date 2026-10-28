@@ -1529,8 +1529,7 @@ public class CBORParser extends ParserBase
     private int _nextFieldDecodeAndAdd(PropertyNameMatcher matcher, int len) throws JacksonException
     {
         // 27-Nov-2017, tatu: May already be in main shared symbol table, need to check...
-        // [dataformats-binary#876]: must use same symbol table lookup (with NUL
-        // padding) as `nextToken()`, not quads built for `PropertyNameMatcher`
+        // [dataformats-binary#876]: decode via same symbol table lookup as `nextToken()`
         final String name = _decodeLongerName(len);
         _streamReadContext.setCurrentName(name);
         _updateToken(JsonToken.PROPERTY_NAME);

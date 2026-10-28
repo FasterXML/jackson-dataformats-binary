@@ -21,6 +21,7 @@ import tools.jackson.dataformat.cbor.CBORTestBase;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 // [dataformats-binary#887]: `nextNameMatch()` with (padded) `BinaryNameMatcher`
@@ -88,11 +89,16 @@ public class NameMatchPadding887Test extends CBORTestBase
     {
         final CBORFactory f = cborFactory();
         final List<String> names = _knownNames();
+        int cases = 0;
         for (PropertyNameMatcher matcher : _matchers(f, names)) {
             for (String known : names) {
                 final byte[] name = known.getBytes(StandardCharsets.UTF_8);
                 for (int nuls = 1; nuls <= 3; ++nuls) {
                     final byte[] withNuls = _insertAtLastQuad(name, (byte) 0, nuls);
+                    if (withNuls == null) {
+                        continue;
+                    }
+                    ++cases;
                     final String exp = new String(withNuls, StandardCharsets.UTF_8);
                     for (int round = 0; round < 2; ++round) {
                         for (JsonParser p : _parsers(f, _mapDoc(_name(1), withNuls))) {
@@ -104,6 +110,8 @@ public class NameMatchPadding887Test extends CBORTestBase
                 }
             }
         }
+        // sanity check: verify enough cases tested
+        assertTrue(cases > 20, "Only "+cases+" cases tested");
     }
 
     @Test
@@ -111,10 +119,15 @@ public class NameMatchPadding887Test extends CBORTestBase
     {
         final CBORFactory f = cborFactory();
         final List<String> names = _knownNames();
+        int cases = 0;
         for (PropertyNameMatcher matcher : _matchers(f, names)) {
             for (String known : names) {
                 final byte[] name = known.getBytes(StandardCharsets.UTF_8);
                 final byte[] withFF = _insertAtLastQuad(name, (byte) 0xFF, 1);
+                if (withFF == null) {
+                    continue;
+                }
+                ++cases;
                 for (JsonParser p : _parsers(f, _mapDoc(_name(1), withFF))) {
                     try {
                         int match = _secondMatch(p, matcher);
@@ -126,6 +139,8 @@ public class NameMatchPadding887Test extends CBORTestBase
                 }
             }
         }
+        // sanity check: verify enough cases tested
+        assertTrue(cases > 20, "Only "+cases+" cases tested");
     }
 
     private List<PropertyNameMatcher> _matchers(CBORFactory f, List<String> names) {
@@ -182,10 +197,16 @@ public class NameMatchPadding887Test extends CBORTestBase
         return b;
     }
 
-    // Name with `count` copies of byte `b` inserted at start of its last quad
+    // Name with `count` copies of byte `b` inserted so that they start its last
+    // quad, followed by the rest of the original name (which would match `name`
+    // if last quad was not padded, or if 0xFF was not rejected); or `null` if
+    // that is not possible (last quad of `name` too long for `count` more bytes)
     private static byte[] _insertAtLastQuad(byte[] name, byte b, int count) {
         final int len = name.length;
         final int lastQuadStart = ((len - 1) >> 2) << 2;
+        if ((len - lastQuadStart) + count > 4) {
+            return null;
+        }
         byte[] result = new byte[len + count];
         System.arraycopy(name, 0, result, 0, lastQuadStart);
         for (int i = 0; i < count; ++i) {
