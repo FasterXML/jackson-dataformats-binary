@@ -42,6 +42,9 @@ No changes since 3.1
 #882: (cbor) `nextNameMatch()` does not pop stringref nesting on `END_OBJECT`,
   resolves later stringrefs against wrong namespace
  (fix by @cowtowncoder, w/ Claude code)
+#888: (cbor, smile) `nextFieldName(SerializableString)` matches against JSON-escaped
+  name bytes (`asQuotedUTF8()`)
+ (fix by @cowtowncoder, w/ Claude code)
 
 3.1.8 (17-Oct-2026)
 
