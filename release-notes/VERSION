@@ -103,6 +103,9 @@ implementations)
 #885: (smile) Cheap validation of short ASCII property names, to prevent
   symbol table bypass
  (fix by @cowtowncoder, w/ Claude code)
+#887: (smile) `nextNameMatch()` matches property names with NUL bytes to shorter
+  known names; (cbor) avoid slow path for such names
+ (fix by @cowtowncoder, w/ Claude code)
 #888: (cbor, smile) `nextFieldName(SerializableString)` matches against JSON-escaped
   name bytes (`asQuotedUTF8()`)
  (fix by @cowtowncoder, w/ Claude code)
