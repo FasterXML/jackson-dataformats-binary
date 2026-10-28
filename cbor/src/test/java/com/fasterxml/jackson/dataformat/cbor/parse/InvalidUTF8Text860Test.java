@@ -11,6 +11,8 @@ import com.fasterxml.jackson.dataformat.cbor.CBORParser;
 import com.fasterxml.jackson.dataformat.cbor.CBORTestBase;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 // [dataformats-binary#860]: invalid UTF-8 sequences (overlong, surrogates,
@@ -36,8 +38,10 @@ public class InvalidUTF8Text860Test extends CBORTestBase
     };
 
     private final static String[] EXPECTED_MSG = {
-        "overlong 2-byte encoding of 0x2f",
-        "overlong 2-byte encoding of 0x7f",
+        // lead bytes that are never valid: rejected as such (wording differs
+        // between decoding paths for names, but all include "byte 0x..")
+        "byte 0xc0",
+        "byte 0xc1",
         "overlong 3-byte encoding of 0x2f",
         "overlong 3-byte encoding of 0x7ff",
         "overlong 4-byte encoding of 0x2f",
@@ -45,7 +49,7 @@ public class InvalidUTF8Text860Test extends CBORTestBase
         "Illegal surrogate character 0xd800",
         "Illegal surrogate character 0xdfff",
         "code point 0x110000 beyond U+10FFFF",
-        "code point 0x140000 beyond U+10FFFF",
+        "byte 0xf5",
         "Invalid UTF-8 middle byte 0x41",
         "Invalid UTF-8 middle byte 0x41",
     };
@@ -97,6 +101,46 @@ public class InvalidUTF8Text860Test extends CBORTestBase
         }
     }
 
+    // Parser must remain usable after invalid String value: error location
+    // points to the problem, but parsing continues after the String
+    @Test
+    public void testRecoverAfterInvalidStringValue() throws Exception
+    {
+        // only paddings where String is decoded from within input buffer
+        for (int pad : new int[] { 1, 100 }) {
+            for (int i = 0; i < INVALID.length; ++i) {
+                final byte[] text = payload(pad, INVALID[i]);
+                final byte[] first = textDoc(text, false);
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                out.write(first, 0, first.length);
+                byte[] second = textDoc("ok".getBytes("UTF-8"), false);
+                out.write(second, 0, second.length);
+                final byte[] doc = out.toByteArray();
+                final int textStart = first.length - text.length;
+
+                for (boolean stream : new boolean[] { false, true }) {
+                    try (CBORParser p = stream ? cborParser(new ByteArrayInputStream(doc))
+                            : cborParser(doc)) {
+                        assertToken(JsonToken.VALUE_STRING, p.nextToken());
+                        try {
+                            p.getText();
+                            fail("Should have failed");
+                        } catch (StreamReadException e) {
+                            verifyException(e, EXPECTED_MSG[i]);
+                            long offset = e.getLocation().getByteOffset();
+                            assertTrue(offset > textStart && offset <= first.length,
+                                    "Error offset "+offset+" not within String ["
+                                    +textStart+", "+first.length+"]");
+                        }
+                        assertToken(JsonToken.VALUE_STRING, p.nextToken());
+                        assertEquals("ok", p.getText());
+                        assertNull(p.nextToken());
+                    }
+                }
+            }
+        }
+    }
+
     @Test
     public void testValidBoundaryChars() throws Exception
     {
@@ -143,8 +187,8 @@ public class InvalidUTF8Text860Test extends CBORTestBase
             }
             fail("Should have failed (padding "+pad+"), did not, got: "+str.substring(pad));
         } catch (StreamReadException e) {
-            // bad continuation bytes reported as-is; others note property name
-            if (name && !expMsg.startsWith("Invalid UTF-8 middle byte")) {
+            // invalid bytes reported as-is; decoded code point problems note property name
+            if (name && !expMsg.contains("byte 0x")) {
                 expMsg = "Invalid UTF-8 in Object property name: "+expMsg;
             }
             verifyException(e, expMsg);

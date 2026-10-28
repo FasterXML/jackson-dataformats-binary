@@ -2551,7 +2551,6 @@ public class CBORParser extends ParserMinimalBase
                             _reportInvalidOther(c2 & 0xFF, inPtr);
                         }
                         i = ((i & 0x1F) << 6) | (c2 & 0x3F);
-                        _verifyUTF8_2(i, inPtr, false);
                     }
                     break;
                     case 2: {
@@ -2591,8 +2590,7 @@ public class CBORParser extends ParserMinimalBase
                     }
                     break;
                     default: // invalid
-                        _inputPtr = inPtr;
-                        _reportInvalidInitial(i);
+                        _reportInvalidInitial(i, inPtr);
                 }
             }
             outBuf[outPtr++] = (char) i;
@@ -2657,7 +2655,6 @@ public class CBORParser extends ParserMinimalBase
                         _reportInvalidOther(d & 0xFF, _inputPtr);
                     }
                     c = ((c & 0x1F) << 6) | (d & 0x3F);
-                    _verifyUTF8_2(c, _inputPtr, isName);
                 }
                 break;
             case 2: // 3-byte UTF
@@ -2822,7 +2819,6 @@ public class CBORParser extends ParserMinimalBase
                         _reportInvalidOther(d & 0xFF, _inputPtr);
                     }
                     c = ((c & 0x1F) << 6) | (d & 0x3F);
-                    _verifyUTF8_2(c, _inputPtr, isName);
                 }
                 break;
                 case 2: // 3-byte UTF
@@ -3274,7 +3270,6 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
                             _reportInvalidOther(c2 & 0xFF, inPtr);
                         }
                         i = ((i & 0x1F) << 6) | (c2 & 0x3F);
-                        _verifyUTF8_2(i, inPtr, true);
                     }
                     break;
                 case 2:
@@ -3316,8 +3311,9 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
                     i = 0xDC00 | (i & 0x3FF);
                     break;
                 default: // invalid
-                    _inputPtr = inPtr;
-                    throw _invalidNameByte(i);
+                    throw _constructErrorAt(String.format(
+                            "Invalid UTF-8 byte 0x%s in Object property name",
+                            Integer.toHexString(i)), inPtr);
                 }
             }
             outBuf[outPtr++] = (char) i;
@@ -3607,6 +3603,9 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
         // [dataformats-binary#860]: Note that this means text is validated as UTF-8
         // here (as decoded values may be returned via later references), but not by
         // the plain skipping below, which does not decode content at all.
+        // This is intentional: UTF-8 validity is checked when text is decoded, and
+        // skipped values are not decoded (validating them would add a pass over
+        // every skipped String).
         if (!_stringRefs.empty()) {
             if (type == CBORConstants.MAJOR_TYPE_TEXT) {
                 // Need to actually read the text (which may add to stringRefs)
@@ -4295,51 +4294,65 @@ expType, type, ch));
     }
 
     protected void _reportInvalidOther(int mask, int ptr) throws JsonParseException {
-        _inputPtr = ptr;
-        _reportInvalidOther(mask);
+        throw _constructErrorAt("Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask), ptr);
+    }
+
+    private void _reportInvalidInitial(int mask, int ptr) throws JsonParseException {
+        throw _constructErrorAt("Invalid UTF-8 start byte 0x"+Integer.toHexString(mask), ptr);
+    }
+
+    // [dataformats-binary#860]: Error located at given input offset, but without
+    //   moving `_inputPtr`: in-buffer decoders have already advanced it past the
+    //   whole String, so that parsing can continue with the following token
+    //   (rewinding would resume parsing from within String contents)
+    private JsonParseException _constructErrorAt(String msg, int ptr) {
+        final long offset = _currInputProcessed + ptr;
+        return new JsonParseException(this, msg,
+                new JsonLocation(_ioContext.contentReference(),
+                        offset, -1, -1, (int) offset));
     }
 
     // [dataformats-binary#860]: Decoded code point must use the shortest form,
     //   must not be a surrogate and must be at most U+10FFFF (RFC 3629).
     //   `ptr` is the input offset just past the sequence, for error location.
-    //   Checks are kept minimal (called per non-ASCII char); failure handling
-    //   is in `_reportInvalidUTF8()`
-    private void _verifyUTF8_2(int ch, int ptr, boolean isName) throws JsonParseException
-    {
-        if (ch < 0x80) {
-            _reportInvalidUTF8(ch, 2, ptr, isName);
-        }
-    }
-
+    //   Checks are kept minimal (called per non-ASCII char); each failing check
+    //   names its own problem, and messages are only built on failure.
+    //   No check needed for 2-byte sequences: overlong lead bytes 0xC0/0xC1
+    //   are rejected via `UTF8_UNIT_CODES`.
     private void _verifyUTF8_3(int ch, int ptr, boolean isName) throws JsonParseException
     {
-        if ((ch < 0x800) || ((ch & 0xF800) == 0xD800)) {
-            _reportInvalidUTF8(ch, 3, ptr, isName);
+        if (ch < 0x800) {
+            _reportOverlongUTF8(ch, 3, ptr, isName);
+        }
+        if ((ch & 0xF800) == 0xD800) {
+            _reportInvalidUTF8("Illegal surrogate character 0x"+Integer.toHexString(ch),
+                    ptr, isName);
         }
     }
 
     private void _verifyUTF8_4(int ch, int ptr, boolean isName) throws JsonParseException
     {
-        if ((ch < 0x10000) || (ch > Character.MAX_CODE_POINT)) {
-            _reportInvalidUTF8(ch, 4, ptr, isName);
+        if (ch < 0x10000) {
+            _reportOverlongUTF8(ch, 4, ptr, isName);
+        }
+        if (ch > Character.MAX_CODE_POINT) {
+            _reportInvalidUTF8("code point 0x"+Integer.toHexString(ch)+" beyond U+10FFFF",
+                    ptr, isName);
         }
     }
 
-    private void _reportInvalidUTF8(int ch, int byteCount, int ptr, boolean isName)
+    private void _reportOverlongUTF8(int ch, int byteCount, int ptr, boolean isName)
         throws JsonParseException
     {
-        final String hex = Integer.toHexString(ch);
-        final String problem;
-        if ((byteCount == 3) && (ch >= 0x800)) {
-            problem = "Illegal surrogate character 0x"+hex;
-        } else if ((byteCount == 4) && (ch >= 0x10000)) {
-            problem = "code point 0x"+hex+" beyond U+10FFFF";
-        } else {
-            problem = "overlong "+byteCount+"-byte encoding of 0x"+hex;
-        }
-        _inputPtr = ptr;
-        _reportError(isName ? ("Invalid UTF-8 in Object property name: "+problem)
-                : ("Invalid UTF-8: "+problem));
+        _reportInvalidUTF8("overlong "+byteCount+"-byte encoding of 0x"+Integer.toHexString(ch),
+                ptr, isName);
+    }
+
+    private void _reportInvalidUTF8(String problem, int ptr, boolean isName)
+        throws JsonParseException
+    {
+        throw _constructErrorAt(isName ? ("Invalid UTF-8 in Object property name: "+problem)
+                : ("Invalid UTF-8: "+problem), ptr);
     }
 
     // @since 2.12
