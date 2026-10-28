@@ -1704,11 +1704,15 @@ _typeAsInt);
             return name;
         }
         // if not canonicalizing, much simpler -- but still need to verify
-        // [dataformats-binary#885]: all bytes are ASCII
-        if (verifyAscii) {
-            _verifyShortAsciiName(len);
+        // [dataformats-binary#885]: all bytes are ASCII. US-ASCII decoding maps
+        // non-ASCII bytes to U+FFFD, which cannot otherwise occur; and check is
+        // cheap for valid (Latin-1 coded) Strings
+        final String name = _decodeShortAsciiName(len);
+        if (verifyAscii && name.indexOf(0xFFFD) >= 0) {
+            _inputPtr -= len; // for error location to point to start of name
+            _reportInvalidShortAsciiName(_inputBuffer, _inputPtr, len);
         }
-        return _decodeShortAsciiName(len);
+        return name;
     }
 
     // NOTE: [dataformats-binary#726] see `_findOrDecodeShortAsciiName()` for
@@ -1767,21 +1771,6 @@ _typeAsInt);
         }
         int qlen = (len + 3) >> 2;
         return _symbols.addName(name, _quadBuffer, qlen);
-    }
-
-    // [dataformats-binary#885]: verify that a short ASCII name contains no
-    // non-ASCII bytes, when not done as part of symbol table lookup
-    private final void _verifyShortAsciiName(int len) throws JacksonException
-    {
-        final byte[] inBuf = _inputBuffer;
-        final int inPtr = _inputPtr;
-        int or = 0;
-        for (int i = 0; i < len; ++i) {
-            or |= inBuf[inPtr+i];
-        }
-        if (or < 0) {
-            _reportInvalidShortAsciiName(inBuf, inPtr, len);
-        }
     }
 
     private final String _decodeShortAsciiName(int len) throws JacksonException
