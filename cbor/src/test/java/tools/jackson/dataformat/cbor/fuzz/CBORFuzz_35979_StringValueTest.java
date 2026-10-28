@@ -31,7 +31,10 @@ public class CBORFuzz_35979_StringValueTest extends CBORTestBase
             p.getString();
             fail("Should not pass");
         } catch (StreamReadException e) {
-            verifyException(e, "Truncated UTF-8 character in Unicode String value (256 bytes)");
+            // [dataformats-binary#860]: last byte (0xF7) is now rejected as invalid
+            //   lead byte, before truncation check
+            verifyException(e, "Truncated UTF-8 character in Unicode String value (256 bytes)",
+                    "Invalid UTF-8 start byte 0xf7");
         }
 
     }
