@@ -492,6 +492,9 @@ PJ Fanning (@pjfanning)
 * Fixed #861: (smile) Invalid UTF-8 sequences (overlong, surrogates, > U+10FFFF,
   bad continuation bytes) not rejected in text
  (2.23.0)
+* Fixed #862: (avro) Invalid UTF-8 sequences (overlong, surrogates, > U+10FFFF,
+  bad continuation bytes) not rejected in strings
+ (2.23.0)
 * Fixed #863: (protobuf) Invalid UTF-8 sequences (overlong, surrogates, > U+10FFFF, bad
   continuation bytes) not rejected in strings
  (2.23.0)
