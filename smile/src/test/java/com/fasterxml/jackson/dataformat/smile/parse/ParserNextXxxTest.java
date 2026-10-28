@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.smile.parse;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Random;
 
@@ -117,6 +118,55 @@ public class ParserNextXxxTest extends BaseTestForSmile
         }
         assertToken(JsonToken.END_OBJECT, parser.nextToken());
         parser.close();
+    }
+
+    // `nextFieldName(SerializableString)` must compare against raw (unquoted)
+    // UTF-8 bytes of the name: Smile has no escaping, so JSON-quoted bytes
+    // (`asQuotedUTF8()`) both fail to match names that need escaping, and
+    // falsely match names that literally contain the escaped form
+    private final static String[] NAMES_TO_ESCAPE = {
+        "a\"b", "a\\b", "a\nb", "\u0001", "\"quoted\""
+    };
+
+    @Test
+    public void testNextFieldNameNeedingJsonEscaping() throws Exception
+    {
+        for (String name : NAMES_TO_ESCAPE) {
+            final byte[] doc = _singlePropertyDoc(name);
+            for (boolean stream : new boolean[] { false, true }) {
+                try (JsonParser p = _parser(doc, stream)) {
+                    assertToken(JsonToken.START_OBJECT, p.nextToken());
+                    assertTrue(p.nextFieldName(new SerializedString(name)),
+                            "Should match name '"+name+"' (stream? "+stream+")");
+                    assertEquals(name, p.currentName());
+                    assertEquals("v", p.nextTextValue());
+                    assertToken(JsonToken.END_OBJECT, p.nextToken());
+                    assertNull(p.nextToken());
+                }
+            }
+        }
+    }
+
+    // Name in document is literally the JSON-escaped form of the name asked for
+    @Test
+    public void testNextFieldNameNoFalseMatchForEscapedForm() throws Exception
+    {
+        for (String name : NAMES_TO_ESCAPE) {
+            final String escaped = new String(new SerializedString(name).asQuotedChars());
+            final byte[] doc = _singlePropertyDoc(escaped);
+            for (boolean stream : new boolean[] { false, true }) {
+                try (JsonParser p = _parser(doc, stream)) {
+                    assertToken(JsonToken.START_OBJECT, p.nextToken());
+                    assertFalse(p.nextFieldName(new SerializedString(name)),
+                            "Should not match name '"+escaped+"' (stream? "+stream+")");
+                    assertToken(JsonToken.FIELD_NAME, p.currentToken());
+                    assertEquals(escaped, p.currentName());
+                    assertEquals("v", p.nextTextValue());
+                    assertToken(JsonToken.END_OBJECT, p.nextToken());
+                    assertNull(p.nextToken());
+                }
+            }
+        }
     }
 
     @Test
@@ -274,5 +324,20 @@ public class ParserNextXxxTest extends BaseTestForSmile
         assertNull(p.getCurrentToken());
 
         p.close();
+    }
+
+    private JsonParser _parser(byte[] doc, boolean stream) throws Exception {
+        return stream ? _smileParser(new ByteArrayInputStream(doc)) : _smileParser(doc);
+    }
+
+    private byte[] _singlePropertyDoc(String name) throws Exception
+    {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (JsonGenerator g = smileGenerator(bytes, true)) {
+            g.writeStartObject();
+            g.writeStringField(name, "v");
+            g.writeEndObject();
+        }
+        return bytes.toByteArray();
     }
 }

@@ -121,6 +121,57 @@ public class ParserNextXxxTest extends CBORTestBase
         parser.close();
     }
 
+    // `nextFieldName(SerializableString)` must compare against raw (unquoted)
+    // UTF-8 bytes of the name: CBOR has no escaping, so JSON-quoted bytes
+    // (`asQuotedUTF8()`) both fail to match names that need escaping, and
+    // falsely match names that literally contain the escaped form
+    private final static String[] NAMES_TO_ESCAPE = {
+        "a\"b", "a\\b", "a\nb", "\u0001", "\"quoted\""
+    };
+
+    @Test
+    public void testNextFieldNameNeedingJsonEscaping() throws Exception
+    {
+        final CBORFactory f = cborFactory();
+        for (String name : NAMES_TO_ESCAPE) {
+            final byte[] doc = _singlePropertyDoc(f, name);
+            for (boolean throttled : new boolean[] { false, true }) {
+                try (JsonParser p = cborParser(f, doc, throttled)) {
+                    assertToken(JsonToken.START_OBJECT, p.nextToken());
+                    assertTrue(p.nextFieldName(new SerializedString(name)),
+                            "Should match name '"+name+"' (throttled? "+throttled+")");
+                    assertEquals(name, p.currentName());
+                    assertEquals("v", p.nextTextValue());
+                    assertToken(JsonToken.END_OBJECT, p.nextToken());
+                    assertNull(p.nextToken());
+                }
+            }
+        }
+    }
+
+    // Name in document is literally the JSON-escaped form of the name asked for
+    @Test
+    public void testNextFieldNameNoFalseMatchForEscapedForm() throws Exception
+    {
+        final CBORFactory f = cborFactory();
+        for (String name : NAMES_TO_ESCAPE) {
+            final String escaped = new String(new SerializedString(name).asQuotedChars());
+            final byte[] doc = _singlePropertyDoc(f, escaped);
+            for (boolean throttled : new boolean[] { false, true }) {
+                try (JsonParser p = cborParser(f, doc, throttled)) {
+                    assertToken(JsonToken.START_OBJECT, p.nextToken());
+                    assertFalse(p.nextFieldName(new SerializedString(name)),
+                            "Should not match name '"+escaped+"' (throttled? "+throttled+")");
+                    assertToken(JsonToken.FIELD_NAME, p.currentToken());
+                    assertEquals(escaped, p.currentName());
+                    assertEquals("v", p.nextTextValue());
+                    assertToken(JsonToken.END_OBJECT, p.nextToken());
+                    assertNull(p.nextToken());
+                }
+            }
+        }
+    }
+
     @Test
     public void testNextValuesMisc() throws Exception
     {
@@ -324,5 +375,16 @@ public class ParserNextXxxTest extends CBORTestBase
         assertNull(p.getCurrentToken());
 
         p.close();
+    }
+
+    private byte[] _singlePropertyDoc(CBORFactory f, String name) throws Exception
+    {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (JsonGenerator g = cborGenerator(f, bytes)) {
+            g.writeStartObject();
+            g.writeStringField(name, "v");
+            g.writeEndObject();
+        }
+        return bytes.toByteArray();
     }
 }
