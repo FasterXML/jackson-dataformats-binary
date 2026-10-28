@@ -706,9 +706,4 @@ public abstract class NonBlockingParserBase
        _reportError("Invalid shared text value reference %d; only got %s names in buffer (invalid content)",
                index, _seenStringValueCount);
     }
-
-    protected void _reportInvalidOther(int mask, int ptr) throws JsonParseException {
-        _inputPtr = ptr;
-        _reportError("Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask));
-    }
 }

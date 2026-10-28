@@ -331,6 +331,10 @@ public final class SmileConstants
      * Values indicate "byte length - 1"; meaning -1 is used for
      * invalid bytes, 0 for single-byte codes, 1 for 2-byte codes
      * and 2 for 3-byte codes.
+     *<p>
+     * NOTE: since 2.23, lead bytes 0xC0 and 0xC1 (which could only start
+     * overlong 2-byte encodings) and 0xF5 - 0xF7 (which could only start
+     * sequences beyond U+10FFFF) are marked invalid as well.
      */
     public final static int[] sUtf8UnitLengths;
     static {
@@ -339,7 +343,11 @@ public final class SmileConstants
             int code;
 
             // We'll add number of bytes needed for decoding
-            if ((c & 0xE0) == 0xC0) { // 2 bytes (0x0080 - 0x07FF)
+            // [dataformats-binary#861]: lead bytes that can not start valid
+            //   (shortest-form, at most U+10FFFF) sequences are invalid
+            if ((c < 0xC2) || (c > 0xF4)) {
+                code = -1;
+            } else if ((c & 0xE0) == 0xC0) { // 2 bytes (0x0080 - 0x07FF)
                 code = 1;
             } else if ((c & 0xF0) == 0xE0) { // 3 bytes (0x0800 - 0xFFFF)
                 code = 2;
