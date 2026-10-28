@@ -2342,7 +2342,6 @@ public class ProtobufParser extends ParserMinimalBase
         }
         int outPtr = 0;
         int inPtr = _inputPtr;
-        _inputPtr += len;
         final byte[] inputBuf = _inputBuffer;
 
         // Let's actually do a tight loop for ASCII first:
@@ -2352,6 +2351,7 @@ public class ProtobufParser extends ParserMinimalBase
         while ((i = inputBuf[inPtr]) >= 0) {
             outBuf[outPtr++] = (char) i;
             if (++inPtr == end) {
+                _inputPtr = end;
                 return _textBuffer.setCurrentAndReturn(outPtr);
             }
         }
@@ -2367,53 +2367,53 @@ public class ProtobufParser extends ParserMinimalBase
             case 1:
                 {
                     if (inPtr >= end) {
-                        _reportTruncatedShortText(2);
+                        _reportTruncatedUTF8(2, inPtr);
                     }
                     final int d = inputBuf[inPtr++];
                     if ((d & 0xC0) != 0x080) {
-                        _reportInvalidOther(d & 0xFF);
+                        _reportInvalidOther(d & 0xFF, inPtr);
                     }
                     i = ((i & 0x1F) << 6) | (d & 0x3F);
-                    _verifyUTF8(i, 2);
+                    _verifyUTF8(i, 2, inPtr);
                 }
                 break;
             case 2:
                 {
                     if ((inPtr + 2) > end) {
-                        _reportTruncatedShortText(3);
+                        _reportTruncatedUTF8(3, inPtr);
                     }
                     final int d1 = inputBuf[inPtr++];
                     if ((d1 & 0xC0) != 0x080) {
-                        _reportInvalidOther(d1 & 0xFF);
+                        _reportInvalidOther(d1 & 0xFF, inPtr);
                     }
                     final int d2 = inputBuf[inPtr++];
                     if ((d2 & 0xC0) != 0x080) {
-                        _reportInvalidOther(d2 & 0xFF);
+                        _reportInvalidOther(d2 & 0xFF, inPtr);
                     }
                     i = ((i & 0x0F) << 12) | ((d1 & 0x3F) << 6) | (d2 & 0x3F);
-                    _verifyUTF8(i, 3);
+                    _verifyUTF8(i, 3, inPtr);
                 }
                 break;
             case 3:
                 {
                     if ((inPtr + 3) > end) {
-                        _reportTruncatedShortText(4);
+                        _reportTruncatedUTF8(4, inPtr);
                     }
                     final int d1 = inputBuf[inPtr++];
                     if ((d1 & 0xC0) != 0x080) {
-                        _reportInvalidOther(d1 & 0xFF);
+                        _reportInvalidOther(d1 & 0xFF, inPtr);
                     }
                     final int d2 = inputBuf[inPtr++];
                     if ((d2 & 0xC0) != 0x080) {
-                        _reportInvalidOther(d2 & 0xFF);
+                        _reportInvalidOther(d2 & 0xFF, inPtr);
                     }
                     final int d3 = inputBuf[inPtr++];
                     if ((d3 & 0xC0) != 0x080) {
-                        _reportInvalidOther(d3 & 0xFF);
+                        _reportInvalidOther(d3 & 0xFF, inPtr);
                     }
                     i = ((i & 0x07) << 18) | ((d1 & 0x3F) << 12)
                             | ((d2 & 0x3F) << 6) | (d3 & 0x3F);
-                    _verifyUTF8(i, 4);
+                    _verifyUTF8(i, 4, inPtr);
                 }
                 // note: this is the codepoint value; need to split, too
                 i -= 0x10000;
@@ -2421,10 +2421,11 @@ public class ProtobufParser extends ParserMinimalBase
                 i = 0xDC00 | (i & 0x3FF);
                 break;
             default: // invalid
-                _reportError(String.format("Invalid byte 0x%02X in Unicode text block", i));
+                _reportInvalidInitial(i, inPtr);
             }
             outBuf[outPtr++] = (char) i;
         } while (inPtr < end);
+        _inputPtr = end;
         return _textBuffer.setCurrentAndReturn(outPtr);
     }
 
@@ -2448,8 +2449,8 @@ public class ProtobufParser extends ParserMinimalBase
                 outBuf[outPtr++] = (char) c;
                 continue;
             }
-            if ((len -= code) < 0) { // may need to improve error here but...
-                throw _constructError("Malformed UTF-8 character at end of long (non-chunked) text segment");
+            if ((len -= code) < 0) {
+                _reportTruncatedUTF8(code+1, _inputPtr);
             }
 
             switch (code) {
@@ -2462,7 +2463,7 @@ public class ProtobufParser extends ParserMinimalBase
                         _reportInvalidOther(d & 0xFF, _inputPtr);
                     }
                     c = ((c & 0x1F) << 6) | (d & 0x3F);
-                    _verifyUTF8(c, 2);
+                    _verifyUTF8(c, 2, _inputPtr);
                 }
                 break;
             case 2: // 3-byte UTF
@@ -2481,8 +2482,7 @@ public class ProtobufParser extends ParserMinimalBase
                 // And let the other char output down below
                 break;
             default:
-                // Is this good enough error message?
-                _reportInvalidInitial(c);
+                _reportInvalidInitial(c, _inputPtr);
             }
             // Need more room?
             if (outPtr >= outEnd) {
@@ -2509,7 +2509,7 @@ public class ProtobufParser extends ParserMinimalBase
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
         c = (c << 6) | (d & 0x3F);
-        _verifyUTF8(c, 3);
+        _verifyUTF8(c, 3, _inputPtr);
         return c;
     }
 
@@ -2534,7 +2534,7 @@ public class ProtobufParser extends ParserMinimalBase
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
         c = (c << 6) | (d & 0x3F);
-        _verifyUTF8(c, 4);
+        _verifyUTF8(c, 4, _inputPtr);
         return c - 0x10000;
     }
 
@@ -3036,14 +3036,16 @@ public class ProtobufParser extends ParserMinimalBase
         _reportError("Too long tag VLong: tenth byte 0x%x", fifth);
     }
 
-    private void _reportTruncatedShortText(int byteCount) throws JsonParseException {
+    private void _reportTruncatedUTF8(int byteCount, int ptr) throws JsonParseException {
+        _inputPtr = ptr;
         _reportError(String.format(
                 "Malformed %d-byte UTF-8 character at the end of Unicode text block", byteCount));
     }
 
     // [dataformats-binary#863]: Decoded code point must use the shortest form,
-    //   must not be a surrogate and must be at most U+10FFFF (RFC 3629)
-    private void _verifyUTF8(int ch, int byteCount) throws JsonParseException
+    //   must not be a surrogate and must be at most U+10FFFF (RFC 3629).
+    //   `ptr` is input position to report on failure
+    private void _verifyUTF8(int ch, int byteCount, int ptr) throws JsonParseException
     {
         final String problem;
         if (byteCount == 2) {
@@ -3056,7 +3058,7 @@ public class ProtobufParser extends ParserMinimalBase
                 if (ch < 0xD800 || ch > 0xDFFF) {
                     return;
                 }
-                problem = "Illegal surrogate character 0x"+Integer.toHexString(ch);
+                problem = "illegal surrogate character 0x"+Integer.toHexString(ch);
             } else {
                 problem = "overlong 3-byte encoding of 0x"+Integer.toHexString(ch);
             }
@@ -3070,10 +3072,12 @@ public class ProtobufParser extends ParserMinimalBase
                 problem = "overlong 4-byte encoding of 0x"+Integer.toHexString(ch);
             }
         }
+        _inputPtr = ptr;
         _reportError("Invalid UTF-8: "+problem);
     }
 
-    private void _reportInvalidInitial(int mask) throws JsonParseException {
+    private void _reportInvalidInitial(int mask, int ptr) throws JsonParseException {
+        _inputPtr = ptr;
         _reportError("Invalid UTF-8 start byte 0x%x", mask);
     }
 

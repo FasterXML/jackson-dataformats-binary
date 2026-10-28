@@ -44,8 +44,8 @@ public class InvalidUTF8String863Test extends ProtobufTestBase
         "overlong 3-byte encoding of 0x7ff",
         "overlong 4-byte encoding of 0x2f",
         "overlong 4-byte encoding of 0xffff",
-        "Illegal surrogate character 0xd800",
-        "Illegal surrogate character 0xdfff",
+        "illegal surrogate character 0xd800",
+        "illegal surrogate character 0xdfff",
         "code point 0x110000 beyond U+10FFFF",
         "code point 0x140000 beyond U+10FFFF",
         "Invalid UTF-8 middle byte 0x41",
@@ -76,7 +76,9 @@ public class InvalidUTF8String863Test extends ProtobufTestBase
     {
         for (int pad : PADDINGS) {
             for (int i = 0; i < INVALID.length; ++i) {
-                _verifyFails(doc(payload(pad, INVALID[i])), EXPECTED_MSG[i], pad);
+                // all problems detected at the last byte of the sequence
+                _verifyFails(payload(pad, INVALID[i]), EXPECTED_MSG[i], pad,
+                        pad + INVALID[i].length);
             }
         }
     }
@@ -86,17 +88,26 @@ public class InvalidUTF8String863Test extends ProtobufTestBase
     @Test
     public void testTruncatedString() throws Exception
     {
-        byte[] str = new byte[] { 'a', (byte) 0xC3 };
-        _verifyFails(doc(str), "Malformed 2-byte UTF-8 character at the end of Unicode text block", 0);
-        str = new byte[] { 'a', (byte) 0xE2, (byte) 0x82 };
-        _verifyFails(doc(str), "Malformed 3-byte UTF-8 character at the end of Unicode text block", 0);
+        for (int pad : PADDINGS) {
+            // problem detected at the lead byte
+            _verifyFails(text(pad, new int[] { 0xC3 }),
+                    "Malformed 2-byte UTF-8 character at the end of Unicode text block", pad, pad + 1);
+            _verifyFails(text(pad, new int[] { 0xE2, 0x82 }),
+                    "Malformed 3-byte UTF-8 character at the end of Unicode text block", pad, pad + 1);
+            _verifyFails(text(pad, new int[] { 0xF0, 0x9F, 0x98 }),
+                    "Malformed 4-byte UTF-8 character at the end of Unicode text block", pad, pad + 1);
+        }
     }
 
     @Test
     public void testInvalidLeadByte() throws Exception
     {
-        _verifyFails(doc(payload(1, new int[] { 0x80 })),
-                "Invalid byte 0x80 in Unicode text block", 0);
+        for (int pad : PADDINGS) {
+            _verifyFails(payload(pad, new int[] { 0x80 }),
+                    "Invalid UTF-8 start byte 0x80", pad, pad + 1);
+            _verifyFails(payload(pad, new int[] { 0xF8 }),
+                    "Invalid UTF-8 start byte 0xf8", pad, pad + 1);
+        }
     }
 
     @Test
@@ -112,8 +123,13 @@ public class InvalidUTF8String863Test extends ProtobufTestBase
         }
     }
 
-    private void _verifyFails(byte[] doc, String expMsg, int pad) throws Exception
+    // `expOffset`: expected error offset relative to start of String contents
+    private void _verifyFails(byte[] text, String expMsg, int pad, int expOffset)
+        throws Exception
     {
+        final byte[] doc = doc(text);
+        // String contents are followed by 2-byte int field
+        final int textStart = doc.length - 2 - text.length;
         for (int mode = 0; mode < 2; ++mode) {
             JsonParser p = (mode == 0) ? MAPPER.createParser(doc)
                     : MAPPER.createParser(new ByteArrayInputStream(doc));
@@ -123,6 +139,8 @@ public class InvalidUTF8String863Test extends ProtobufTestBase
                         +str.substring(pad));
             } catch (StreamReadException e) {
                 verifyException(e, expMsg);
+                assertEquals(textStart + expOffset, e.getLocation().getByteOffset(),
+                        "Error offset (padding "+pad+", mode "+mode+")");
             }
         }
     }
@@ -152,11 +170,26 @@ public class InvalidUTF8String863Test extends ProtobufTestBase
     }
 
     private static byte[] payload(int pad, int[] seq) {
+        return payload(pad, bytes(seq));
+    }
+
+    // Like `payload()` but with `seq` at the very end of String
+    private static byte[] text(int pad, int[] seq) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        for (int i = 0; i < pad; ++i) {
+            out.write('a');
+        }
+        byte[] b = bytes(seq);
+        out.write(b, 0, b.length);
+        return out.toByteArray();
+    }
+
+    private static byte[] bytes(int[] seq) {
         byte[] b = new byte[seq.length];
         for (int i = 0; i < seq.length; ++i) {
             b[i] = (byte) seq[i];
         }
-        return payload(pad, b);
+        return b;
     }
 
     private static byte[] payload(int pad, byte[] seq) {
