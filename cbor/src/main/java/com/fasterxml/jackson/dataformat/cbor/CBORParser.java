@@ -1529,7 +1529,10 @@ public class CBORParser extends ParserMinimalBase
                 _updateToken(JsonToken.END_OBJECT);
                 return false;
             }
-            byte[] nameBytes = str.asQuotedUTF8();
+            // Must compare raw UTF-8 bytes: CBOR has no escaping, so JSON-quoted
+            // bytes (`asQuotedUTF8()`) would falsely match a name containing the
+            // escaped form (like `a\"b` for `a"b`)
+            byte[] nameBytes = str.asUnquotedUTF8();
             final int byteLen = nameBytes.length;
             // NOTE: [dataformats-binary#725] `maxNameLength` deliberately NOT
             //   enforced by the fast path below: length matched is that of the
