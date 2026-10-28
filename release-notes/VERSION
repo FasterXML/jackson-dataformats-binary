@@ -109,6 +109,9 @@ implementations)
 #888: (cbor, smile) `nextFieldName(SerializableString)` matches against JSON-escaped
   name bytes (`asQuotedUTF8()`)
  (fix by @cowtowncoder, w/ Claude code)
+#889: (smile) Speed up UTF-8 validation of 3- and 4-byte sequences with
+  second-byte range check keyed on lead byte
+ (fix by @cowtowncoder, w/ Claude code)
 - (avro) Generated `array` schemas missing `java-class` for `java.util.List`,
   breaking round-trip via Apache `ReflectDatumReader`
 
