@@ -37,8 +37,9 @@ public class InvalidUTF8String862Test extends AvroTestBase
     };
 
     private final static String[] EXPECTED_MSG = {
-        "overlong 2-byte encoding of 0x2f",
-        "overlong 2-byte encoding of 0x7f",
+        // 0xC0/0xC1 only produce overlong forms: invalid as lead bytes
+        "Invalid byte 0xC0 in Unicode text block",
+        "Invalid byte 0xC1 in Unicode text block",
         "overlong 3-byte encoding of 0x2f",
         "overlong 3-byte encoding of 0x7ff",
         "overlong 4-byte encoding of 0x2f",
@@ -46,7 +47,8 @@ public class InvalidUTF8String862Test extends AvroTestBase
         "Illegal surrogate character 0xd800",
         "Illegal surrogate character 0xdfff",
         "code point 0x110000 beyond U+10FFFF",
-        "code point 0x140000 beyond U+10FFFF",
+        // 0xF5 - 0xF7 only produce > U+10FFFF: invalid as lead bytes
+        "Invalid byte 0xF5 in Unicode text block",
         "Invalid UTF-8 middle byte 0x41",
         "Invalid UTF-8 middle byte 0x41",
         "Invalid UTF-8 middle byte 0x41",
@@ -103,12 +105,12 @@ public class InvalidUTF8String862Test extends AvroTestBase
     }
 
     // Multi-byte sequence truncated by end of text: message should
-    // indicate full length of sequence
+    // indicate full length of sequence, for short and long text
     @Test
     public void testTruncatedAtEnd() throws Exception
     {
         final int[][] leads = { { 0xC3 }, { 0xE2, 0x82 }, { 0xF0, 0x9F, 0x98 } };
-        for (int pad : new int[] { 1, 100 }) {
+        for (int pad : PADDINGS) {
             for (int[] lead : leads) {
                 byte[] text = payload(pad, lead);
                 // drop the trailing 'b' so sequence is truncated by end of text
@@ -147,6 +149,10 @@ public class InvalidUTF8String862Test extends AvroTestBase
                         +str.substring(pad));
             } catch (StreamReadException e) {
                 verifyException(e, expMsg);
+                // map keys should be identified as such; values not
+                if (mapKey != e.getMessage().contains("Object property name")) {
+                    fail("Map key "+(mapKey ? "not " : "")+"indicated in message: "+e.getMessage());
+                }
             }
         }
     }

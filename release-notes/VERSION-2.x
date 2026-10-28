@@ -54,6 +54,11 @@ Active maintainers:
  (fix by @pjfanning, w/ Claude code)
 #862: (avro) Invalid UTF-8 sequences (overlong, surrogates, > U+10FFFF, bad continuation
   bytes) not rejected in strings
+  (NOTE: only applies to the default (Jackson) decoder: Apache Avro decoder
+  (`ApacheAvroFactory`) replaces invalid UTF-8 with U+FFFD; no option to accept such
+  content, including CESU-8 / "Modified UTF-8" encoded text, which earlier versions
+  decoded; also note that validation is done when text is decoded: skipped strings
+  are not validated)
  (fix by @pjfanning, w/ Claude code)
 #868: (cbor) Wrong cached property name returned for names containing 0xFF bytes
  (fix by @pjfanning, w/ Claude code)

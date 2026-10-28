@@ -26,11 +26,13 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             int code;
 
             // We'll add number of bytes needed for decoding
-            if ((c & 0xE0) == 0xC0) { // 2 bytes (0x0080 - 0x07FF)
+            // [dataformats-binary#862]: 0xC0/0xC1 only produce overlong forms
+            if ((c & 0xE0) == 0xC0 && c >= 0xC2) { // 2 bytes (0x0080 - 0x07FF)
                 code = 1;
             } else if ((c & 0xF0) == 0xE0) { // 3 bytes (0x0800 - 0xFFFF)
                 code = 2;
-            } else if ((c & 0xF8) == 0xF0) {
+            // [dataformats-binary#862]: 0xF5 - 0xF7 only produce > U+10FFFF
+            } else if ((c & 0xF8) == 0xF0 && c <= 0xF4) {
                 // 4 bytes; double-char with surrogates and all...
                 code = 3;
             } else {
@@ -553,6 +555,11 @@ public class JacksonAvroParserImpl extends AvroParserImpl
 
     @Override
     public void decodeString() throws IOException {
+        _decodeString(false);
+    }
+
+    // [dataformats-binary#862]: `isName` only used for error reporting
+    private void _decodeString(boolean isName) throws IOException {
         int len = decodeInt();
         if (len <= 0) {
             if (len < 0) {
@@ -567,13 +574,13 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             // or if not, could we read?
             if (len >= _inputBuffer.length) {
                 // If not enough space, need handling similar to chunked
-                _finishLongText(len);
+                _finishLongText(len, isName);
                 return;
             }
             _loadToHaveAtLeast(len);
         }
         // offline for better optimization
-        _finishShortText(len);
+        _finishShortText(len, isName);
     }
 
     @Override
@@ -589,7 +596,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         _skip(len);
     }
 
-    private final String _finishShortText(int len) throws IOException
+    private final String _finishShortText(int len, boolean isName) throws IOException
     {
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         if (outBuf.length < len) { // one minor complication
@@ -620,22 +627,22 @@ public class JacksonAvroParserImpl extends AvroParserImpl
                 continue;
             }
             if ((inPtr + code) > end) {
-                // (`code` is number of continuation bytes; -1 for invalid lead byte)
-                throw _constructError(String.format(
-                        "Malformed %d-byte UTF-8 character at the end of Unicode text block", code+1));
+                // (`code` is number of continuation bytes, 1 - 3: invalid lead
+                // bytes (-1) never get here but are reported by `default` below)
+                _reportTruncatedUTF8(code, isName);
             }
             // [dataformats-binary#862]: validate continuation bytes, code point
             switch (code) {
             case 1:
-                i = _decodeUTF8InBuffer2(inputBuf, inPtr, i);
+                i = _decodeUTF8InBuffer2(inputBuf, inPtr, i, isName);
                 ++inPtr;
                 break;
             case 2:
-                i = _decodeUTF8InBuffer3(inputBuf, inPtr, i);
+                i = _decodeUTF8InBuffer3(inputBuf, inPtr, i, isName);
                 inPtr += 2;
                 break;
             case 3:
-                i = _decodeUTF8InBuffer4(inputBuf, inPtr, i);
+                i = _decodeUTF8InBuffer4(inputBuf, inPtr, i, isName);
                 inPtr += 3;
                 // note: this is the codepoint value; need to split, too
                 i -= 0x10000;
@@ -643,14 +650,14 @@ public class JacksonAvroParserImpl extends AvroParserImpl
                 i = 0xDC00 | (i & 0x3FF);
                 break;
             default: // invalid
-                _reportInvalidByteInText(i);
+                _reportInvalidByteInText(i, isName);
             }
             outBuf[outPtr++] = (char) i;
         } while (inPtr < end);
         return _textBuffer.setCurrentAndReturn(outPtr);
     }
 
-    private final void _finishLongText(int len) throws IOException
+    private final void _finishLongText(int len, boolean isName) throws IOException
     {
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         int outPtr = 0;
@@ -665,10 +672,10 @@ public class JacksonAvroParserImpl extends AvroParserImpl
                 continue;
             }
             if (code < 0) {
-                _reportInvalidByteInText(c);
+                _reportInvalidByteInText(c, isName);
             }
-            if ((len -= code) < 0) { // may need to improve error here but...
-                throw _constructError("Malformed UTF-8 character at end of long (non-chunked) text segment");
+            if ((len -= code) < 0) {
+                _reportTruncatedUTF8(code, isName);
             }
 
             switch (code) {
@@ -678,17 +685,17 @@ public class JacksonAvroParserImpl extends AvroParserImpl
                 {
                     int d = _nextByteGuaranteed();
                     if ((d & 0xC0) != 0x080) {
-                        _reportInvalidOther(d & 0xFF, _inputPtr);
+                        _reportInvalidOther(d & 0xFF, isName);
                     }
+                    // (no overlong check needed: lead bytes 0xC0/0xC1 rejected above)
                     c = ((c & 0x1F) << 6) | (d & 0x3F);
-                    _verifyUTF8(c, 2);
                 }
                 break;
             case 2: // 3-byte UTF
-                c = _decodeUTF8_3(c);
+                c = _decodeUTF8_3(c, isName);
                 break;
             case 3: // 4-byte UTF
-                c = _decodeUTF8_4(c);
+                c = _decodeUTF8_4(c, isName);
                 if (outPtr >= outBuf.length) {
                     outBuf = _textBuffer.finishCurrentSegment();
                     outPtr = 0;
@@ -699,8 +706,8 @@ public class JacksonAvroParserImpl extends AvroParserImpl
                 c = 0xDC00 | (c & 0x3FF);
                 // And let the other char output down below
                 break;
-            default: // invalid lead bytes already reported above
-                _reportInvalidByteInText(c);
+            default: // invalid lead bytes (code -1) already reported above
+                _throwInternal();
             }
             // Need more room?
             if (outPtr >= outEnd) {
@@ -714,41 +721,41 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         _textBuffer.setCurrentLength(outPtr);
     }
 
-    private final int _decodeUTF8_3(int c1) throws IOException
+    private final int _decodeUTF8_3(int c1, boolean isName) throws IOException
     {
         c1 &= 0x0F;
         int d = _nextByteGuaranteed();
         if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
+            _reportInvalidOther(d & 0xFF, isName);
         }
         int c = (c1 << 6) | (d & 0x3F);
         d = _nextByteGuaranteed();
         if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
+            _reportInvalidOther(d & 0xFF, isName);
         }
         c = (c << 6) | (d & 0x3F);
-        _verifyUTF8(c, 3);
+        _verifyUTF8(c, 3, isName);
         return c;
     }
 
-    private final int _decodeUTF8_4(int c) throws IOException
+    private final int _decodeUTF8_4(int c, boolean isName) throws IOException
     {
         int d = _nextByteGuaranteed();
         if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
+            _reportInvalidOther(d & 0xFF, isName);
         }
         c = ((c & 0x07) << 6) | (d & 0x3F);
         d = _nextByteGuaranteed();
         if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
+            _reportInvalidOther(d & 0xFF, isName);
         }
         c = (c << 6) | (d & 0x3F);
         d = _nextByteGuaranteed();
         if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
+            _reportInvalidOther(d & 0xFF, isName);
         }
         c = (c << 6) | (d & 0x3F);
-        _verifyUTF8(c, 4);
+        _verifyUTF8(c, 4, isName);
         return c - 0x10000;
     }
 
@@ -758,17 +765,19 @@ public class JacksonAvroParserImpl extends AvroParserImpl
     //   per length, with only cheap checks, so they get inlined (a generic loop was
     //   measurably slower); invalid sequences are decoded again for error reporting.
 
-    private int _decodeUTF8InBuffer2(byte[] buf, int ptr, int c) throws JsonParseException
+    private int _decodeUTF8InBuffer2(byte[] buf, int ptr, int c, boolean isName)
+        throws JsonParseException
     {
         final int d = buf[ptr];
-        final int ch = ((c & 0x1F) << 6) | (d & 0x3F);
-        if (((d & 0xC0) != 0x80) || (ch < 0x80)) {
-            _reportInvalidUTF8InBuffer(buf, ptr, c, 1);
+        // (no overlong check needed: lead bytes 0xC0/0xC1 rejected via `sUtf8UnitLengths`)
+        if ((d & 0xC0) != 0x80) {
+            _reportInvalidUTF8InBuffer(buf, ptr, c, 1, isName);
         }
-        return ch;
+        return ((c & 0x1F) << 6) | (d & 0x3F);
     }
 
-    private int _decodeUTF8InBuffer3(byte[] buf, int ptr, int c) throws JsonParseException
+    private int _decodeUTF8InBuffer3(byte[] buf, int ptr, int c, boolean isName)
+        throws JsonParseException
     {
         final int d = buf[ptr];
         final int e = buf[ptr+1];
@@ -776,13 +785,14 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         // continuation bytes must be 10xxxxxx; no overlong forms or surrogates
         if ((((d & e) & 0xC0) != 0x80) || (((d | e) & 0x40) != 0)
                 || (ch < 0x800) || ((ch & 0xF800) == 0xD800)) {
-            _reportInvalidUTF8InBuffer(buf, ptr, c, 2);
+            _reportInvalidUTF8InBuffer(buf, ptr, c, 2, isName);
         }
         return ch;
     }
 
     // NOTE: returns code point, not split into surrogate pair
-    private int _decodeUTF8InBuffer4(byte[] buf, int ptr, int c) throws JsonParseException
+    private int _decodeUTF8InBuffer4(byte[] buf, int ptr, int c, boolean isName)
+        throws JsonParseException
     {
         final int d = buf[ptr];
         final int e = buf[ptr+1];
@@ -791,14 +801,16 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         // continuation bytes must be 10xxxxxx; no overlong forms, max U+10FFFF
         if ((((d & e & f) & 0xC0) != 0x80) || (((d | e | f) & 0x40) != 0)
                 || (ch < 0x10000) || (ch > Character.MAX_CODE_POINT)) {
-            _reportInvalidUTF8InBuffer(buf, ptr, c, 3);
+            _reportInvalidUTF8InBuffer(buf, ptr, c, 3, isName);
         }
         return ch;
     }
 
     // Called when one of _decodeUTF8InBufferN found a problem: decodes the
-    // sequence again to find and report the first problem
-    private void _reportInvalidUTF8InBuffer(byte[] buf, int ptr, int c, int needed)
+    // sequence again to find and report the first problem. Never returns
+    // normally: if no specific problem is found, reports a generic one
+    private void _reportInvalidUTF8InBuffer(byte[] buf, int ptr, int c, int needed,
+            boolean isName)
         throws JsonParseException
     {
         // Mask lead byte: 0x1F for 2-byte, 0x0F for 3-byte, 0x07 for 4-byte
@@ -806,56 +818,60 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         for (int i = 0; i < needed; ++i) {
             final int d = buf[ptr++];
             if ((d & 0xC0) != 0x080) {
-                _reportInvalidOther(d & 0xFF);
+                _reportInvalidOther(d & 0xFF, isName);
             }
             c = (c << 6) | (d & 0x3F);
         }
-        _verifyUTF8(c, needed+1);
+        _verifyUTF8(c, needed+1, isName);
+        // Should never get here (fast-path checks out of sync with `_verifyUTF8`?),
+        // but fail rather than return invalid character
+        _reportInvalidUTF8(String.format("invalid %d-byte sequence (code point 0x%s)",
+                needed+1, Integer.toHexString(c)), isName);
     }
 
     // [dataformats-binary#862]: Decoded code point must use the shortest form,
-    //   must not be a surrogate and must be at most U+10FFFF (RFC 3629)
-    private void _verifyUTF8(int ch, int byteCount) throws JsonParseException
+    //   must not be a surrogate and must be at most U+10FFFF (RFC 3629).
+    //   No check needed for 2-byte sequences: overlong lead bytes 0xC0/0xC1
+    //   are rejected via `sUtf8UnitLengths`.
+    private void _verifyUTF8(int ch, int byteCount, boolean isName) throws JsonParseException
     {
-        final String problem;
-        if (byteCount == 2) {
-            if (ch >= 0x80) {
-                return;
+        if (byteCount == 3) {
+            if (ch < 0x800) {
+                _reportInvalidUTF8("overlong 3-byte encoding of 0x"+Integer.toHexString(ch), isName);
             }
-            problem = "overlong 2-byte encoding of 0x"+Integer.toHexString(ch);
-        } else if (byteCount == 3) {
-            if (ch >= 0x800) {
-                if (ch < 0xD800 || ch > 0xDFFF) {
-                    return;
-                }
-                problem = "Illegal surrogate character 0x"+Integer.toHexString(ch);
-            } else {
-                problem = "overlong 3-byte encoding of 0x"+Integer.toHexString(ch);
+            if ((ch & 0xF800) == 0xD800) {
+                _reportInvalidUTF8("Illegal surrogate character 0x"+Integer.toHexString(ch), isName);
             }
-        } else {
-            if (ch >= 0x10000) {
-                if (ch <= Character.MAX_CODE_POINT) {
-                    return;
-                }
-                problem = "code point 0x"+Integer.toHexString(ch)+" beyond U+10FFFF";
-            } else {
-                problem = "overlong 4-byte encoding of 0x"+Integer.toHexString(ch);
+        } else if (byteCount == 4) {
+            if (ch < 0x10000) {
+                _reportInvalidUTF8("overlong 4-byte encoding of 0x"+Integer.toHexString(ch), isName);
+            }
+            if (ch > Character.MAX_CODE_POINT) {
+                _reportInvalidUTF8("code point 0x"+Integer.toHexString(ch)+" beyond U+10FFFF",
+                        isName);
             }
         }
-        _reportError("Invalid UTF-8: "+problem);
     }
 
-    private void _reportInvalidByteInText(int b) throws JsonParseException {
-        _reportError(String.format("Invalid byte 0x%02X in Unicode text block", b & 0xFF));
+    private void _reportInvalidUTF8(String problem, boolean isName) throws JsonParseException {
+        _reportError(isName ? ("Invalid UTF-8 in Object property name: "+problem)
+                : ("Invalid UTF-8: "+problem));
     }
 
-    private void _reportInvalidOther(int mask) throws JsonParseException {
-        _reportError("Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask));
+    // `code` is number of continuation bytes expected (1 - 3)
+    private void _reportTruncatedUTF8(int code, boolean isName) throws JsonParseException {
+        _reportError(String.format("Malformed %d-byte UTF-8 character at the end of Unicode text block%s",
+                code+1, isName ? " (Object property name)" : ""));
     }
 
-    private void _reportInvalidOther(int mask, int ptr) throws JsonParseException {
-        _inputPtr = ptr;
-        _reportInvalidOther(mask);
+    private void _reportInvalidByteInText(int b, boolean isName) throws JsonParseException {
+        _reportError(String.format("Invalid byte 0x%02X in Unicode text block%s",
+                b & 0xFF, isName ? " (Object property name)" : ""));
+    }
+
+    private void _reportInvalidOther(int mask, boolean isName) throws JsonParseException {
+        _reportError("Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask)
+                +(isName ? " in Object property name" : ""));
     }
 
     /*
@@ -1116,7 +1132,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
 
     @Override
     public String decodeMapKey() throws IOException {
-        decodeString();
+        _decodeString(true);
         return _textBuffer.contentsAsString();
     }
 
