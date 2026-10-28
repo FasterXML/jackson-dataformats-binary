@@ -76,6 +76,9 @@ Active maintainers:
 #881: (protobuf) Known field after a skipped unknown field gets wrong wire type,
   state or token location
  (fix by @cowtowncoder, w/ Claude code)
+#888: (cbor, smile) `nextFieldName(SerializableString)` matches against JSON-escaped
+  name bytes (`asQuotedUTF8()`)
+ (fix by @cowtowncoder, w/ Claude code)
 
 2.22.4 (17-Oct-2026)
 
@@ -161,6 +164,9 @@ No changes since 2.21
 
 #881: (protobuf) Known field after a skipped unknown field gets wrong wire type,
   state or token location
+ (fix by @cowtowncoder, w/ Claude code)
+#888: (cbor, smile) `nextFieldName(SerializableString)` matches against JSON-escaped
+  name bytes (`asQuotedUTF8()`)
  (fix by @cowtowncoder, w/ Claude code)
 
 2.21.8 (17-Oct-2026)
