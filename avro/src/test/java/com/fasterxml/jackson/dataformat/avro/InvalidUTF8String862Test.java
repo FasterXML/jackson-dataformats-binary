@@ -38,8 +38,8 @@ public class InvalidUTF8String862Test extends AvroTestBase
 
     private final static String[] EXPECTED_MSG = {
         // 0xC0/0xC1 only produce overlong forms: invalid as lead bytes
-        "Invalid byte 0xC0 in Unicode text block",
-        "Invalid byte 0xC1 in Unicode text block",
+        "unexpected byte 0xc0",
+        "unexpected byte 0xc1",
         "overlong 3-byte encoding of 0x2f",
         "overlong 3-byte encoding of 0x7ff",
         "overlong 4-byte encoding of 0x2f",
@@ -48,10 +48,10 @@ public class InvalidUTF8String862Test extends AvroTestBase
         "Illegal surrogate character 0xdfff",
         "code point 0x110000 beyond U+10FFFF",
         // 0xF5 - 0xF7 only produce > U+10FFFF: invalid as lead bytes
-        "Invalid byte 0xF5 in Unicode text block",
-        "Invalid UTF-8 middle byte 0x41",
-        "Invalid UTF-8 middle byte 0x41",
-        "Invalid UTF-8 middle byte 0x41",
+        "unexpected byte 0xf5",
+        "bad continuation byte 0x41",
+        "bad continuation byte 0x41",
+        "bad continuation byte 0x41",
     };
 
     private final static String[] VALID = {
@@ -99,7 +99,7 @@ public class InvalidUTF8String862Test extends AvroTestBase
             for (int b : new int[] { 0x80, 0xBF, 0xF8, 0xFF }) {
                 byte[] doc = valueDoc(payload(pad, new int[] { b }));
                 _verifyFails(doc, false,
-                        String.format("Invalid byte 0x%02X in Unicode text block", b), pad);
+                        "unexpected byte 0x"+Integer.toHexString(b), pad);
             }
         }
     }
@@ -116,7 +116,7 @@ public class InvalidUTF8String862Test extends AvroTestBase
                 // drop the trailing 'b' so sequence is truncated by end of text
                 byte[] doc = valueDoc(Arrays.copyOf(text, text.length - 1));
                 final int expLen = lead.length + 1;
-                _verifyFails(doc, false, "Malformed "+expLen+"-byte UTF-8 character", pad);
+                _verifyFails(doc, false, "truncated "+expLen+"-byte sequence", pad);
             }
         }
     }
