@@ -679,9 +679,4 @@ public abstract class NonBlockingParserBase
         throw _constructReadException("Invalid shared text value reference %d; only got %s names in buffer (invalid content)",
                index, _seenStringValueCount);
     }
-
-    protected void _reportInvalidOther(int mask, int ptr) throws StreamReadException {
-        _inputPtr = ptr;
-        throw _constructReadException("Invalid UTF-8 middle byte 0x"+Integer.toHexString(mask));
-    }
 }

@@ -42,7 +42,8 @@ public class SmileFuzz32654ShortUnicodeTest extends BaseTestForSmile
                 String text = p.getString();
                 fail("Should have failed, instead decoded String of "+text.length()+" chars");
             } catch (StreamReadException e) {
-                verifyException(e, "Invalid byte 0xB4 in short Unicode text");
+                // [dataformats-binary#861]: continuation bytes now validated, so fails earlier
+                verifyException(e, "Invalid UTF-8 middle byte 0x2a");
             }
         }
     }
