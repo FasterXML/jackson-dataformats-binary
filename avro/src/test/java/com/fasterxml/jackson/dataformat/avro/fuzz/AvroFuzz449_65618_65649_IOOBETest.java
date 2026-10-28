@@ -42,12 +42,14 @@ public class AvroFuzz449_65618_65649_IOOBETest extends AvroTestBase
             (byte) 0, (byte) 8, (byte) 3, (byte) 3, (byte) 3,
             (byte) 122, (byte) 3, (byte) -24
         };
-        testFuzzIOOBE(doc, "Malformed 2-byte UTF-8 character at the end of");
+        // [dataformats-binary#862]: 0xE8 is lead byte of 3-byte sequence
+        testFuzzIOOBE(doc, "Invalid UTF-8: truncated 3-byte sequence");
     }
 
     @Test
     public void testFuzz65649_IOOBE() throws Exception {
         final byte[] doc = AvroFuzzTestUtil.readResource("/data/fuzz-65649.avro");
-        testFuzzIOOBE(doc, "Invalid UTF-8 start byte 0x80");
+        // [dataformats-binary#862]: same message for short and long text
+        testFuzzIOOBE(doc, "Invalid UTF-8: unexpected byte 0x80");
     }
 }
