@@ -1323,7 +1323,9 @@ public class NonBlockingByteArrayParser
         if ((e & 0xC0) != 0x080) {
             _reportInvalidOther(e & 0xFF, _inputPtr);
         }
-        return (c << 6) | (e & 0x3F);
+        c = (c << 6) | (e & 0x3F);
+        _verifyUTF8_3(c, false);
+        return c;
     }
 
     // @return Character value <b>minus 0x10000</c>; this so that caller
@@ -1341,7 +1343,9 @@ public class NonBlockingByteArrayParser
         if ((f & 0xC0) != 0x080) {
             _reportInvalidOther(f & 0xFF, _inputPtr);
         }
-        return ((c << 6) | (f & 0x3F)) - 0x10000;
+        c = (c << 6) | (f & 0x3F);
+        _verifyUTF8_4(c, false);
+        return c - 0x10000;
     }
 
     /*
@@ -1810,6 +1814,8 @@ public class NonBlockingByteArrayParser
         int outPtr = 0;
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         final int[] codes = SmileConstants.sUtf8UnitLengths;
+        // may be decoding from copy buffer, offsets of which are not input offsets
+        final boolean inInputBuffer = (inBuf == _inputBuffer);
         for (final int end = inPtr + len; inPtr < end; ) {
             int i = inBuf[inPtr++] & 0xFF;
             int code = codes[i];
@@ -1824,20 +1830,19 @@ public class NonBlockingByteArrayParser
                     _reportTruncatedUTF8InString(len, firstCharOffset, i, code);
                 }
                 // trickiest one, need surrogate handling
+                // [dataformats-binary#861]: validate continuation bytes, code point
                 switch (code) {
                 case 1:
-                    i = ((i & 0x1F) << 6) | (inBuf[inPtr++] & 0x3F);
+                    i = _decodeUTF8InBuffer2(inBuf, inPtr, i, inInputBuffer, isName);
+                    ++inPtr;
                     break;
                 case 2:
-                    i = ((i & 0x0F) << 12)
-                        | ((inBuf[inPtr++] & 0x3F) << 6)
-                        | (inBuf[inPtr++] & 0x3F);
+                    i = _decodeUTF8InBuffer3(inBuf, inPtr, i, inInputBuffer, isName);
+                    inPtr += 2;
                     break;
                 case 3:
-                    i = ((i & 0x07) << 18)
-                    | ((inBuf[inPtr++] & 0x3F) << 12)
-                    | ((inBuf[inPtr++] & 0x3F) << 6)
-                    | (inBuf[inPtr++] & 0x3F);
+                    i = _decodeUTF8InBuffer4(inBuf, inPtr, i, inInputBuffer, isName);
+                    inPtr += 3;
                     // note: this is the codepoint value; need to split, too
                     i -= 0x10000;
                     outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
@@ -1867,6 +1872,8 @@ public class NonBlockingByteArrayParser
         // since we only check expansion for multi-byte chars, there must be
         // enough room for remaining bytes as all-ASCII
         int estSlack = outBuf.length - len - 8;
+        // may be decoding from copy buffer, offsets of which are not input offsets
+        final boolean inInputBuffer = (inBuf == _inputBuffer);
 
         for (final int end = inPtr + len; inPtr < end; ) {
             int i = inBuf[inPtr++] & 0xFF;
@@ -1877,20 +1884,19 @@ public class NonBlockingByteArrayParser
                     _reportInvalidEOF(" in long field name", JsonToken.FIELD_NAME);
                 }
                 // trickiest one, need surrogate handling
+                // [dataformats-binary#861]: validate continuation bytes, code point
                 switch (code) {
                 case 1:
-                    i = ((i & 0x1F) << 6) | (inBuf[inPtr++] & 0x3F);
+                    i = _decodeUTF8InBuffer2(inBuf, inPtr, i, inInputBuffer, true);
+                    ++inPtr;
                     break;
                 case 2:
-                    i = ((i & 0x0F) << 12)
-                        | ((inBuf[inPtr++] & 0x3F) << 6)
-                        | (inBuf[inPtr++] & 0x3F);
+                    i = _decodeUTF8InBuffer3(inBuf, inPtr, i, inInputBuffer, true);
+                    inPtr += 2;
                     break;
                 case 3:
-                    i = ((i & 0x07) << 18)
-                    | ((inBuf[inPtr++] & 0x3F) << 12)
-                    | ((inBuf[inPtr++] & 0x3F) << 6)
-                    | (inBuf[inPtr++] & 0x3F);
+                    i = _decodeUTF8InBuffer4(inBuf, inPtr, i, inInputBuffer, true);
+                    inPtr += 3;
                     // note: this is the codepoint value; need to split, too
                     i -= 0x10000;
                     outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
