@@ -1353,14 +1353,14 @@ public class ProtobufParser extends ParserMinimalBase
         }
         // Compare against remaining input: `_inputPtr + len` may overflow
         if (len <= (_inputEnd - _inputPtr)) {
-            return _finishShortText(len);
+            return _finishShortText(len, true);
         }
         if (len >= _inputBuffer.length) {
-            _finishLongText(len);
+            _finishLongText(len, true);
             return _textBuffer.contentsAsString();
         }
         _loadToHaveAtLeast(len);
-        return _finishShortText(len);
+        return _finishShortText(len, true);
     }
 
     /**
@@ -1650,7 +1650,7 @@ public class ProtobufParser extends ParserMinimalBase
         }
         // Compare against remaining input: `_inputPtr + len` may overflow
         if (len <= (_inputEnd - _inputPtr)) {
-            return _finishShortText(len);
+            return _finishShortText(len, false);
         }
         _finishToken();
         return _textBuffer.contentsAsString();
@@ -1707,7 +1707,7 @@ public class ProtobufParser extends ParserMinimalBase
                 // Compare against remaining input: `_inputPtr + len` may overflow
                 if (len <= (_inputEnd - _inputPtr)) {
                     _tokenIncomplete = false;
-                    return _finishShortText(len);
+                    return _finishShortText(len, false);
                 }
                 _finishToken();
             }
@@ -1792,7 +1792,7 @@ public class ProtobufParser extends ParserMinimalBase
                 // Compare against remaining input: `_inputPtr + len` may overflow
                 if (len <= (_inputEnd - _inputPtr)) {
                     _tokenIncomplete = false;
-                    return _finishShortText(len);
+                    return _finishShortText(len, false);
                 }
                 _finishToken();
             }
@@ -1832,7 +1832,7 @@ public class ProtobufParser extends ParserMinimalBase
                 // Compare against remaining input: `_inputPtr + len` may overflow
                 if (len <= (_inputEnd - _inputPtr)) {
                     _tokenIncomplete = false;
-                    _finishShortText(len);
+                    _finishShortText(len, false);
                 } else {
                     _finishToken();
                 }
@@ -2273,13 +2273,13 @@ public class ProtobufParser extends ParserMinimalBase
                 // or if not, could we read?
                 if (len >= _inputBuffer.length) {
                     // If not enough space, need different handling
-                    _finishLongText(len);
+                    _finishLongText(len, false);
                     return;
                 }
                 _loadToHaveAtLeast(len);
             }
             // offline for better optimization
-            _finishShortText(len);
+            _finishShortText(len, false);
             return;
         }
         if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT) {
@@ -2334,7 +2334,7 @@ public class ProtobufParser extends ParserMinimalBase
         }
     }
 
-    private final String _finishShortText(int len) throws IOException
+    private final String _finishShortText(int len, boolean isName) throws IOException
     {
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         if (outBuf.length < len) { // one minor complication
@@ -2342,16 +2342,17 @@ public class ProtobufParser extends ParserMinimalBase
         }
         int outPtr = 0;
         int inPtr = _inputPtr;
+        final int end = inPtr + len;
+        // [dataformats-binary#863]: move past String first, so that parsing
+        //   continues with the following field even if decoding fails
+        _inputPtr = end;
         final byte[] inputBuf = _inputBuffer;
 
         // Let's actually do a tight loop for ASCII first:
-        final int end = inPtr + len;
-
         int i;
         while ((i = inputBuf[inPtr]) >= 0) {
             outBuf[outPtr++] = (char) i;
             if (++inPtr == end) {
-                _inputPtr = end;
                 return _textBuffer.setCurrentAndReturn(outPtr);
             }
         }
@@ -2367,53 +2368,53 @@ public class ProtobufParser extends ParserMinimalBase
             case 1:
                 {
                     if (inPtr >= end) {
-                        _reportTruncatedUTF8(2, inPtr);
+                        _reportTruncatedUTF8(2, isName, inPtr, end);
                     }
                     final int d = inputBuf[inPtr++];
                     if ((d & 0xC0) != 0x080) {
-                        _reportInvalidOther(d & 0xFF, inPtr);
+                        _reportInvalidContinuation(d, isName, inPtr, end);
                     }
                     i = ((i & 0x1F) << 6) | (d & 0x3F);
-                    _verifyUTF8(i, 2, inPtr);
+                    _verifyUTF8(i, 2, isName, inPtr, end);
                 }
                 break;
             case 2:
                 {
                     if ((inPtr + 2) > end) {
-                        _reportTruncatedUTF8(3, inPtr);
+                        _reportTruncatedUTF8(3, isName, inPtr, end);
                     }
                     final int d1 = inputBuf[inPtr++];
                     if ((d1 & 0xC0) != 0x080) {
-                        _reportInvalidOther(d1 & 0xFF, inPtr);
+                        _reportInvalidContinuation(d1, isName, inPtr, end);
                     }
                     final int d2 = inputBuf[inPtr++];
                     if ((d2 & 0xC0) != 0x080) {
-                        _reportInvalidOther(d2 & 0xFF, inPtr);
+                        _reportInvalidContinuation(d2, isName, inPtr, end);
                     }
                     i = ((i & 0x0F) << 12) | ((d1 & 0x3F) << 6) | (d2 & 0x3F);
-                    _verifyUTF8(i, 3, inPtr);
+                    _verifyUTF8(i, 3, isName, inPtr, end);
                 }
                 break;
             case 3:
                 {
                     if ((inPtr + 3) > end) {
-                        _reportTruncatedUTF8(4, inPtr);
+                        _reportTruncatedUTF8(4, isName, inPtr, end);
                     }
                     final int d1 = inputBuf[inPtr++];
                     if ((d1 & 0xC0) != 0x080) {
-                        _reportInvalidOther(d1 & 0xFF, inPtr);
+                        _reportInvalidContinuation(d1, isName, inPtr, end);
                     }
                     final int d2 = inputBuf[inPtr++];
                     if ((d2 & 0xC0) != 0x080) {
-                        _reportInvalidOther(d2 & 0xFF, inPtr);
+                        _reportInvalidContinuation(d2, isName, inPtr, end);
                     }
                     final int d3 = inputBuf[inPtr++];
                     if ((d3 & 0xC0) != 0x080) {
-                        _reportInvalidOther(d3 & 0xFF, inPtr);
+                        _reportInvalidContinuation(d3, isName, inPtr, end);
                     }
                     i = ((i & 0x07) << 18) | ((d1 & 0x3F) << 12)
                             | ((d2 & 0x3F) << 6) | (d3 & 0x3F);
-                    _verifyUTF8(i, 4, inPtr);
+                    _verifyUTF8(i, 4, isName, inPtr, end);
                 }
                 // note: this is the codepoint value; need to split, too
                 i -= 0x10000;
@@ -2421,15 +2422,14 @@ public class ProtobufParser extends ParserMinimalBase
                 i = 0xDC00 | (i & 0x3FF);
                 break;
             default: // invalid
-                _reportInvalidInitial(i, inPtr);
+                _reportInvalidInitial(i, isName, inPtr, end);
             }
             outBuf[outPtr++] = (char) i;
         } while (inPtr < end);
-        _inputPtr = end;
         return _textBuffer.setCurrentAndReturn(outPtr);
     }
 
-    private final void _finishLongText(final int expLen) throws IOException
+    private final void _finishLongText(final int expLen, boolean isName) throws IOException
     {
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         int outPtr = 0;
@@ -2450,7 +2450,7 @@ public class ProtobufParser extends ParserMinimalBase
                 continue;
             }
             if ((len -= code) < 0) {
-                _reportTruncatedUTF8(code+1, _inputPtr);
+                _reportTruncatedUTF8(code+1, isName, _inputPtr, _inputPtr);
             }
 
             switch (code) {
@@ -2460,29 +2460,29 @@ public class ProtobufParser extends ParserMinimalBase
                 {
                     int d = _nextByte();
                     if ((d & 0xC0) != 0x080) {
-                        _reportInvalidOther(d & 0xFF, _inputPtr);
+                        _reportInvalidContinuation(d, isName, _inputPtr, _inputPtr);
                     }
                     c = ((c & 0x1F) << 6) | (d & 0x3F);
-                    _verifyUTF8(c, 2, _inputPtr);
+                    _verifyUTF8(c, 2, isName, _inputPtr, _inputPtr);
                 }
                 break;
             case 2: // 3-byte UTF
-                c = _decodeUTF8_3(c);
+                c = _decodeUTF8_3(c, isName);
                 break;
             case 3: // 4-byte UTF
-                c = _decodeUTF8_4(c);
-                // Let's add first part right away:
-                outBuf[outPtr++] = (char) (0xD800 | (c >> 10));
-                if (outPtr >= outBuf.length) {
+                c = _decodeUTF8_4(c, isName);
+                // [dataformats-binary#863]: ensure room before adding first part
+                if (outPtr >= outEnd) {
                     outBuf = _textBuffer.finishCurrentSegment();
                     outPtr = 0;
                     outEnd = outBuf.length;
                 }
+                outBuf[outPtr++] = (char) (0xD800 | (c >> 10));
                 c = 0xDC00 | (c & 0x3FF);
                 // And let the other char output down below
                 break;
             default:
-                _reportInvalidInitial(c, _inputPtr);
+                _reportInvalidInitial(c, isName, _inputPtr, _inputPtr);
             }
             // Need more room?
             if (outPtr >= outEnd) {
@@ -2496,20 +2496,20 @@ public class ProtobufParser extends ParserMinimalBase
         _textBuffer.setCurrentLength(outPtr);
     }
 
-    private final int _decodeUTF8_3(int c1) throws IOException
+    private final int _decodeUTF8_3(int c1, boolean isName) throws IOException
     {
         c1 &= 0x0F;
         int d = _nextByte();
         if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
+            _reportInvalidContinuation(d, isName, _inputPtr, _inputPtr);
         }
         int c = (c1 << 6) | (d & 0x3F);
         d = _nextByte();
         if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
+            _reportInvalidContinuation(d, isName, _inputPtr, _inputPtr);
         }
         c = (c << 6) | (d & 0x3F);
-        _verifyUTF8(c, 3, _inputPtr);
+        _verifyUTF8(c, 3, isName, _inputPtr, _inputPtr);
         return c;
     }
 
@@ -2517,24 +2517,24 @@ public class ProtobufParser extends ParserMinimalBase
      * @return Character value <b>minus 0x10000</c>; this so that caller
      *    can readily expand it to actual surrogates
      */
-    private final int _decodeUTF8_4(int c) throws IOException
+    private final int _decodeUTF8_4(int c, boolean isName) throws IOException
     {
         int d = _nextByte();
         if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
+            _reportInvalidContinuation(d, isName, _inputPtr, _inputPtr);
         }
         c = ((c & 0x07) << 6) | (d & 0x3F);
         d = _nextByte();
         if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
+            _reportInvalidContinuation(d, isName, _inputPtr, _inputPtr);
         }
         c = (c << 6) | (d & 0x3F);
         d = _nextByte();
         if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
+            _reportInvalidContinuation(d, isName, _inputPtr, _inputPtr);
         }
         c = (c << 6) | (d & 0x3F);
-        _verifyUTF8(c, 4, _inputPtr);
+        _verifyUTF8(c, 4, isName, _inputPtr, _inputPtr);
         return c - 0x10000;
     }
 
@@ -3036,16 +3036,10 @@ public class ProtobufParser extends ParserMinimalBase
         _reportError("Too long tag VLong: tenth byte 0x%x", fifth);
     }
 
-    private void _reportTruncatedUTF8(int byteCount, int ptr) throws JsonParseException {
-        _inputPtr = ptr;
-        _reportError(String.format(
-                "Malformed %d-byte UTF-8 character at the end of Unicode text block", byteCount));
-    }
-
     // [dataformats-binary#863]: Decoded code point must use the shortest form,
     //   must not be a surrogate and must be at most U+10FFFF (RFC 3629).
-    //   `ptr` is input position to report on failure
-    private void _verifyUTF8(int ch, int byteCount, int ptr) throws JsonParseException
+    private void _verifyUTF8(int ch, int byteCount, boolean isName,
+            int errorPtr, int resumePtr) throws JsonParseException
     {
         final String problem;
         if (byteCount == 2) {
@@ -3058,7 +3052,7 @@ public class ProtobufParser extends ParserMinimalBase
                 if (ch < 0xD800 || ch > 0xDFFF) {
                     return;
                 }
-                problem = "illegal surrogate character 0x"+Integer.toHexString(ch);
+                problem = "Illegal surrogate character 0x"+Integer.toHexString(ch);
             } else {
                 problem = "overlong 3-byte encoding of 0x"+Integer.toHexString(ch);
             }
@@ -3072,21 +3066,38 @@ public class ProtobufParser extends ParserMinimalBase
                 problem = "overlong 4-byte encoding of 0x"+Integer.toHexString(ch);
             }
         }
-        _inputPtr = ptr;
-        _reportError("Invalid UTF-8: "+problem);
+        _reportInvalidUTF8(problem, isName, errorPtr, resumePtr);
     }
 
-    private void _reportInvalidInitial(int mask, int ptr) throws JsonParseException {
-        _inputPtr = ptr;
-        _reportError("Invalid UTF-8 start byte 0x%x", mask);
+    private void _reportTruncatedUTF8(int byteCount, boolean isName,
+            int errorPtr, int resumePtr) throws JsonParseException {
+        _reportInvalidUTF8("truncated "+byteCount+"-byte sequence at end of text",
+                isName, errorPtr, resumePtr);
     }
 
-    private void _reportInvalidOther(int mask) throws JsonParseException {
-        _reportError("Invalid UTF-8 middle byte 0x%x", mask);
+    private void _reportInvalidInitial(int b, boolean isName,
+            int errorPtr, int resumePtr) throws JsonParseException {
+        _reportInvalidUTF8("unexpected byte 0x"+Integer.toHexString(b & 0xFF),
+                isName, errorPtr, resumePtr);
     }
 
-    private void _reportInvalidOther(int mask, int ptr) throws JsonParseException {
-        _inputPtr = ptr;
-        _reportInvalidOther(mask);
+    private void _reportInvalidContinuation(int b, boolean isName,
+            int errorPtr, int resumePtr) throws JsonParseException {
+        _reportInvalidUTF8("bad continuation byte 0x"+Integer.toHexString(b & 0xFF),
+                isName, errorPtr, resumePtr);
+    }
+
+    // [dataformats-binary#863]: `errorPtr` is input position to report;
+    //   `resumePtr` position to leave parser at (to allow continuing after
+    //   failure, when known)
+    private void _reportInvalidUTF8(String problem, boolean isName,
+            int errorPtr, int resumePtr) throws JsonParseException
+    {
+        _inputPtr = errorPtr;
+        JsonParseException e = _constructError(isName
+                ? ("Invalid UTF-8 in Object property name: "+problem)
+                : ("Invalid UTF-8: "+problem));
+        _inputPtr = resumePtr;
+        throw e;
     }
 }

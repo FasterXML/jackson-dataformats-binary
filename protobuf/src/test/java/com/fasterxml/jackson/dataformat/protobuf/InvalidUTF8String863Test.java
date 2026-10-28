@@ -35,6 +35,15 @@ public class InvalidUTF8String863Test extends ProtobufTestBase
         { 0xC3, 0x41 }, // bad continuation byte
         { 0xE2, 0x82, 0x41 }, // bad last continuation byte
         { 0xF0, 0x9F, 0x98, 0x41 }, // bad last continuation byte
+        { 0xE2, 0x41, 0x82 }, // bad first continuation byte
+        { 0xE2, 0xC3, 0x82 }, // lead byte instead of continuation byte
+        { 0xF0, 0xF0, 0x98, 0x80 }, // lead byte instead of continuation byte
+    };
+
+    // Offset (from start of sequence) at which problem is detected:
+    // for continuation bytes, right after bad byte; otherwise after last byte
+    private final static int[] EXPECTED_OFFSET = {
+        2, 2, 3, 3, 4, 4, 3, 3, 4, 4, 2, 3, 4, 2, 2, 2
     };
 
     private final static String[] EXPECTED_MSG = {
@@ -44,13 +53,16 @@ public class InvalidUTF8String863Test extends ProtobufTestBase
         "overlong 3-byte encoding of 0x7ff",
         "overlong 4-byte encoding of 0x2f",
         "overlong 4-byte encoding of 0xffff",
-        "illegal surrogate character 0xd800",
-        "illegal surrogate character 0xdfff",
+        "Illegal surrogate character 0xd800",
+        "Illegal surrogate character 0xdfff",
         "code point 0x110000 beyond U+10FFFF",
         "code point 0x140000 beyond U+10FFFF",
-        "Invalid UTF-8 middle byte 0x41",
-        "Invalid UTF-8 middle byte 0x41",
-        "Invalid UTF-8 middle byte 0x41",
+        "bad continuation byte 0x41",
+        "bad continuation byte 0x41",
+        "bad continuation byte 0x41",
+        "bad continuation byte 0x41",
+        "bad continuation byte 0xc3",
+        "bad continuation byte 0xf0",
     };
 
     private final static String[] VALID = {
@@ -62,10 +74,13 @@ public class InvalidUTF8String863Test extends ProtobufTestBase
     private final ProtobufMapper MAPPER = newObjectMapper();
 
     private final ProtobufSchema SCHEMA;
+    private final ProtobufSchema MAP_SCHEMA;
     {
         try {
             SCHEMA = ProtobufSchemaLoader.std.parse(
                     "message M { optional string s = 1; optional int32 i = 2; }");
+            MAP_SCHEMA = ProtobufSchemaLoader.std.parse(
+                    "syntax = \"proto3\";\nmessage M { map<string, int32> m = 1; }\n", "M");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -76,9 +91,8 @@ public class InvalidUTF8String863Test extends ProtobufTestBase
     {
         for (int pad : PADDINGS) {
             for (int i = 0; i < INVALID.length; ++i) {
-                // all problems detected at the last byte of the sequence
                 _verifyFails(payload(pad, INVALID[i]), EXPECTED_MSG[i], pad,
-                        pad + INVALID[i].length);
+                        pad + EXPECTED_OFFSET[i]);
             }
         }
     }
@@ -91,11 +105,11 @@ public class InvalidUTF8String863Test extends ProtobufTestBase
         for (int pad : PADDINGS) {
             // problem detected at the lead byte
             _verifyFails(text(pad, new int[] { 0xC3 }),
-                    "Malformed 2-byte UTF-8 character at the end of Unicode text block", pad, pad + 1);
+                    "truncated 2-byte sequence at end of text", pad, pad + 1);
             _verifyFails(text(pad, new int[] { 0xE2, 0x82 }),
-                    "Malformed 3-byte UTF-8 character at the end of Unicode text block", pad, pad + 1);
+                    "truncated 3-byte sequence at end of text", pad, pad + 1);
             _verifyFails(text(pad, new int[] { 0xF0, 0x9F, 0x98 }),
-                    "Malformed 4-byte UTF-8 character at the end of Unicode text block", pad, pad + 1);
+                    "truncated 4-byte sequence at end of text", pad, pad + 1);
         }
     }
 
@@ -104,9 +118,9 @@ public class InvalidUTF8String863Test extends ProtobufTestBase
     {
         for (int pad : PADDINGS) {
             _verifyFails(payload(pad, new int[] { 0x80 }),
-                    "Invalid UTF-8 start byte 0x80", pad, pad + 1);
+                    "unexpected byte 0x80", pad, pad + 1);
             _verifyFails(payload(pad, new int[] { 0xF8 }),
-                    "Invalid UTF-8 start byte 0xf8", pad, pad + 1);
+                    "unexpected byte 0xf8", pad, pad + 1);
         }
     }
 
@@ -119,6 +133,89 @@ public class InvalidUTF8String863Test extends ProtobufTestBase
                 byte[] doc = doc(payload(pad, str.getBytes("UTF-8")));
                 assertEquals(exp, _read(MAPPER.createParser(doc)));
                 assertEquals(exp, _read(MAPPER.createParser(new ByteArrayInputStream(doc))));
+            }
+        }
+    }
+
+    // `string` map keys are decoded via separate code path; problem should be
+    // reported as being in property name
+    @Test
+    public void testInvalidMapKey() throws Exception
+    {
+        for (int pad : PADDINGS) {
+            for (int i = 0; i < INVALID.length; ++i) {
+                final byte[] doc = mapDoc(payload(pad, INVALID[i]));
+                for (int mode = 0; mode < 2; ++mode) {
+                    try (JsonParser p = (mode == 0) ? MAPPER.createParser(doc)
+                            : MAPPER.createParser(new ByteArrayInputStream(doc))) {
+                        p.setSchema(MAP_SCHEMA);
+                        assertToken(JsonToken.START_OBJECT, p.nextToken());
+                        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+                        assertToken(JsonToken.START_OBJECT, p.nextToken());
+                        p.nextToken();
+                        fail("Should have failed (padding "+pad+", mode "+mode+"), did not, got: "
+                                +p.currentName().substring(pad));
+                    } catch (StreamReadException e) {
+                        verifyException(e, "Invalid UTF-8 in Object property name: "
+                                +EXPECTED_MSG[i]);
+                    }
+                }
+            }
+        }
+    }
+
+    // Failure to decode String should leave parser after String, so that
+    // following field can still be read
+    @Test
+    public void testContinueAfterInvalidString() throws Exception
+    {
+        // (only for String values within input buffer: longer ones are decoded
+        // while reading)
+        for (int pad : new int[] { 1, 100 }) {
+            for (int i = 0; i < INVALID.length; ++i) {
+                final byte[] doc = doc(payload(pad, INVALID[i]));
+                for (int mode = 0; mode < 2; ++mode) {
+                    try (JsonParser p = (mode == 0) ? MAPPER.createParser(doc)
+                            : MAPPER.createParser(new ByteArrayInputStream(doc))) {
+                        p.setSchema(SCHEMA);
+                        assertToken(JsonToken.START_OBJECT, p.nextToken());
+                        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+                        assertToken(JsonToken.VALUE_STRING, p.nextToken());
+                        try {
+                            p.getText();
+                            fail("Should have failed");
+                        } catch (StreamReadException e) {
+                            verifyException(e, EXPECTED_MSG[i]);
+                        }
+                        assertToken(JsonToken.FIELD_NAME, p.nextToken());
+                        assertEquals("i", p.currentName());
+                        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+                        assertEquals(1, p.getIntValue());
+                        assertToken(JsonToken.END_OBJECT, p.nextToken());
+                    }
+                }
+            }
+        }
+    }
+
+    // 4-byte character right after output segment has been filled: must not
+    // write past end of segment (long text, decoded while reading)
+    @Test
+    public void testLongTextWithSurrogatePairAtSegmentEnd() throws Exception
+    {
+        final String emoji = "\uD83D\uDE00"; // U+1F600
+        final int len = 100_000;
+        for (int prefix = 65530; prefix <= 65540; ++prefix) {
+            StringBuilder sb = new StringBuilder(pad(prefix)).append(emoji);
+            sb.append(pad(len - sb.length()));
+            final String exp = sb.toString();
+            byte[] doc = doc(exp.getBytes("UTF-8"));
+            try (JsonParser p = MAPPER.createParser(new ByteArrayInputStream(doc))) {
+                p.setSchema(SCHEMA);
+                assertToken(JsonToken.START_OBJECT, p.nextToken());
+                assertToken(JsonToken.FIELD_NAME, p.nextToken());
+                assertToken(JsonToken.VALUE_STRING, p.nextToken());
+                assertEquals(exp, p.getText(), "Prefix length "+prefix);
             }
         }
     }
@@ -216,5 +313,29 @@ public class InvalidUTF8String863Test extends ProtobufTestBase
         out.write(0x10); // field 2, wire type 0 (varint)
         out.write(0x01);
         return out.toByteArray();
+    }
+
+    // Map field 1 with single entry: `text` as key, 1 as value
+    private static byte[] mapDoc(byte[] text) {
+        ByteArrayOutputStream entry = new ByteArrayOutputStream();
+        entry.write(0x0A); // key: field 1, wire type 2
+        writeLength(entry, text.length);
+        entry.write(text, 0, text.length);
+        entry.write(0x10); // value: field 2, wire type 0
+        entry.write(0x01);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        out.write(0x0A); // map field 1, wire type 2
+        writeLength(out, entry.size());
+        byte[] b = entry.toByteArray();
+        out.write(b, 0, b.length);
+        return out.toByteArray();
+    }
+
+    private static void writeLength(ByteArrayOutputStream out, int len) {
+        while ((len & ~0x7F) != 0) {
+            out.write((len & 0x7F) | 0x80);
+            len >>>= 7;
+        }
+        out.write(len);
     }
 }
