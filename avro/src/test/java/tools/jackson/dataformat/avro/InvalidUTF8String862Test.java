@@ -72,6 +72,10 @@ public class InvalidUTF8String862Test extends AvroTestBase
     private final AvroSchema STRING_SCHEMA = parseSchema(MAPPER, aposToQuotes(
             "{'type':'record','name':'R','fields':[{'name':'s','type':'string'}]}"));
 
+    private final AvroSchema STRING_INT_SCHEMA = parseSchema(MAPPER, aposToQuotes(
+            "{'type':'record','name':'R','fields':[{'name':'s','type':'string'},"
+            +"{'name':'i','type':'int'}]}"));
+
     private final AvroSchema MAP_SCHEMA = parseSchema(MAPPER, aposToQuotes(
             "{'type':'map','values':'int'}"));
 
@@ -124,6 +128,43 @@ public class InvalidUTF8String862Test extends AvroTestBase
                 byte[] doc = valueDoc(Arrays.copyOf(text, text.length - 1));
                 final int expLen = lead.length + 1;
                 _verifyFails(doc, false, "truncated "+expLen+"-byte sequence", pad);
+            }
+        }
+    }
+
+    // Failure to decode String should leave parser after String, so that
+    // following field can still be read
+    @Test
+    public void testContinueAfterInvalidString() throws Exception
+    {
+        // (only for String values within input buffer: longer ones are decoded
+        // while reading)
+        for (int pad : new int[] { 1, 100 }) {
+            for (int i = 0; i < INVALID.length; ++i) {
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                byte[] b = valueDoc(payload(pad, INVALID[i]));
+                out.write(b, 0, b.length);
+                _writeLong(out, 1); // int field `i`
+                final byte[] doc = out.toByteArray();
+                for (int mode = 0; mode < 2; ++mode) {
+                    ObjectReader r = MAPPER.reader(STRING_INT_SCHEMA);
+                    try (JsonParser p = (mode == 0) ? r.createParser(doc)
+                            : r.createParser(new ByteArrayInputStream(doc))) {
+                        assertToken(JsonToken.START_OBJECT, p.nextToken());
+                        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
+                        try {
+                            p.nextToken();
+                            fail("Should have failed");
+                        } catch (StreamReadException e) {
+                            verifyException(e, EXPECTED_MSG[i]);
+                        }
+                        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
+                        assertEquals("i", p.currentName());
+                        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+                        assertEquals(1, p.getIntValue());
+                        assertToken(JsonToken.END_OBJECT, p.nextToken());
+                    }
+                }
             }
         }
     }
