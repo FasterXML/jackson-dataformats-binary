@@ -1581,17 +1581,14 @@ public class CBORParser extends ParserBase
         if ((_inputEnd - _inputPtr) < len) {
             _loadToHaveAtLeast(len);
         }
-        // [dataformats-binary#876]: quads are not padded, so a leading NUL byte
-        // in the last quad would be indistinguishable from a shorter name:
-        // force decoding (and match by String) instead
-        if (_inputBuffer[_inputPtr + ((len - 1) & ~3)] == 0) {
-            return PropertyNameMatcher.MATCH_UNKNOWN_NAME;
-        }
+        // [dataformats-binary#887]: last quad padded (same as with symbol table
+        // lookups), as expected by `BinaryNameMatcher` constructed by `CBORFactory`;
+        // otherwise leading NUL bytes of last quad would be lost
         // First: maybe we already have this name decoded?
         if (len < 5) {
             int inPtr = _inputPtr;
             final byte[] inBuf = _inputBuffer;
-            int q = inBuf[inPtr] & 0xFF;
+            int q = _padQuadForNulls(inBuf[inPtr]);
             if (len > 1) {
                 q = (q << 8) + (inBuf[++inPtr] & 0xFF);
                 if (len > 2) {
@@ -1612,7 +1609,7 @@ public class CBORParser extends ParserBase
         inPtr += 4;
 
         if (len < 9) {
-            int q2 = (inBuf[inPtr++] & 0xFF);
+            int q2 = _padQuadForNulls(inBuf[inPtr++]);
             int left = len - 5;
             if (left > 0) {
                 q2 = (q2 << 8) + (inBuf[inPtr++] & 0xFF);
@@ -1630,7 +1627,7 @@ public class CBORParser extends ParserBase
         inPtr += 4;
 
         if (len < 13) {
-            int q3 = (inBuf[inPtr++] & 0xFF);
+            int q3 = _padQuadForNulls(inBuf[inPtr++]);
             int left = len - 9;
             if (left > 0) {
                 q3 = (q3 << 8) + (inBuf[inPtr++] & 0xFF);
@@ -1673,8 +1670,14 @@ public class CBORParser extends ParserBase
             inPtr += 4;
         } while ((len -= 4) > 3);
         // and then leftovers
-        if (len > 0) {
-            int q = inBuf[inPtr] & 0xFF;
+        if (len == 0) {
+            // [dataformats-binary#868]: full last quad starting with 0xFF would match
+            //   padded last quad of a shorter name
+            if ((_quadBuffer[offset-1] >>> 24) == 0xFF) {
+                throw _invalidNameByte(0xFF);
+            }
+        } else {
+            int q = _padQuadForNulls(inBuf[inPtr]);
             if (len > 1) {
                 q = (q << 8) + (inBuf[++inPtr] & 0xFF);
                 if (len > 2) {

@@ -299,14 +299,16 @@ public class SmileFactory
     /**********************************************************************
      */
 
+    // [dataformats-binary#887]: parser pads last partial quad (with 0xFF bytes) so that
+    // names with leading NUL bytes in it do not match shorter names
     @Override
     public PropertyNameMatcher constructNameMatcher(List<Named> matches, boolean alreadyInterned) {
-        return BinaryNameMatcher.constructFrom(matches, alreadyInterned);
+        return BinaryNameMatcher.constructFrom(matches, alreadyInterned, true);
     }
 
     @Override
     public PropertyNameMatcher constructCINameMatcher(List<Named> matches, boolean alreadyInterned,
             Locale locale) {
-        return BinaryNameMatcher.constructCaseInsensitive(locale, matches, alreadyInterned);
+        return BinaryNameMatcher.constructCaseInsensitive(locale, matches, alreadyInterned, true);
     }
 }

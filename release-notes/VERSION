@@ -96,6 +96,9 @@ implementations)
 #885: (smile) Cheap validation of short ASCII property names, to prevent
   symbol table bypass
  (fix by @cowtowncoder, w/ Claude code)
+#887: (cbor, smile) Update CBOR and Smile parsers to use padding variant of
+  `BinaryNameMatcher` from jackson-core
+ (fix by @cowtowncoder, w/ Claude code)
 #888: (cbor, smile) `nextFieldName(SerializableString)` matches against JSON-escaped
   name bytes (`asQuotedUTF8()`)
  (fix by @cowtowncoder, w/ Claude code)
