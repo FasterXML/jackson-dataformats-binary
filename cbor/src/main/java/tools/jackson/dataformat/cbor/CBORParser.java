@@ -2511,44 +2511,42 @@ public class CBORParser extends ParserBase
                 }
 
                 switch (code) {
+                    // Validation per #866 (Avro): signed compares of raw bytes (continuation
+                    // bytes 0x80 - 0xBF are -128 to -65), range checks keyed on lead byte,
+                    // single cold error path that re-checks sequence for exact message
                     case 1: {
                         final int c2 = inputBuf[inPtr++];
-                        if ((c2 & 0xC0) != 0x080) {
+                        if (c2 >= -64) {
                             _reportInvalidOther(c2 & 0xFF, inPtr);
                         }
                         i = ((i & 0x1F) << 6) | (c2 & 0x3F);
                     }
                     break;
                     case 2: {
-                        final int c2 = inputBuf[inPtr++];
-                        if ((c2 & 0xC0) != 0x080) {
-                            _reportInvalidOther(c2 & 0xFF, inPtr);
+                        final int c2 = inputBuf[inPtr];
+                        final int c3 = inputBuf[inPtr+1];
+                        // 0xE0 needs 0xA0+ (else overlong), 0xED below 0xA0 (else surrogate)
+                        if ((c2 >= -64) || (c3 >= -64)
+                                || ((i == 0xE0) && (c2 < -96)) || ((i == 0xED) && (c2 >= -96))) {
+                            _reportInvalidUTF8InBuffer(inputBuf, inPtr, i, 2, false);
                         }
-                        final int c3 = inputBuf[inPtr++];
-                        if ((c3 & 0xC0) != 0x080) {
-                            _reportInvalidOther(c3 & 0xFF, inPtr);
-                        }
+                        inPtr += 2;
                         i = ((i & 0x0F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
-                        _verifyUTF8_3(i, inPtr, false);
                     }
                     break;
                     case 3: {
                         // [dataformats-binary#860]: validate continuation bytes too
-                        final int c2 = inputBuf[inPtr++];
-                        if ((c2 & 0xC0) != 0x080) {
-                            _reportInvalidOther(c2 & 0xFF, inPtr);
+                        final int c2 = inputBuf[inPtr];
+                        final int c3 = inputBuf[inPtr+1];
+                        final int c4 = inputBuf[inPtr+2];
+                        // 0xF0 needs 0x90+ (else overlong), 0xF4 below 0x90 (else > U+10FFFF)
+                        if ((c2 >= -64) || (c3 >= -64) || (c4 >= -64)
+                                || ((i == 0xF0) && (c2 < -112)) || ((i == 0xF4) && (c2 >= -112))) {
+                            _reportInvalidUTF8InBuffer(inputBuf, inPtr, i, 3, false);
                         }
-                        final int c3 = inputBuf[inPtr++];
-                        if ((c3 & 0xC0) != 0x080) {
-                            _reportInvalidOther(c3 & 0xFF, inPtr);
-                        }
-                        final int c4 = inputBuf[inPtr++];
-                        if ((c4 & 0xC0) != 0x080) {
-                            _reportInvalidOther(c4 & 0xFF, inPtr);
-                        }
+                        inPtr += 3;
                         i = ((i & 0x07) << 18) | ((c2 & 0x3F) << 12)
                             | ((c3 & 0x3F) << 6) | (c4 & 0x3F);
-                        _verifyUTF8_4(i, inPtr, false);
                         // note: this is the codepoint value; need to split, too
                         i -= 0x10000;
                         outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
@@ -3234,10 +3232,11 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
                 }
 
                 switch (code) {
+                // Validation same as in `_finishShortText()`
                 case 1:
                     {
                         final int c2 = inBuf[inPtr++];
-                        if ((c2 & 0xC0) != 0x080) {
+                        if (c2 >= -64) {
                             _reportInvalidOther(c2 & 0xFF, inPtr);
                         }
                         i = ((i & 0x1F) << 6) | (c2 & 0x3F);
@@ -3245,36 +3244,29 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
                     break;
                 case 2:
                     {
-                        final int c2 = inBuf[inPtr++];
-                        if ((c2 & 0xC0) != 0x080) {
-                            _reportInvalidOther(c2 & 0xFF, inPtr);
+                        final int c2 = inBuf[inPtr];
+                        final int c3 = inBuf[inPtr+1];
+                        if ((c2 >= -64) || (c3 >= -64)
+                                || ((i == 0xE0) && (c2 < -96)) || ((i == 0xED) && (c2 >= -96))) {
+                            _reportInvalidUTF8InBuffer(inBuf, inPtr, i, 2, true);
                         }
-                        final int c3 = inBuf[inPtr++];
-                        if ((c3 & 0xC0) != 0x080) {
-                            _reportInvalidOther(c3 & 0xFF, inPtr);
-                        }
+                        inPtr += 2;
                         i = ((i & 0x0F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
-                        _verifyUTF8_3(i, inPtr, true);
                     }
                     break;
                 case 3:
                     {
                         // [dataformats-binary#860]: validate continuation bytes too
-                        final int c2 = inBuf[inPtr++];
-                        if ((c2 & 0xC0) != 0x080) {
-                            _reportInvalidOther(c2 & 0xFF, inPtr);
+                        final int c2 = inBuf[inPtr];
+                        final int c3 = inBuf[inPtr+1];
+                        final int c4 = inBuf[inPtr+2];
+                        if ((c2 >= -64) || (c3 >= -64) || (c4 >= -64)
+                                || ((i == 0xF0) && (c2 < -112)) || ((i == 0xF4) && (c2 >= -112))) {
+                            _reportInvalidUTF8InBuffer(inBuf, inPtr, i, 3, true);
                         }
-                        final int c3 = inBuf[inPtr++];
-                        if ((c3 & 0xC0) != 0x080) {
-                            _reportInvalidOther(c3 & 0xFF, inPtr);
-                        }
-                        final int c4 = inBuf[inPtr++];
-                        if ((c4 & 0xC0) != 0x080) {
-                            _reportInvalidOther(c4 & 0xFF, inPtr);
-                        }
+                        inPtr += 3;
                         i = ((i & 0x07) << 18) | ((c2 & 0x3F) << 12)
                             | ((c3 & 0x3F) << 6) | (c4 & 0x3F);
-                        _verifyUTF8_4(i, inPtr, true);
                     }
                     // note: this is the codepoint value; need to split, too
                     i -= 0x10000;
@@ -4288,6 +4280,34 @@ expType, type, ch));
         return new StreamReadException(this, msg,
                 new TokenStreamLocation(_ioContext.contentReference(),
                         offset, -1, -1, (int) offset));
+    }
+
+    // Called when in-buffer validation of a 3- or 4-byte sequence failed: re-checks
+    // it the same way as `_finishLongText()` to report the first problem, with
+    // same message and location. `ptr` is the offset of first continuation byte.
+    // Never returns normally.
+    private void _reportInvalidUTF8InBuffer(byte[] buf, int ptr, int c, int needed,
+            boolean isName)
+        throws StreamReadException
+    {
+        // Mask lead byte: 0x0F for 3-byte, 0x07 for 4-byte
+        c &= (0x3F >> needed);
+        for (int i = 0; i < needed; ++i) {
+            final int d = buf[ptr++];
+            if ((d & 0xC0) != 0x080) {
+                _reportInvalidOther(d & 0xFF, ptr);
+            }
+            c = (c << 6) | (d & 0x3F);
+        }
+        if (needed == 2) {
+            _verifyUTF8_3(c, ptr, isName);
+        } else {
+            _verifyUTF8_4(c, ptr, isName);
+        }
+        // Should never get here: fast and slow path checks disagree
+        throw new IllegalStateException(String.format(
+"Internal error: UTF-8 sequence of %d bytes reported as invalid, but no problem found (code point 0x%x)",
+                needed+1, c));
     }
 
     // [dataformats-binary#860]: Decoded code point must use the shortest form,
