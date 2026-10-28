@@ -728,9 +728,15 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         throws IOException
     {
         _inputPtr = startPtr;
-        _finishLongString(len, isName);
-        // Should not get here, but just in case
-        _reportInvalidUTF8("malformed sequence", isName);
+        try {
+            _finishLongString(len, isName);
+            // Should not get here, but just in case
+            _reportInvalidUTF8("malformed sequence", isName);
+        } finally {
+            // Leave parser after String (as with valid content) so that
+            // parsing may continue with the next value
+            _inputPtr = startPtr + len;
+        }
     }
 
     private final void _finishLongString(int len, boolean isName) throws IOException
