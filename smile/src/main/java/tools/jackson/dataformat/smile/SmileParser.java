@@ -1886,6 +1886,7 @@ _typeAsInt);
                 if (needed < 0) { // 5- and 6-byte chars not valid chars
                     _reportInvalidInitial(ch);
                 }
+                final int lead = ch;
                 // Mask lead byte: 0x1F for 2-byte, 0x0F for 3-byte, 0x07 for 4-byte
                 ch &= (0x3F >> needed);
                 if ((ix + needed) > byteLen) {
@@ -1901,6 +1902,8 @@ _typeAsInt);
                 if ((ch2 & 0xC0) != 0x080) {
                     _reportInvalidOtherInName(ch2 & 0xFF);
                 }
+                // second byte, as raw signed byte, for range check below
+                final int second = (byte) ch2;
                 ch = (ch << 6) | (ch2 & 0x3F);
                 if (needed > 1) {
                     ch2 = quads[ix >> 2];
@@ -1926,9 +1929,9 @@ _typeAsInt);
                 // [dataformats-binary#861]: validate decoded code point
                 if (needed > 1) {
                     if (needed > 2) {
-                        _verifyUTF8_4(ch, true);
+                        _verifyUTF8_4(lead, second, ch, true);
                     } else {
-                        _verifyUTF8_3(ch, true);
+                        _verifyUTF8_3(lead, second, ch, true);
                     }
                 }
                 if (needed > 2) { // surrogate pair? once again, let's output one here, one later on
@@ -3308,7 +3311,7 @@ currentToken(), firstCh);
             _loadMoreGuaranteed();
         }
         int d = (int) _inputBuffer[_inputPtr++];
-        if ((d & 0xC0) != 0x080) {
+        if (d >= -64) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
         return ((c & 0x1F) << 6) | (d & 0x3F);
@@ -3319,38 +3322,38 @@ currentToken(), firstCh);
         if (_inputPtr >= _inputEnd) {
             _loadMoreGuaranteed();
         }
-        c1 &= 0x0F;
-        int d = (int) _inputBuffer[_inputPtr++];
-        if ((d & 0xC0) != 0x080) {
+        // [dataformats-binary#889]: signed compares of raw bytes (continuation
+        // bytes 0x80 - 0xBF are -128 to -65)
+        final int d = (int) _inputBuffer[_inputPtr++];
+        if (d >= -64) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
-        int c = (c1 << 6) | (d & 0x3F);
+        int c = ((c1 & 0x0F) << 6) | (d & 0x3F);
         if (_inputPtr >= _inputEnd) {
             _loadMoreGuaranteed();
         }
-        d = (int) _inputBuffer[_inputPtr++];
-        if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
+        final int e = (int) _inputBuffer[_inputPtr++];
+        if (e >= -64) {
+            _reportInvalidOther(e & 0xFF, _inputPtr);
         }
-        c = (c << 6) | (d & 0x3F);
-        _verifyUTF8_3(c, false);
+        c = (c << 6) | (e & 0x3F);
+        _verifyUTF8_3(c1, d, c, false);
         return c;
     }
 
     private final int _decodeUtf8_3fast(int c1) throws JacksonException
     {
-        c1 &= 0x0F;
-        int d = (int) _inputBuffer[_inputPtr++];
-        if ((d & 0xC0) != 0x080) {
+        final int d = (int) _inputBuffer[_inputPtr++];
+        if (d >= -64) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
-        int c = (c1 << 6) | (d & 0x3F);
-        d = (int) _inputBuffer[_inputPtr++];
-        if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
+        int c = ((c1 & 0x0F) << 6) | (d & 0x3F);
+        final int e = (int) _inputBuffer[_inputPtr++];
+        if (e >= -64) {
+            _reportInvalidOther(e & 0xFF, _inputPtr);
         }
-        c = (c << 6) | (d & 0x3F);
-        _verifyUTF8_3(c, false);
+        c = (c << 6) | (e & 0x3F);
+        _verifyUTF8_3(c1, d, c, false);
         return c;
     }
 
@@ -3358,37 +3361,37 @@ currentToken(), firstCh);
      * @return Character value <b>minus 0x10000</c>; this so that caller
      *    can readily expand it to actual surrogates
      */
-    private final int _decodeUtf8_4(int c) throws JacksonException
+    private final int _decodeUtf8_4(int c1) throws JacksonException
     {
         if (_inputPtr >= _inputEnd) {
             _loadMoreGuaranteed();
         }
-        int d = (int) _inputBuffer[_inputPtr++];
-        if ((d & 0xC0) != 0x080) {
+        final int d = (int) _inputBuffer[_inputPtr++];
+        if (d >= -64) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
-        c = ((c & 0x07) << 6) | (d & 0x3F);
+        int c = ((c1 & 0x07) << 6) | (d & 0x3F);
 
         if (_inputPtr >= _inputEnd) {
             _loadMoreGuaranteed();
         }
-        d = (int) _inputBuffer[_inputPtr++];
-        if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
+        int e = (int) _inputBuffer[_inputPtr++];
+        if (e >= -64) {
+            _reportInvalidOther(e & 0xFF, _inputPtr);
         }
-        c = (c << 6) | (d & 0x3F);
+        c = (c << 6) | (e & 0x3F);
         if (_inputPtr >= _inputEnd) {
             _loadMoreGuaranteed();
         }
-        d = (int) _inputBuffer[_inputPtr++];
-        if ((d & 0xC0) != 0x080) {
-            _reportInvalidOther(d & 0xFF, _inputPtr);
+        e = (int) _inputBuffer[_inputPtr++];
+        if (e >= -64) {
+            _reportInvalidOther(e & 0xFF, _inputPtr);
         }
 
         // note: won't change it to negative here, since caller
         // already knows it'll need a surrogate
-        c = (c << 6) | (d & 0x3F);
-        _verifyUTF8_4(c, false);
+        c = (c << 6) | (e & 0x3F);
+        _verifyUTF8_4(c1, d, c, false);
         return c - 0x10000;
     }
 

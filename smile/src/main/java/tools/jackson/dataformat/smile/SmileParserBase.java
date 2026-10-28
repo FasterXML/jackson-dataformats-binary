@@ -828,8 +828,9 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
     /**
      * Helper method for decoding a 2-byte UTF-8 sequence fully contained in
      * given buffer: lead byte {@code c} has already been read, and continuation
-     * byte is at {@code buf[ptr]}. Verifies continuation byte(s) as well as the
-     * decoded code point (see {@link #_verifyUTF8_3} and {@link #_verifyUTF8_4}).
+     * byte is at {@code buf[ptr]}. Verifies continuation byte(s) as well as
+     * the range of second byte, keyed on lead byte (see {@link #_verifyUTF8_3}
+     * and {@link #_verifyUTF8_4}).
      *<p>
      * NOTE: does not change {@code _inputPtr}, not even on error: caller has
      * already advanced it past the whole String, and leaving it there
@@ -856,9 +857,11 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
     {
         // NOTE: separate small methods per length, with only cheap checks, so that
         // they get inlined (a generic loop was measurably slower); invalid sequences
-        // are decoded again for error reporting
+        // are decoded again for error reporting.
+        // [dataformats-binary#889]: signed compares of raw bytes (continuation
+        // bytes 0x80 - 0xBF are -128 to -65)
         final int d = buf[ptr];
-        if ((d & 0xC0) != 0x80) {
+        if (d >= -64) {
             _reportInvalidUTF8InBuffer(buf, ptr, c, 1, inInputBuffer, isName);
         }
         return ((c & 0x1F) << 6) | (d & 0x3F);
@@ -875,13 +878,13 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
     {
         final int d = buf[ptr];
         final int e = buf[ptr+1];
-        final int ch = ((c & 0x0F) << 12) | ((d & 0x3F) << 6) | (e & 0x3F);
-        // continuation bytes must be 10xxxxxx; no overlong forms or surrogates
-        if ((((d & e) & 0xC0) != 0x80) || (((d | e) & 0x40) != 0)
-                || (ch < 0x800) || ((ch & 0xF800) == 0xD800)) {
+        // continuation bytes must be 10xxxxxx; 0xE0 needs 0xA0+ (else overlong),
+        // 0xED below 0xA0 (else surrogate)
+        if ((d >= -64) || (e >= -64)
+                || ((c == 0xE0) && (d < -96)) || ((c == 0xED) && (d >= -96))) {
             _reportInvalidUTF8InBuffer(buf, ptr, c, 2, inInputBuffer, isName);
         }
-        return ch;
+        return ((c & 0x0F) << 12) | ((d & 0x3F) << 6) | (e & 0x3F);
     }
 
     /**
@@ -898,13 +901,13 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
         final int d = buf[ptr];
         final int e = buf[ptr+1];
         final int f = buf[ptr+2];
-        final int ch = ((c & 0x07) << 18) | ((d & 0x3F) << 12) | ((e & 0x3F) << 6) | (f & 0x3F);
-        // continuation bytes must be 10xxxxxx; no overlong forms, max U+10FFFF
-        if ((((d & e & f) & 0xC0) != 0x80) || (((d | e | f) & 0x40) != 0)
-                || (ch < 0x10000) || (ch > Character.MAX_CODE_POINT)) {
+        // continuation bytes must be 10xxxxxx; 0xF0 needs 0x90+ (else overlong),
+        // 0xF4 below 0x90 (else > U+10FFFF)
+        if ((d >= -64) || (e >= -64) || (f >= -64)
+                || ((c == 0xF0) && (d < -112)) || ((c == 0xF4) && (d >= -112))) {
             _reportInvalidUTF8InBuffer(buf, ptr, c, 3, inInputBuffer, isName);
         }
-        return ch;
+        return ((c & 0x07) << 18) | ((d & 0x3F) << 12) | ((e & 0x3F) << 6) | (f & 0x3F);
     }
 
     // Called when one of _decodeUTF8InBufferN found a problem: decodes the
@@ -944,41 +947,55 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
     }
 
     /**
-     * Helper method for verifying that decoded 3-byte UTF-8 code point uses
-     * the shortest form and is not a surrogate (RFC 3629).
+     * Helper method for verifying that a 3-byte UTF-8 sequence, with continuation
+     * bytes already verified, uses the shortest form and is not a surrogate
+     * (RFC 3629). Instead of the decoded code point, checks the range of second
+     * byte, keyed on lead byte (Unicode Standard, Table 3-7): lead byte 0xE0
+     * needs 0xA0 - 0xBF, 0xED needs 0x80 - 0x9F.
      * Error, if any, is reported at the current input location.
      *<p>
      * NOTE: no such check is needed for 2-byte sequences, since lead bytes
      * 0xC0 and 0xC1 (overlong encodings) are marked invalid in
      * {@link SmileConstants#sUtf8UnitLengths}.
      *
-     * @param ch Decoded code point
+     * @param c Lead byte (0x00 - 0xFF)
+     * @param d Second byte, as raw signed {@code byte} value
+     * @param ch Decoded code point (for error reporting)
      * @param isName Whether text being decoded is an Object property name
      *    (for error reporting)
      *
      * @since 3.3
      */
-    protected final void _verifyUTF8_3(int ch, boolean isName) throws StreamReadException
+    protected final void _verifyUTF8_3(int c, int d, int ch, boolean isName)
+        throws StreamReadException
     {
-        if ((ch < 0x800) || ((ch & 0xF800) == 0xD800)) {
+        // Signed compares: 0xA0 is -96
+        if (((c == 0xE0) && (d < -96)) || ((c == 0xED) && (d >= -96))) {
             _reportInvalidUTF8(ch, 3, isName);
         }
     }
 
     /**
-     * Helper method for verifying that decoded 4-byte UTF-8 code point uses
-     * the shortest form and is at most U+10FFFF (RFC 3629).
+     * Helper method for verifying that a 4-byte UTF-8 sequence, with continuation
+     * bytes already verified, uses the shortest form and is at most U+10FFFF
+     * (RFC 3629). Instead of the decoded code point, checks the range of second
+     * byte, keyed on lead byte (Unicode Standard, Table 3-7): lead byte 0xF0
+     * needs 0x90 - 0xBF, 0xF4 needs 0x80 - 0x8F.
      * Error, if any, is reported at the current input location.
      *
-     * @param ch Decoded code point
+     * @param c Lead byte (0x00 - 0xFF)
+     * @param d Second byte, as raw signed {@code byte} value
+     * @param ch Decoded code point (for error reporting)
      * @param isName Whether text being decoded is an Object property name
      *    (for error reporting)
      *
      * @since 3.3
      */
-    protected final void _verifyUTF8_4(int ch, boolean isName) throws StreamReadException
+    protected final void _verifyUTF8_4(int c, int d, int ch, boolean isName)
+        throws StreamReadException
     {
-        if ((ch < 0x10000) || (ch > Character.MAX_CODE_POINT)) {
+        // Signed compares: 0x90 is -112
+        if (((c == 0xF0) && (d < -112)) || ((c == 0xF4) && (d >= -112))) {
             _reportInvalidUTF8(ch, 4, isName);
         }
     }
@@ -986,7 +1003,14 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
     private void _reportInvalidUTF8(int ch, int byteCount, boolean isName)
         throws StreamReadException
     {
-        _reportError(_invalidUTF8Message(_invalidUTF8Problem(ch, byteCount), isName));
+        final String problem = _invalidUTF8Problem(ch, byteCount);
+        if (problem == null) {
+            // Should never get here: byte range and code point checks disagree
+            throw new IllegalStateException(String.format(
+"Internal error: UTF-8 sequence of %d bytes reported as invalid, but no problem found (code point 0x%x)",
+                    byteCount, ch));
+        }
+        _reportError(_invalidUTF8Message(problem, isName));
     }
 
     // @return Description of problem with decoded code point, if any; null if valid

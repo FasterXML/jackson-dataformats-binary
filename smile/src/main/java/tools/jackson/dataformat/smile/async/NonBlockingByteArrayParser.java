@@ -1320,46 +1320,44 @@ public class NonBlockingByteArrayParser
     /**********************************************************************
      */
 
+    // [dataformats-binary#889]: signed compares of raw bytes (continuation
+    // bytes 0x80 - 0xBF are -128 to -65)
     private final int _decodeUTF8_2(int c, int d) throws JacksonException
     {
-        if ((d & 0xC0) != 0x080) {
+        if (d >= -64) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
         return ((c & 0x1F) << 6) | (d & 0x3F);
     }
 
-    private final int _decodeUTF8_3(int c, int d, int e) throws JacksonException
+    private final int _decodeUTF8_3(int c1, int d, int e) throws JacksonException
     {
-        c &= 0x0F;
-        if ((d & 0xC0) != 0x080) {
+        if (d >= -64) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
-        c = (c << 6) | (d & 0x3F);
-        if ((e & 0xC0) != 0x080) {
+        if (e >= -64) {
             _reportInvalidOther(e & 0xFF, _inputPtr);
         }
-        c = (c << 6) | (e & 0x3F);
-        _verifyUTF8_3(c, false);
+        final int c = ((c1 & 0x0F) << 12) | ((d & 0x3F) << 6) | (e & 0x3F);
+        _verifyUTF8_3(c1, d, c, false);
         return c;
     }
 
     // @return Character value <b>minus 0x10000</c>; this so that caller
     //    can readily expand it to actual surrogates
-    private final int _decodeUTF8_4(int c, int d, int e, int f) throws JacksonException
+    private final int _decodeUTF8_4(int c1, int d, int e, int f) throws JacksonException
     {
-        if ((d & 0xC0) != 0x080) {
+        if (d >= -64) {
             _reportInvalidOther(d & 0xFF, _inputPtr);
         }
-        c = ((c & 0x07) << 6) | (d & 0x3F);
-        if ((e & 0xC0) != 0x080) {
+        if (e >= -64) {
             _reportInvalidOther(e & 0xFF, _inputPtr);
         }
-        c = (c << 6) | (e & 0x3F);
-        if ((f & 0xC0) != 0x080) {
+        if (f >= -64) {
             _reportInvalidOther(f & 0xFF, _inputPtr);
         }
-        c = (c << 6) | (f & 0x3F);
-        _verifyUTF8_4(c, false);
+        final int c = ((c1 & 0x07) << 18) | ((d & 0x3F) << 12) | ((e & 0x3F) << 6) | (f & 0x3F);
+        _verifyUTF8_4(c1, d, c, false);
         return c - 0x10000;
     }
 
