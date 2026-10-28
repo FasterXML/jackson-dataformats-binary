@@ -76,15 +76,26 @@ public class ProtobufParser extends ParserMinimalBase
     // input pointer only reaches the value's end on the following `nextToken()`.
     private final static int STATE_MAP_ENTRY_END = 18;
 
-    // [dataformats-binary#863]: Like `ProtobufUtil.sUtf8UnitLengths`, but also marks
-    //   as invalid lead bytes 0xC0/0xC1 (only produce overlong forms) and
-    //   0xF5 - 0xF7 (only produce > U+10FFFF)
+    // UTF-8 decoding info: "byte length - 1" of sequence by lead byte; -1 for
+    //   invalid bytes, 0 for single-byte, 1 for 2-byte, 2 for 3-byte and
+    //   3 for 4-byte sequences.
+    // [dataformats-binary#863]: lead bytes 0xC0/0xC1 (only produce overlong forms)
+    //   and 0xF5 - 0xF7 (only produce > U+10FFFF) also marked invalid
     private final static int[] UTF8_UNIT_CODES;
     static {
-        final int[] table = ProtobufUtil.sUtf8UnitLengths.clone();
-        table[0xC0] = table[0xC1] = -1;
-        for (int c = 0xF5; c <= 0xF7; ++c) {
-            table[c] = -1;
+        final int[] table = new int[256];
+        for (int c = 128; c < 256; ++c) {
+            int code;
+            if (c >= 0xC2 && c <= 0xDF) { // 2 bytes (0x0080 - 0x07FF)
+                code = 1;
+            } else if ((c & 0xF0) == 0xE0) { // 3 bytes (0x0800 - 0xFFFF)
+                code = 2;
+            } else if (c >= 0xF0 && c <= 0xF4) { // 4 bytes (0x10000 - 0x10FFFF)
+                code = 3;
+            } else {
+                code = -1;
+            }
+            table[c] = code;
         }
         UTF8_UNIT_CODES = table;
     }
