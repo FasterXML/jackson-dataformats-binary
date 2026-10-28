@@ -130,8 +130,12 @@ public final class CBORConstants
      * Additionally we can combine UTF-8 decoding info into similar
      * data table.
      * Values indicate "byte length - 1"; meaning -1 is used for
-     * invalid bytes, 0 for single-byte codes, 1 for 2-byte codes
-     * and 2 for 3-byte codes.
+     * invalid bytes, 0 for single-byte codes, 1 for 2-byte codes,
+     * 2 for 3-byte codes and 3 for 4-byte codes.
+     *<p>
+     * Since 3.3, lead bytes that can never start a valid sequence
+     * (as per RFC 3629) are also marked invalid: {@code 0xC0} and {@code 0xC1}
+     * (always overlong) and {@code 0xF5} - {@code 0xF7} (always beyond U+10FFFF).
      */
     public final static int[] sUtf8UnitLengths;
     static {
@@ -140,11 +144,13 @@ public final class CBORConstants
             int code;
 
             // We'll add number of bytes needed for decoding
-            if ((c & 0xE0) == 0xC0) { // 2 bytes (0x0080 - 0x07FF)
+            // [dataformats-binary#860]: 0xC0/0xC1 only produce overlong forms
+            if ((c & 0xE0) == 0xC0 && c >= 0xC2) { // 2 bytes (0x0080 - 0x07FF)
                 code = 1;
             } else if ((c & 0xF0) == 0xE0) { // 3 bytes (0x0800 - 0xFFFF)
                 code = 2;
-            } else if ((c & 0xF8) == 0xF0) {
+            // [dataformats-binary#860]: 0xF5 - 0xF7 only produce > U+10FFFF
+            } else if ((c & 0xF8) == 0xF0 && c <= 0xF4) {
                 // 4 bytes; double-char with surrogates and all...
                 code = 3;
             } else {
