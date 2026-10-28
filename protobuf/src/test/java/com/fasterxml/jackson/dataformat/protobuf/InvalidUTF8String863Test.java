@@ -40,15 +40,16 @@ public class InvalidUTF8String863Test extends ProtobufTestBase
         { 0xF0, 0xF0, 0x98, 0x80 }, // lead byte instead of continuation byte
     };
 
-    // Offset (from start of sequence) at which problem is detected:
-    // for continuation bytes, right after bad byte; otherwise after last byte
+    // Offset (from start of sequence) at which problem is detected: for invalid
+    // lead and continuation bytes, right after bad byte; otherwise after last byte
     private final static int[] EXPECTED_OFFSET = {
-        2, 2, 3, 3, 4, 4, 3, 3, 4, 4, 2, 3, 4, 2, 2, 2
+        1, 1, 3, 3, 4, 4, 3, 3, 4, 1, 2, 3, 4, 2, 2, 2
     };
 
     private final static String[] EXPECTED_MSG = {
-        "overlong 2-byte encoding of 0x2f",
-        "overlong 2-byte encoding of 0x7f",
+        // 0xC0/0xC1 only produce overlong forms: invalid as lead bytes
+        "unexpected byte 0xc0",
+        "unexpected byte 0xc1",
         "overlong 3-byte encoding of 0x2f",
         "overlong 3-byte encoding of 0x7ff",
         "overlong 4-byte encoding of 0x2f",
@@ -56,7 +57,8 @@ public class InvalidUTF8String863Test extends ProtobufTestBase
         "Illegal surrogate character 0xd800",
         "Illegal surrogate character 0xdfff",
         "code point 0x110000 beyond U+10FFFF",
-        "code point 0x140000 beyond U+10FFFF",
+        // 0xF5 - 0xF7 only produce > U+10FFFF: invalid as lead bytes
+        "unexpected byte 0xf5",
         "bad continuation byte 0x41",
         "bad continuation byte 0x41",
         "bad continuation byte 0x41",

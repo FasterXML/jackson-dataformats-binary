@@ -76,7 +76,18 @@ public class ProtobufParser extends ParserMinimalBase
     // input pointer only reaches the value's end on the following `nextToken()`.
     private final static int STATE_MAP_ENTRY_END = 18;
 
-    private final static int[] UTF8_UNIT_CODES = ProtobufUtil.sUtf8UnitLengths;
+    // [dataformats-binary#863]: Like `ProtobufUtil.sUtf8UnitLengths`, but also marks
+    //   as invalid lead bytes 0xC0/0xC1 (only produce overlong forms) and
+    //   0xF5 - 0xF7 (only produce > U+10FFFF)
+    private final static int[] UTF8_UNIT_CODES;
+    static {
+        final int[] table = ProtobufUtil.sUtf8UnitLengths.clone();
+        table[0xC0] = table[0xC1] = -1;
+        for (int c = 0xF5; c <= 0xF7; ++c) {
+            table[c] = -1;
+        }
+        UTF8_UNIT_CODES = table;
+    }
 
     // @since 2.14
     protected final static JacksonFeatureSet<StreamReadCapability> PROTOBUF_READ_CAPABILITIES
@@ -2374,8 +2385,8 @@ public class ProtobufParser extends ParserMinimalBase
                     if ((d & 0xC0) != 0x080) {
                         _reportInvalidContinuation(d, isName, inPtr, end);
                     }
+                    // (no overlong check needed: lead bytes 0xC0/0xC1 rejected via `UTF8_UNIT_CODES`)
                     i = ((i & 0x1F) << 6) | (d & 0x3F);
-                    _verifyUTF8(i, 2, isName, inPtr, end);
                 }
                 break;
             case 2:
@@ -2462,8 +2473,8 @@ public class ProtobufParser extends ParserMinimalBase
                     if ((d & 0xC0) != 0x080) {
                         _reportInvalidContinuation(d, isName, _inputPtr, _inputPtr);
                     }
+                    // (no overlong check needed: lead bytes 0xC0/0xC1 rejected via `UTF8_UNIT_CODES`)
                     c = ((c & 0x1F) << 6) | (d & 0x3F);
-                    _verifyUTF8(c, 2, isName, _inputPtr, _inputPtr);
                 }
                 break;
             case 2: // 3-byte UTF
@@ -3038,16 +3049,13 @@ public class ProtobufParser extends ParserMinimalBase
 
     // [dataformats-binary#863]: Decoded code point must use the shortest form,
     //   must not be a surrogate and must be at most U+10FFFF (RFC 3629).
+    //   No check needed for 2-byte sequences: overlong lead bytes 0xC0/0xC1
+    //   are rejected via `UTF8_UNIT_CODES`.
     private void _verifyUTF8(int ch, int byteCount, boolean isName,
             int errorPtr, int resumePtr) throws JsonParseException
     {
         final String problem;
-        if (byteCount == 2) {
-            if (ch >= 0x80) {
-                return;
-            }
-            problem = "overlong 2-byte encoding of 0x"+Integer.toHexString(ch);
-        } else if (byteCount == 3) {
+        if (byteCount == 3) {
             if (ch >= 0x800) {
                 if (ch < 0xD800 || ch > 0xDFFF) {
                     return;
