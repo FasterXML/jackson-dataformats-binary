@@ -675,7 +675,10 @@ versionBits));
             _tokenOffsetForTotal = _inputPtr;
             _binaryValue = null;
 
-            byte[] nameBytes = str.asQuotedUTF8();
+            // Must compare raw UTF-8 bytes: Smile has no escaping, so JSON-quoted
+            // bytes (`asQuotedUTF8()`) would falsely match a name containing the
+            // escaped form (like `a\"b` for `a"b`)
+            byte[] nameBytes = str.asUnquotedUTF8();
             final int byteLen = nameBytes.length;
             // NOTE: [dataformats-binary#726] `maxNameLength` deliberately NOT
             //   enforced by the fast path below: length matched is that of the
