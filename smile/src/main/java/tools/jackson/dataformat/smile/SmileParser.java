@@ -2181,9 +2181,9 @@ _typeAsInt);
         return _growArrayTo(arr, arr.length + more);
     }
 
-    // Helper methods for [dataformats-binary#312] (masking of 0x00 character) live in
-    // `SmileParserBase`: `_padLastQuad()` and `_decodePartialQuadForNulls()`, shared
-    // with non-blocking parser ([dataformats-binary#761])
+    // Helper method for [dataformats-binary#312] (masking of 0x00 character),
+    // `_padLastQuad()`, lives in `SmileParserBase`, shared with non-blocking
+    // parser ([dataformats-binary#761])
 
     /*
     /**********************************************************************

@@ -27,6 +27,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class ShortAsciiName885Test extends BaseTestForSmile
 {
     static class EAcute {
+        public int a;
+
         @JsonProperty("é")
         public int value;
     }
@@ -147,19 +149,78 @@ public class ShortAsciiName885Test extends BaseTestForSmile
         }
     }
 
-    // `nextNameMatch()` (used by POJO deserialization) must not match either
+    // `nextNameMatch()` (used by POJO deserialization) must not match either.
+    // Note: first property name is read with `nextToken()`, so invalid name must
+    // come second to be read via `nextNameMatch()`
     @Test
     public void testNextNameMatch() throws Exception
     {
-        final byte[] doc = _doc(_asciiName(new byte[] { (byte) 0xC3, (byte) 0xA9 }));
+        final byte[] eAcute = { (byte) 0xC3, (byte) 0xA9 };
+        // as the only name (read via `nextToken()`)...
+        _verifyNextNameMatchFails(_doc(_asciiName(eAcute)), 0xC3);
+        // ... and as second one (via `nextNameMatch()`)
+        _verifyNextNameMatchFails(_doc(_asciiName(_name(1)), _asciiName(eAcute)), 0xC3);
+        // and for all name lengths (to cover all quad-count cases)
+        for (int len : _testLengths()) {
+            for (int pos : new int[] { 0, len - 1 }) {
+                final byte[] name = _name(len);
+                name[pos] = (byte) 0x80;
+                _verifyNextNameMatchFails(_doc(_asciiName(_name(1)), _asciiName(name)), 0x80);
+            }
+        }
+    }
+
+    private void _verifyNextNameMatchFails(byte[] doc, int b) throws Exception
+    {
         for (SmileFactory f : new SmileFactory[] { CANON_F, NO_CANON_F }) {
             try {
                 EAcute result = new SmileMapper(f).readValue(doc, EAcute.class);
                 fail("Should have failed; got value: "+result.value);
             } catch (StreamReadException e) {
-                verifyException(e, "Invalid byte 0xC3 in short ASCII property name");
+                verifyException(e, String.format("Invalid byte 0x%02X in short ASCII property name", b));
             }
         }
+    }
+
+    // No-arg `nextName()` (used by `readTree()`, `Map` deserialization) must not
+    // accept either
+    @Test
+    public void testNextName() throws Exception
+    {
+        for (int len : _testLengths()) {
+            for (int pos : new int[] { 0, len - 1 }) {
+                final byte[] name = _name(len);
+                name[pos] = (byte) 0x80;
+                // both as first and second name
+                for (byte[] doc : new byte[][] {
+                        _doc(_asciiName(name)),
+                        _doc(_asciiName(_name(1)), _asciiName(name)) }) {
+                    for (SmileFactory f : new SmileFactory[] { CANON_F, NO_CANON_F }) {
+                        final SmileMapper mapper = new SmileMapper(f);
+                        try (JsonParser p = mapper.createParser(doc)) {
+                            assertEquals(JsonToken.START_OBJECT, p.nextToken());
+                            while (p.nextName() != null) {
+                                assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+                            }
+                            fail("Should have failed; got last name: "+p.currentName());
+                        } catch (StreamReadException e) {
+                            verifyException(e, "Invalid byte 0x80 in short ASCII property name");
+                        }
+                        try {
+                            Object result = mapper.readTree(doc);
+                            fail("Should have failed; got: "+result);
+                        } catch (StreamReadException e) {
+                            verifyException(e, "Invalid byte 0x80 in short ASCII property name");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Name lengths covering all quad-count cases of short ASCII names
+    private static int[] _testLengths() {
+        return new int[] { 1, 3, 4, 5, 8, 9, 12, 13, 16, 17, 20, 63, 64 };
     }
 
     private void _verifyFails(SmileFactory f, byte[] doc, int mode, int b) throws Exception

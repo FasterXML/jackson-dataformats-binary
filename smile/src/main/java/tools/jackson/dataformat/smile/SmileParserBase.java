@@ -903,9 +903,12 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
      * Variant of {@link #_decodePartialQuad} that pads the unused high bytes with
      * 1s rather than 0s, which is what {@link ByteQuadsCanonicalizer} expects of a
      * partial quad: without it a name ending in NULL bytes would collide with the
-     * shorter name that precedes those NULLs.
+     * shorter name that precedes those NULLs ([dataformats-binary#761]).
      *<p>
-     * Shared by blocking and non-blocking parsers ([dataformats-binary#761]).
+     * Only used by non-blocking parser, for names split across input buffers;
+     * other name lookups call {@link #_decodePartialQuad} and {@link #_padLastQuad}
+     * separately, so that "short ASCII" names can be verified
+     * ([dataformats-binary#885]) between the two calls.
      *
      * @param len Number of bytes to decode; must be between 1 and 4
      *
@@ -934,7 +937,7 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
      * Mask for checking that a quad (or the OR of quads) has no bytes with the
      * high bit set; i.e. that all bytes are 7-bit ASCII. Note that it may only be
      * used on quads that are zero-padded (as produced by {@link #_decodePartialQuad}),
-     * not ones padded with 1s ({@link #_decodePartialQuadForNulls}).
+     * not ones padded with 1s (by {@link #_padLastQuad}).
      *
      * @since 3.3
      */
