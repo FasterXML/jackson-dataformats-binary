@@ -66,6 +66,13 @@ Active maintainers:
   decoded; also note that validation is done when text is decoded: skipped strings
   are not validated)
  (fix by @pjfanning, w/ Claude code)
+#863: (protobuf) Invalid UTF-8 sequences (overlong, surrogates, > U+10FFFF, bad continuation
+  bytes) not rejected in strings
+  (NOTE: no option to accept such content, including CESU-8 / "Modified UTF-8"
+  encoded text, which earlier versions decoded; also note that validation is done
+  when text is decoded: skipped strings (including unknown fields) are not validated;
+  `ProtobufUtil.sUtf8UnitLengths` deprecated as unused, to be removed from 3.x)
+ (fix by @pjfanning, w/ Claude code)
 #868: (cbor) Wrong cached property name returned for names containing 0xFF bytes
  (fix by @pjfanning, w/ Claude code)
 #869: (smile) Wrong cached property name returned for names containing 0xFF bytes
