@@ -34,6 +34,9 @@ public class InvalidUTF8String862Test extends AvroTestBase
         { 0xC3, 0x41 }, // bad continuation byte
         { 0xE2, 0x82, 0x41 }, // bad last continuation byte
         { 0xF0, 0x9F, 0x98, 0x41 }, // bad last continuation byte
+        { 0xE2, 0x41, 0x82 }, // bad first continuation byte
+        { 0xE2, 0xC3, 0x82 }, // lead byte instead of continuation byte
+        { 0xF0, 0xF0, 0x98, 0x80 }, // lead byte instead of continuation byte
     };
 
     private final static String[] EXPECTED_MSG = {
@@ -52,6 +55,9 @@ public class InvalidUTF8String862Test extends AvroTestBase
         "bad continuation byte 0x41",
         "bad continuation byte 0x41",
         "bad continuation byte 0x41",
+        "bad continuation byte 0x41",
+        "bad continuation byte 0xc3",
+        "bad continuation byte 0xf0",
     };
 
     private final static String[] VALID = {

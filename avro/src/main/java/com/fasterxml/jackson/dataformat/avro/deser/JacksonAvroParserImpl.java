@@ -619,6 +619,10 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         }
 
         final int[] codes = sUtf8UnitLengths;
+        // [dataformats-binary#862]: validate continuation bytes and code points with
+        //   as few instructions as possible (each one costs measurably for CJK text):
+        //   compare signed bytes (continuation bytes 0x80 - 0xBF are -128 to -65) and
+        //   check lead bytes that may start overlong/surrogate/too big sequences
         do {
             i = inputBuf[inPtr++] & 0xFF;
             final int code = codes[i];
@@ -626,35 +630,67 @@ public class JacksonAvroParserImpl extends AvroParserImpl
                 outBuf[outPtr++] = (char) i;
                 continue;
             }
-            if ((inPtr + code) > end) {
-                // (`code` is number of continuation bytes, 1 - 3: invalid lead
-                // bytes (-1) never get here but are reported by `default` below)
-                _reportInvalidUTF8("truncated "+(code+1)+"-byte sequence at end of text", isName);
+            if ((inPtr + code) > end) { // truncated sequence
+                _reportInvalidUTF8InShortText(end - len, len, isName);
             }
-            // [dataformats-binary#862]: validate continuation bytes, code point
             switch (code) {
             case 1:
-                i = _decodeUTF8InBuffer2(inputBuf, inPtr, i, isName);
-                ++inPtr;
+                {
+                    final int d = inputBuf[inPtr++];
+                    // (no overlong check needed: lead bytes 0xC0/0xC1 rejected via `sUtf8UnitLengths`)
+                    if (d >= -64) {
+                        _reportInvalidUTF8InShortText(end - len, len, isName);
+                    }
+                    i = ((i & 0x1F) << 6) | (d & 0x3F);
+                }
                 break;
             case 2:
-                i = _decodeUTF8InBuffer3(inputBuf, inPtr, i, isName);
-                inPtr += 2;
+                {
+                    final int d = inputBuf[inPtr++];
+                    final int e = inputBuf[inPtr++];
+                    if ((d >= -64) || (e >= -64)
+                            // 0xE0 needs 0xA0+ (else overlong), 0xED below 0xA0 (else surrogate)
+                            || ((i == 0xE0) && (d < -96)) || ((i == 0xED) && (d >= -96))) {
+                        _reportInvalidUTF8InShortText(end - len, len, isName);
+                    }
+                    i = ((i & 0x0F) << 12) | ((d & 0x3F) << 6) | (e & 0x3F);
+                }
                 break;
             case 3:
-                i = _decodeUTF8InBuffer4(inputBuf, inPtr, i, isName);
-                inPtr += 3;
+                {
+                    final int d = inputBuf[inPtr++];
+                    final int e = inputBuf[inPtr++];
+                    final int f = inputBuf[inPtr++];
+                    if ((d >= -64) || (e >= -64) || (f >= -64)
+                            // 0xF0 needs 0x90+ (else overlong), 0xF4 below 0x90 (else > U+10FFFF)
+                            || ((i == 0xF0) && (d < -112)) || ((i == 0xF4) && (d >= -112))) {
+                        _reportInvalidUTF8InShortText(end - len, len, isName);
+                    }
+                    i = ((i & 0x07) << 18) | ((d & 0x3F) << 12) | ((e & 0x3F) << 6) | (f & 0x3F);
+                }
                 // note: this is the codepoint value; need to split, too
                 i -= 0x10000;
                 outBuf[outPtr++] = (char) (0xD800 | (i >> 10));
                 i = 0xDC00 | (i & 0x3FF);
                 break;
-            default: // invalid
-                _reportInvalidUTF8("unexpected byte 0x"+Integer.toHexString(i), isName);
+            default: // invalid lead byte
+                _reportInvalidUTF8InShortText(end - len, len, isName);
             }
             outBuf[outPtr++] = (char) i;
         } while (inPtr < end);
         return _textBuffer.setCurrentAndReturn(outPtr);
+    }
+
+    // [dataformats-binary#862]: Called when `_finishShortText()` found a problem:
+    //   decodes text again with validating long-text decoder (all bytes are in
+    //   buffer) to report the first problem. Never returns normally.
+    private void _reportInvalidUTF8InShortText(int startPtr, int len, boolean isName)
+        throws IOException
+    {
+        _inputPtr = startPtr;
+        _finishLongText(len, isName);
+        // Should not get here, but just in case
+        _reportInvalidUTF8("malformed sequence", isName);
     }
 
     private final void _finishLongText(int len, boolean isName) throws IOException
@@ -757,70 +793,6 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         c = (c << 6) | (d & 0x3F);
         _verifyUTF8(c, 4, isName);
         return c - 0x10000;
-    }
-
-    // [dataformats-binary#862]: Decode multi-byte UTF-8 sequences fully contained in
-    //   buffer: lead byte `c` already read, continuation bytes start at `buf[ptr]`.
-    //   Verifies continuation bytes and decoded code point. Separate small methods
-    //   per length, with only cheap checks, so they get inlined (a generic loop was
-    //   measurably slower); invalid sequences are decoded again for error reporting.
-
-    private int _decodeUTF8InBuffer2(byte[] buf, int ptr, int c, boolean isName)
-        throws IOException
-    {
-        final int d = buf[ptr];
-        // (no overlong check needed: lead bytes 0xC0/0xC1 rejected via `sUtf8UnitLengths`)
-        if ((d & 0xC0) != 0x80) {
-            _reportInvalidUTF8InBuffer(ptr, c, 1, isName);
-        }
-        return ((c & 0x1F) << 6) | (d & 0x3F);
-    }
-
-    private int _decodeUTF8InBuffer3(byte[] buf, int ptr, int c, boolean isName)
-        throws IOException
-    {
-        final int d = buf[ptr];
-        final int e = buf[ptr+1];
-        final int ch = ((c & 0x0F) << 12) | ((d & 0x3F) << 6) | (e & 0x3F);
-        // continuation bytes must be 10xxxxxx; no overlong forms or surrogates
-        if ((((d & e) & 0xC0) != 0x80) || (((d | e) & 0x40) != 0)
-                || (ch < 0x800) || ((ch & 0xF800) == 0xD800)) {
-            _reportInvalidUTF8InBuffer(ptr, c, 2, isName);
-        }
-        return ch;
-    }
-
-    // NOTE: returns code point, not split into surrogate pair
-    private int _decodeUTF8InBuffer4(byte[] buf, int ptr, int c, boolean isName)
-        throws IOException
-    {
-        final int d = buf[ptr];
-        final int e = buf[ptr+1];
-        final int f = buf[ptr+2];
-        final int ch = ((c & 0x07) << 18) | ((d & 0x3F) << 12) | ((e & 0x3F) << 6) | (f & 0x3F);
-        // continuation bytes must be 10xxxxxx; no overlong forms, max U+10FFFF
-        if ((((d & e & f) & 0xC0) != 0x80) || (((d | e | f) & 0x40) != 0)
-                || (ch < 0x10000) || (ch > Character.MAX_CODE_POINT)) {
-            _reportInvalidUTF8InBuffer(ptr, c, 3, isName);
-        }
-        return ch;
-    }
-
-    // Called when one of _decodeUTF8InBufferN found a problem: decodes the sequence
-    // again with long-text decoders (bytes are all in buffer) to report the first
-    // problem. Never returns normally: if none is found, reports a generic one
-    private void _reportInvalidUTF8InBuffer(int ptr, int c, int needed, boolean isName)
-        throws IOException
-    {
-        _inputPtr = ptr;
-        if (needed == 1) { // bad continuation byte only possible problem
-            _reportInvalidContinuation(_inputBuffer[ptr], isName);
-        } else if (needed == 2) {
-            _decodeUTF8_3(c, isName);
-        } else {
-            _decodeUTF8_4(c, isName);
-        }
-        _reportInvalidUTF8("malformed "+(needed+1)+"-byte sequence", isName);
     }
 
     // [dataformats-binary#862]: Decoded code point must use the shortest form,
