@@ -79,6 +79,9 @@ implementations)
 #882: (cbor) `nextNameMatch()` does not pop stringref nesting on `END_OBJECT`,
   resolves later stringrefs against wrong namespace
  (fix by @cowtowncoder, w/ Claude code)
+#885: (smile) Cheap validation of short ASCII property names, to prevent
+  symbol table bypass
+ (fix by @cowtowncoder, w/ Claude code)
 - (avro) Generated `array` schemas missing `java-class` for `java.util.List`,
   breaking round-trip via Apache `ReflectDatumReader`
 

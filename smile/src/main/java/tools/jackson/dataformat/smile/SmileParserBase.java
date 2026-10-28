@@ -903,9 +903,12 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
      * Variant of {@link #_decodePartialQuad} that pads the unused high bytes with
      * 1s rather than 0s, which is what {@link ByteQuadsCanonicalizer} expects of a
      * partial quad: without it a name ending in NULL bytes would collide with the
-     * shorter name that precedes those NULLs.
+     * shorter name that precedes those NULLs ([dataformats-binary#761]).
      *<p>
-     * Shared by blocking and non-blocking parsers ([dataformats-binary#761]).
+     * Only used by non-blocking parser, for names split across input buffers;
+     * other name lookups call {@link #_decodePartialQuad} and {@link #_padLastQuad}
+     * separately, so that "short ASCII" names can be verified
+     * ([dataformats-binary#885]) between the two calls.
      *
      * @param len Number of bytes to decode; must be between 1 and 4
      *
@@ -928,6 +931,37 @@ strLenBytes, firstUTFByteValue, truncatedCharOffset, bytesExpected));
         if ((q >>> 24) == 0xFF) {
             _reportInvalidInitial(0xFF);
         }
+    }
+
+    /**
+     * Mask for checking that a quad (or the OR of quads) has no bytes with the
+     * high bit set; i.e. that all bytes are 7-bit ASCII. Note that it may only be
+     * used on quads that are zero-padded (as produced by {@link #_decodePartialQuad}),
+     * not ones padded with 1s (by {@link #_padLastQuad}).
+     *
+     * @since 3.3
+     */
+    protected final static int NON_ASCII_QUAD_MASK = 0x80808080;
+
+    /**
+     * Helper method called when a "short ASCII" property name has been found to
+     * contain non-ASCII bytes ([dataformats-binary#885]): finds the first such
+     * byte and reports it.
+     *
+     * @since 3.3
+     */
+    protected void _reportInvalidShortAsciiName(byte[] buf, int ptr, int len)
+        throws StreamReadException
+    {
+        int b = 0;
+        for (final int end = ptr + len; ptr < end; ++ptr) {
+            if (buf[ptr] < 0) {
+                b = buf[ptr] & 0xFF;
+                break;
+            }
+        }
+        throw _constructReadException(
+"Invalid byte 0x%02X in short ASCII property name", b);
     }
 
     protected void _reportInvalidInitial(int mask) throws StreamReadException {

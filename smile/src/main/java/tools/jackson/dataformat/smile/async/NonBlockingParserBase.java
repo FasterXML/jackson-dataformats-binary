@@ -432,30 +432,44 @@ public abstract class NonBlockingParserBase
      */
 
     // Helper method for trying to find specified encoded UTF-8 byte sequence
-    // from symbol table; if successful avoids actual decoding to String
-    protected final String _findDecodedFromSymbols(byte[] inBuf, int inPtr, int len) throws JacksonException
+    // from symbol table; if successful avoids actual decoding to String.
+    // If `ascii` is true (a "short ASCII" name), all bytes are verified to be
+    // 7-bit ASCII before lookup ([dataformats-binary#885])
+    protected final String _findDecodedFromSymbols(byte[] inBuf, int inPtr, int len,
+            boolean ascii)
+        throws JacksonException
     {
         // First: maybe we already have this name decoded?
         if (len < 5) {
+            int q = _decodePartialQuad(inBuf, inPtr, len);
+            if (ascii && (q & NON_ASCII_QUAD_MASK) != 0) {
+                _reportInvalidShortAsciiName(inBuf, inPtr, len);
+            }
             // [dataformats-binary#761] / #312: pad unused high bytes so a short name
             // cannot collide with a longer NUL-prefixed one in ByteQuadsCanonicalizer
-            int q = _decodePartialQuadForNulls(inBuf, inPtr, len);
+            q = _padLastQuad(q, len);
             _quad1 = q;
             return _symbols.findName(q);
         }
         if (len < 9) {
             // First quadbyte is easy
             int q1 = _decodeQuad(inBuf, inPtr);
-            int q2 = _decodePartialQuadForNulls(inBuf, inPtr+4, len - 4);
+            int q2 = _decodePartialQuad(inBuf, inPtr+4, len - 4);
+            if (ascii && ((q1 | q2) & NON_ASCII_QUAD_MASK) != 0) {
+                _reportInvalidShortAsciiName(inBuf, inPtr, len);
+            }
+            q2 = _padLastQuad(q2, len - 4);
             _quad1 = q1;
             _quad2 = q2;
             return _symbols.findName(q1, q2);
         }
-        return _findDecodedLonger(inBuf, inPtr, len);
+        return _findDecodedLonger(inBuf, inPtr, len, ascii);
     }
 
     // Method for locating names longer than 8 bytes (in UTF-8)
-    private final String _findDecodedLonger(byte[] inBuf, int inPtr, int len) throws JacksonException
+    private final String _findDecodedLonger(byte[] inBuf, int inPtr, int len,
+            boolean ascii)
+        throws JacksonException
     {
         // first, need enough buffer to store bytes as ints:
         {
@@ -465,14 +479,28 @@ public abstract class NonBlockingParserBase
             }
         }
         // then decode, full quads first
+        final int startPtr = inPtr;
+        final int fullLen = len;
         int offset = 0;
+        int or = 0;
         do {
-            _quadBuffer[offset++] = _decodeQuad(inBuf, inPtr);
+            int q = _decodeQuad(inBuf, inPtr);
+            _quadBuffer[offset++] = q;
+            or |= q;
             inPtr += 4;
         } while ((len -= 4) > 3);
         // and then leftovers
+        int lastQ = 0;
         if (len > 0) {
-            _quadBuffer[offset++] = _decodePartialQuadForNulls(inBuf, inPtr, len);
+            lastQ = _decodePartialQuad(inBuf, inPtr, len);
+            or |= lastQ;
+        }
+        // [dataformats-binary#885]: verify ASCII-ness before 0xFF checks
+        if (ascii && (or & NON_ASCII_QUAD_MASK) != 0) {
+            _reportInvalidShortAsciiName(inBuf, startPtr, fullLen);
+        }
+        if (len > 0) {
+            _quadBuffer[offset++] = _padLastQuad(lastQ, len);
         } else {
             _verifyLastFullQuad(_quadBuffer[offset-1]);
         }

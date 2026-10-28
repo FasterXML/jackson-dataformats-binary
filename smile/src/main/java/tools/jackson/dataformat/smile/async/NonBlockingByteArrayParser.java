@@ -278,7 +278,8 @@ public class NonBlockingByteArrayParser
                 if (avail >= needed) { // got it all
                     System.arraycopy(_inputBuffer, _inputPtr, _inputCopy, _inputCopyLen, needed);
                     _inputPtr += needed;
-                    String name = _findDecodedFromSymbols(_inputCopy, 0, fullLen);
+                    String name = _findDecodedFromSymbols(_inputCopy, 0, fullLen,
+                            _minorState == MINOR_PROPERTY_NAME_SHORT_ASCII);
                     if (name == null) {
                         name = (_minorState == MINOR_PROPERTY_NAME_SHORT_ASCII)
                                 ? _decodeASCIIText(_inputCopy, 0, fullLen)
@@ -735,7 +736,7 @@ public class NonBlockingByteArrayParser
                 final int left = _inputEnd - inputPtr;
                 if (len <= left) { // gotcha!
                     _inputPtr = inputPtr + len;
-                    String name = _findDecodedFromSymbols(_inputBuffer, inputPtr, len);
+                    String name = _findDecodedFromSymbols(_inputBuffer, inputPtr, len, true);
                     if (name == null) {
                         name = _decodeASCIIText(_inputBuffer, inputPtr, len);
                         name = _addDecodedToSymbols(len, name);
@@ -778,7 +779,7 @@ public class NonBlockingByteArrayParser
                 final int left = _inputEnd - inputPtr;
                 if (len <= left) { // gotcha!
                     _inputPtr = inputPtr + len;
-                    String name = _findDecodedFromSymbols(_inputBuffer, inputPtr, len);
+                    String name = _findDecodedFromSymbols(_inputBuffer, inputPtr, len, false);
                     if (name == null) {
                         name = _decodeShortUnicodeText(_inputBuffer, inputPtr, len, true);
                         name = _addDecodedToSymbols(len, name);
