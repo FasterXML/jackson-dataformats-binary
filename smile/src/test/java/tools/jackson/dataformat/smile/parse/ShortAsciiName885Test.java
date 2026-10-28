@@ -170,6 +170,27 @@ public class ShortAsciiName885Test extends BaseTestForSmile
         }
     }
 
+    // `nextNameMatch()` must verify ASCII-ness even for names with NUL as first
+    // byte of last quad: a guard against NUL collisions ([dataformats-binary#873]
+    // et al) that returns before validation must not bypass it, since name is
+    // then decoded without (re-)validation
+    @Test
+    public void testNextNameMatchWithNulInLastQuad() throws Exception
+    {
+        for (int len : _testLengths()) {
+            final int nulPos = (len - 1) & ~3;
+            for (int pos : new int[] { 0, len - 1 }) {
+                if (pos == nulPos) {
+                    continue;
+                }
+                final byte[] name = _name(len);
+                name[nulPos] = 0;
+                name[pos] = (byte) 0xFF;
+                _verifyNextNameMatchFails(_doc(_asciiName(_name(1)), _asciiName(name)), 0xFF);
+            }
+        }
+    }
+
     private void _verifyNextNameMatchFails(byte[] doc, int b) throws Exception
     {
         for (SmileFactory f : new SmileFactory[] { CANON_F, NO_CANON_F }) {

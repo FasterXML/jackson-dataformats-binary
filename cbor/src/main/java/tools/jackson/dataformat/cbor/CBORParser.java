@@ -1412,7 +1412,7 @@ public class CBORParser extends ParserBase
                 _updateToken(JsonToken.END_OBJECT);
                 return false;
             }
-            byte[] nameBytes = str.asQuotedUTF8();
+            byte[] nameBytes = str.asUnquotedUTF8();
             final int byteLen = nameBytes.length;
             // fine; require room for up to 2-byte marker, data itself
             int ptr = _inputPtr;
