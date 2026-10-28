@@ -4,6 +4,15 @@ public class ProtobufUtil
 {
     public final static int SECONDARY_BUFFER_LENGTH = 64000;
 
+    /**
+     * UTF-8 decoding info: "byte length - 1" of sequence by lead byte;
+     * -1 for invalid bytes, 0 for single-byte, 1 for 2-byte, 2 for 3-byte
+     * and 3 for 4-byte sequences.
+     *
+     * @deprecated Since 2.23: not used by Jackson (parser uses stricter internal
+     *   table); will be removed from 3.x
+     */
+    @Deprecated // since 2.23
     public final static int[] sUtf8UnitLengths;
     static {
         int[] table = new int[256];

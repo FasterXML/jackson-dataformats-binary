@@ -495,6 +495,9 @@ PJ Fanning (@pjfanning)
 * Fixed #862: (avro) Invalid UTF-8 sequences (overlong, surrogates, > U+10FFFF,
   bad continuation bytes) not rejected in strings
  (2.23.0)
+* Fixed #863: (protobuf) Invalid UTF-8 sequences (overlong, surrogates, > U+10FFFF, bad
+  continuation bytes) not rejected in strings
+ (2.23.0)
 * Fixed #868: (cbor) Wrong cached property name returned for names containing 0xFF bytes
  (2.23.0)
 * Fixed #869: (smile) Wrong cached property name returned for names containing 0xFF bytes
