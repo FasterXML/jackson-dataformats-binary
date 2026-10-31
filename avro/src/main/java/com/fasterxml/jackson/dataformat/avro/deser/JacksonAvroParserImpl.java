@@ -1017,6 +1017,9 @@ public class JacksonAvroParserImpl extends AvroParserImpl
         int result = decodeInt();
         while (result < 0) {
             long bytecount = decodeLong();
+            if (bytecount < 0L) {
+                _reportError("Invalid byte size for Array/Map block: "+bytecount);
+            }
             _skipL(bytecount);
             result = decodeInt();
         }
