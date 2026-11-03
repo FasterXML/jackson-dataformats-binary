@@ -120,7 +120,7 @@ public class BigDecimalScaleExtremes842Test extends CBORTestBase
         try (JsonParser p = cborParser(doc)) {
             assertToken(JsonToken.START_ARRAY, p.nextToken());
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            assertEquals("abc", p.getText());
+            assertEquals("abc", p.getString());
             p.nextToken();
             fail("Should not pass, got: "+p.currentToken());
         } catch (StreamReadException e) {

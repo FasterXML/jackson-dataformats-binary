@@ -202,7 +202,7 @@ public class SkipUnknownThenKnown881Test extends ProtobufTestBase
             assertEquals("s", r.nextName(p));
             assertEquals(0, p.currentTokenLocation().getByteOffset());
             assertToken(JsonToken.VALUE_STRING, p.nextToken());
-            assertEquals("x", p.getText());
+            assertEquals("x", p.getString());
             assertEquals("c", r.nextName(p));
             assertEquals(3, p.currentTokenLocation().getByteOffset());
         }
