@@ -18,7 +18,7 @@ public class DatabindRead303Test
     {
         URL poc = getClass().getResource("/data/issue-303.ion");
         try {
-            MAPPER.readTree(poc);
+            MAPPER.readTree(poc.openStream());
             fail("Should not pass with invalid content");
         } catch (StreamReadException e) {
             // 19-Dec-2023, tatu: Looks like message depends on ion-java version,

@@ -195,7 +195,7 @@ public class IonValueDeserializerTest {
         source.put("a", SYSTEM.newInt(1));
         source.put("b", SYSTEM.newNull());
         source.put("c", null);
-        IonValueMapper mapper = (IonValueMapper) ION_VALUE_MAPPER.copy().setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        IonValueMapper mapper = (IonValueMapper) ION_VALUE_MAPPER.copy().setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
 
         String data = mapper.writeValueAsString(source);
         assertEquals("{a:1,b:null}", data);

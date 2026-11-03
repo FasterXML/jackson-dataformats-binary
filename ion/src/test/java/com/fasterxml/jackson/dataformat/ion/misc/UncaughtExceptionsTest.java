@@ -23,7 +23,7 @@ public class UncaughtExceptionsTest
     {
         URL poc = getClass().getResource("/data/issue-302.ion");
         try {
-            MAPPER.readTree(poc);
+            MAPPER.readTree(poc.openStream());
             fail("Should not pass with invalid content");
         } catch (JsonProcessingException e) {
             verifyException(e, "Invalid embedded TIMESTAMP");
