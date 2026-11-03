@@ -270,7 +270,7 @@ public class StringableTest extends InteropTestBase {
 
     @Test
     public void testURL() throws IOException {
-        URL original = new URL("https://github.com");
+        URL original = URI.create("https://github.com").toURL();
         //
         URL result = roundTrip(original);
         //
@@ -280,8 +280,8 @@ public class StringableTest extends InteropTestBase {
     @Test
     public void testURLArray() throws IOException {
         ArrayList<URL> array = new ArrayList<>();
-        array.add(new URL("http://fasterxml.com"));
-        array.add(new URL("https://github.com"));
+        array.add(URI.create("http://fasterxml.com").toURL());
+        array.add(URI.create("https://github.com").toURL());
         //
         ArrayList<URL> result = roundTrip(type(ArrayList.class, URL.class), array);
         //
@@ -291,8 +291,8 @@ public class StringableTest extends InteropTestBase {
     @Test
     public void testURLKeys() throws IOException {
         Map<URL, String> map = new HashMap<>();
-        map.put(new URL("http://fasterxml.com"), "one");
-        map.put(new URL("https://github.com"), "two");
+        map.put(URI.create("http://fasterxml.com").toURL(), "one");
+        map.put(URI.create("https://github.com").toURL(), "two");
         //
         Map<URL, String> result = roundTrip(type(Map.class, URL.class, String.class), map);
         //
