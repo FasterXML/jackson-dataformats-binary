@@ -152,15 +152,72 @@ public abstract class AvroReaderFactory
         if (elementTypeId == null) {
             elementTypeId = AvroSchemaHelper.getTypeId(elementType);
         }
+        final boolean zeroLength = _isZeroLength(elementType);
 
         if (scalar != null) {
             // EnumSet has to know element type information up front; take advantage of the fact that the id resolver handles canonical IDs
             if (EnumSet.class.getName().equals(typeId)) {
                 typeId += "<" + elementTypeId + ">";
             }
-            return ArrayReader.construct(scalar, typeId, elementTypeId);
+            return ArrayReader.construct(scalar, typeId, elementTypeId, zeroLength);
         }
-        return ArrayReader.construct(createReader(elementType), typeId, elementTypeId);
+        return ArrayReader.construct(createReader(elementType), typeId, elementTypeId, zeroLength);
+    }
+
+    /**
+     * Helper method for checking whether values of given type are encoded with no
+     * bytes at all: {@code null}, zero-length {@code fixed}, and Records with only
+     * such fields. All other types take at least one byte.
+     *
+     * @since 3.1.9
+     */
+    static boolean _isZeroLength(Schema schema) {
+        return _isZeroLength(schema, null, new int[] { MAX_ZERO_LENGTH_RECORD_CHECKS });
+    }
+
+    /**
+     * Maximum number of Records to check when determining whether a type is zero-length:
+     * same Record type may be reused by multiple fields, so number of checks could
+     * grow exponentially with nesting depth. If exceeded, type considered not to be
+     * zero-length (which only means that skipping iterates over elements).
+     */
+    private final static int MAX_ZERO_LENGTH_RECORD_CHECKS = 1000;
+
+    // @param path Records being checked (enclosing ones), to detect recursion;
+    //    {@code null} if none (allocated lazily, only needed for Records)
+    // @param checksLeft Number of Records still allowed to be checked (shared)
+    private static boolean _isZeroLength(Schema schema, Set<Schema> path, int[] checksLeft) {
+        switch (schema.getType()) {
+        case NULL:
+            return true;
+        case FIXED:
+            return schema.getFixedSize() == 0;
+        case RECORD:
+            if (--checksLeft[0] < 0) {
+                return false;
+            }
+            if (path == null) {
+                path = Collections.newSetFromMap(new IdentityHashMap<>());
+            }
+            // recursive Record type cannot be zero-length (not encodable). NOTE: only
+            // Records on the current path count; same type may well be used by
+            // sibling fields
+            if (!path.add(schema)) {
+                return false;
+            }
+            try {
+                for (Schema.Field field : schema.getFields()) {
+                    if (!_isZeroLength(field.schema(), path, checksLeft)) {
+                        return false;
+                    }
+                }
+                return true;
+            } finally {
+                path.remove(schema);
+            }
+        default:
+            return false;
+        }
     }
 
     protected AvroStructureReader createMapReader(Schema schema)
@@ -276,10 +333,13 @@ public abstract class AvroReaderFactory
             String typeId = AvroSchemaHelper.getTypeId(readerSchema);
             String elementTypeId = readerSchema.getProp(AvroSchemaHelper.AVRO_SCHEMA_PROP_ELEMENT_CLASS);
 
+            // NOTE: encoding (and so length) determined by writer schema
+            final boolean zeroLength = _isZeroLength(writerElementType);
             if (scalar != null) {
-                return ArrayReader.construct(scalar, typeId, elementTypeId);
+                return ArrayReader.construct(scalar, typeId, elementTypeId, zeroLength);
             }
-            return ArrayReader.construct(createReader(writerElementType, readerSchema.getElementType()), typeId, elementTypeId);
+            return ArrayReader.construct(createReader(writerElementType, readerSchema.getElementType()),
+                    typeId, elementTypeId, zeroLength);
         }
 
         protected AvroStructureReader createMapReader(Schema writerSchema, Schema readerSchema)

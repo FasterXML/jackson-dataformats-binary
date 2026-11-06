@@ -513,3 +513,6 @@ Dhanraj E (@Dhanu-dynamic)
 
 * Contributed #895: (smile) Enforce `maxNestingDepth` in non-blocking parser
  (2.21.9)
+* Contributed #896: (avro) Negative byte size of skipped Array/Map block moves input
+  pointer backwards, causing infinite loop
+ (2.21.9)

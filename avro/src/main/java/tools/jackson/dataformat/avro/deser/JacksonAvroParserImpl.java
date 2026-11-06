@@ -469,9 +469,11 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             return;
         }
         final byte[] buf = _inputBuffer;
-        if (buf[ptr++] < 0) {
+        int b = buf[ptr++];
+        if (b < 0) {
+            // NOTE: at least 10 bytes available, so can read directly from buffer
+            //   (must not use `_nextByteGuaranteed()`: `_inputPtr` not yet updated)
             int maxLeft = 9;
-            int b;
             do {
                 b = buf[ptr++];
             } while ((--maxLeft > 0) && (b < 0));
@@ -861,7 +863,11 @@ public class JacksonAvroParserImpl extends AvroParserImpl
      * @since 2.18.11
      */
     private final void _validateValueLength(long len) throws IOException {
-        _streamReadConstraints.validateDocumentLength(_currInputProcessed + _inputPtr + len);
+        long total = _currInputProcessed + _inputPtr + len;
+        if (total < 0L) { // overflow for huge `len`
+            total = Long.MAX_VALUE;
+        }
+        _streamReadConstraints.validateDocumentLength(total);
     }
 
     private final void _read(byte[] target, int offset, int len) throws IOException
@@ -933,6 +939,9 @@ public class JacksonAvroParserImpl extends AvroParserImpl
 
     private final void _skip(int len) throws IOException
     {
+        if (len < 0) { // would move input pointer backwards
+            _reportError("Invalid (negative) number of bytes to skip: "+len);
+        }
         int ptr = _inputPtr;
         int available = _inputEnd - ptr;
         int left = len - available;
@@ -962,6 +971,9 @@ public class JacksonAvroParserImpl extends AvroParserImpl
 
     private final void _skipL(long len) throws IOException
     {
+        if (len < 0L) { // would move input pointer backwards
+            _reportError("Invalid (negative) number of bytes to skip: "+len);
+        }
         int ptr = _inputPtr;
         int available = _inputEnd - ptr;
         long left = len - available;
@@ -1007,29 +1019,50 @@ public class JacksonAvroParserImpl extends AvroParserImpl
 
     @Override
     public long skipArray() throws IOException {
-        return _skipChunkElements();
+        return _skipChunkElements(false);
     }
 
     // used for Arrays and Maps, first and other chunks
     private final long _decodeChunkLength() throws IOException {
         long result = decodeLong();
         if (result < 0) {
+            _verifyNegativeItemCount(result);
             skipLong(); // Consume byte-count if present
             result = -result;
         }
         return result;
     }
 
-    private long _skipChunkElements() throws IOException {
-        int result = decodeInt();
-        while (result < 0) {
+    // used for skipping Arrays and Maps (all chunks): block item count is a `long`,
+    // and negative count is followed by byte size of the block
+    private long _skipChunkElements(boolean isMap) throws IOException {
+        long result = decodeLong();
+        while (result < 0L) {
+            _verifyNegativeItemCount(result);
             long bytecount = decodeLong();
+            if (bytecount < 0L) {
+                _reportError("Invalid byte size for Array/Map block: "+bytecount);
+            }
+            // Every Map entry has a key, at least 1 byte (length): Array elements may
+            // be zero-length (like `null`s) so no similar check is possible for Arrays
+            if (isMap && (bytecount < -result)) {
+                _reportError("Invalid byte size for Map block: "+bytecount
+                        +" (less than entry count "+(-result)+")");
+            }
+            _validateValueLength(bytecount);
             _skipL(bytecount);
-            result = decodeInt();
+            result = decodeLong();
         }
         return result;
     }
-    
+
+    // `Long.MIN_VALUE` cannot be negated into valid (positive) item count
+    private void _verifyNegativeItemCount(long count) throws IOException {
+        if (count == Long.MIN_VALUE) {
+            _reportError("Invalid item count for Array/Map block: "+count);
+        }
+    }
+
     /*
     /**********************************************************************
     /* Methods for AvroReadContext implementations: decoding Maps
@@ -1054,7 +1087,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
 
     @Override
     public long skipMap() throws IOException {
-        return _skipChunkElements();
+        return _skipChunkElements(true);
     }
 
     /*
