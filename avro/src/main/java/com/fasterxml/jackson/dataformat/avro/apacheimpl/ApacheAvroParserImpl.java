@@ -375,7 +375,12 @@ public class ApacheAvroParserImpl extends AvroParserImpl
 
     @Override
     public void skipString() throws IOException {
-        _decoder.skipString();
+        // Not delegated to `BinaryDecoder.skipString()`: it does not check sign of length
+        long len = _decoder.readLong();
+        if (len < 0L) {
+            _reportError("Invalid length indicator for String: "+len);
+        }
+        _skipBytes(len);
     }
 
     @Override
@@ -427,7 +432,12 @@ public class ApacheAvroParserImpl extends AvroParserImpl
 
     @Override
     public void skipBytes() throws IOException {
-        _decoder.skipBytes();
+        // Not delegated to `BinaryDecoder.skipBytes()`: it does not check sign of length
+        long len = _decoder.readLong();
+        if (len < 0L) {
+            _reportError("Invalid length indicator for Bytes: "+len);
+        }
+        _skipBytes(len);
     }
 
     @Override
@@ -455,7 +465,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
 
     @Override
     public long skipArray() throws IOException {
-        return _decoder.skipArray();
+        return _skipChunkElements();
     }
 
     // // // Map decoding
@@ -477,7 +487,34 @@ public class ApacheAvroParserImpl extends AvroParserImpl
 
     @Override
     public long skipMap() throws IOException {
-        return _decoder.skipMap();
+        return _skipChunkElements();
+    }
+
+    // Used for skipping Arrays and Maps, instead of `BinaryDecoder.skipArray()`/`skipMap()`
+    // which do not check the sign of block byte size: a negative size would move
+    // decoder position backwards (possibly causing an infinite loop)
+    private long _skipChunkElements() throws IOException {
+        long result = _decoder.readLong();
+        while (result < 0L) {
+            long bytecount = _decoder.readLong();
+            if (bytecount < 0L) {
+                _reportError("Invalid byte size for Array/Map block: "+bytecount);
+            }
+            _skipBytes(bytecount);
+            result = _decoder.readLong();
+        }
+        return result;
+    }
+
+    // Caller must verify that `len` is not negative
+    private void _skipBytes(long len) throws IOException {
+        while (len > Integer.MAX_VALUE) {
+            _decoder.skipFixed(Integer.MAX_VALUE);
+            len -= Integer.MAX_VALUE;
+        }
+        if (len > 0L) {
+            _decoder.skipFixed((int) len);
+        }
     }
 
     // // // Misc other decoding
