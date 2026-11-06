@@ -15,6 +15,14 @@ public abstract class ArrayReader extends AvroStructureReader
     protected final AvroParserImpl _parser;
     protected final String _elementTypeId;
 
+    /**
+     * Whether encoded elements take no bytes (like {@code null}s): if so, skipping
+     * must not iterate over elements, since item count is not bounded by input length.
+     *
+     * @since 3.1.9
+     */
+    final boolean _zeroLengthElements;
+
     protected int _state;
     protected long _count;
 
@@ -22,20 +30,52 @@ public abstract class ArrayReader extends AvroStructureReader
     
     protected ArrayReader(AvroReadContext parent, AvroParserImpl parser, String typeId, String elementTypeId)
     {
+        this(parent, parser, typeId, elementTypeId, false);
+    }
+
+    // @since 3.1.9
+    private ArrayReader(AvroReadContext parent, AvroParserImpl parser, String typeId, String elementTypeId,
+            boolean zeroLengthElements)
+    {
         super(parent, TYPE_ARRAY, typeId);
         _parser = parser;
         _elementTypeId = elementTypeId;
+        _zeroLengthElements = zeroLengthElements;
         if (parser != null) {
             parser.streamReadConstraints().validateNestingDepth(_nestingDepth);
         }
     }
 
+    /**
+     * @deprecated Since 3.1.9: no longer used by Jackson. Readers constructed with
+     *   this method do not know whether elements are zero-length, and so skip them
+     *   one by one.
+     */
+    @Deprecated // since 3.1.9
     public static ArrayReader construct(ScalarDecoder reader, String typeId, String elementTypeId) {
-        return new Scalar(reader, typeId, elementTypeId);
+        return construct(reader, typeId, elementTypeId, false);
     }
 
+    /**
+     * @deprecated Since 3.1.9: no longer used by Jackson. Readers constructed with
+     *   this method do not know whether elements are zero-length, and so skip them
+     *   one by one.
+     */
+    @Deprecated // since 3.1.9
     public static ArrayReader construct(AvroStructureReader reader, String typeId, String elementTypeId) {
-        return new NonScalar(reader, typeId, elementTypeId);
+        return construct(reader, typeId, elementTypeId, false);
+    }
+
+    // @since 3.1.9
+    static ArrayReader construct(ScalarDecoder reader, String typeId, String elementTypeId,
+            boolean zeroLengthElements) {
+        return new Scalar(null, reader, null, typeId, elementTypeId, zeroLengthElements);
+    }
+
+    // @since 3.1.9
+    static ArrayReader construct(AvroStructureReader reader, String typeId, String elementTypeId,
+            boolean zeroLengthElements) {
+        return new NonScalar(null, reader, null, typeId, elementTypeId, zeroLengthElements);
     }
 
     @Override
@@ -84,20 +124,18 @@ public abstract class ArrayReader extends AvroStructureReader
     private final static class Scalar extends ArrayReader
     {
         private final ScalarDecoder _elementReader;
-        
-        public Scalar(ScalarDecoder reader, String typeId, String elementTypeId) {
-            this(null, reader, null, typeId, elementTypeId != null ? elementTypeId : reader.getTypeId());
-        }
 
-        private Scalar(AvroReadContext parent, ScalarDecoder reader, 
-                AvroParserImpl parser, String typeId, String elementTypeId) {
-            super(parent, parser, typeId, elementTypeId != null ? elementTypeId : reader.getTypeId());
+        private Scalar(AvroReadContext parent, ScalarDecoder reader,
+                AvroParserImpl parser, String typeId, String elementTypeId,
+                boolean zeroLengthElements) {
+            super(parent, parser, typeId, elementTypeId != null ? elementTypeId : reader.getTypeId(),
+                    zeroLengthElements);
             _elementReader = reader;
         }
         
         @Override
         public Scalar newReader(AvroReadContext parent, AvroParserImpl parser) {
-            return new Scalar(parent, _elementReader, parser, _typeId, _elementTypeId);
+            return new Scalar(parent, _elementReader, parser, _typeId, _elementTypeId, _zeroLengthElements);
         }
 
         @Override
@@ -141,8 +179,12 @@ public abstract class ArrayReader extends AvroStructureReader
             // As per Avro spec/ref impl suggestion:
             long l;
             while ((l = parser.skipArray()) > 0L) {
-                while (--l >= 0) {
-                    _elementReader.skipValue(parser);
+                // Nothing to skip for zero-length elements; and must not iterate since
+                // count is not bounded by input length (each block takes only a few bytes)
+                if (!_zeroLengthElements) {
+                    while (--l >= 0) {
+                        _elementReader.skipValue(parser);
+                    }
                 }
             }
         }
@@ -151,21 +193,18 @@ public abstract class ArrayReader extends AvroStructureReader
     private final static class NonScalar extends ArrayReader
     {
         private final AvroStructureReader _elementReader;
-        
-        public NonScalar(AvroStructureReader reader, String typeId, String elementTypeId) {
-            this(null, reader, null, typeId, elementTypeId);
-        }
 
         private NonScalar(AvroReadContext parent,
-                AvroStructureReader reader, 
-                AvroParserImpl parser, String typeId, String elementTypeId) {
-            super(parent, parser, typeId, elementTypeId);
+                AvroStructureReader reader,
+                AvroParserImpl parser, String typeId, String elementTypeId,
+                boolean zeroLengthElements) {
+            super(parent, parser, typeId, elementTypeId, zeroLengthElements);
             _elementReader = reader;
         }
         
         @Override
         public NonScalar newReader(AvroReadContext parent, AvroParserImpl parser) {
-            return new NonScalar(parent, _elementReader, parser, _typeId, _elementTypeId);
+            return new NonScalar(parent, _elementReader, parser, _typeId, _elementTypeId, _zeroLengthElements);
         }
 
         @Override
@@ -205,8 +244,12 @@ public abstract class ArrayReader extends AvroStructureReader
             // As per Avro spec/ref impl suggestion:
             long l;
             while ((l = parser.skipArray()) > 0L) {
-                while (--l >= 0) {
-                    _elementReader.skipValue(parser);
+                // Nothing to skip for zero-length elements; and must not iterate since
+                // count is not bounded by input length (each block takes only a few bytes)
+                if (!_zeroLengthElements) {
+                    while (--l >= 0) {
+                        _elementReader.skipValue(parser);
+                    }
                 }
             }
         }
