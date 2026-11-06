@@ -51,6 +51,29 @@ public class DeeplyNestedSmileReadWriteTest extends AsyncTestBase
         }
     }
 
+    // Nesting exactly at the limit (root + 9 = 10 levels) must still be accepted
+    @Test
+    public void testMaxNestingArrayRead() throws Exception {
+        _testMaxNestingRead(createDeepNestedArrayDoc(9));
+    }
+
+    @Test
+    public void testMaxNestingObjectRead() throws Exception {
+        _testMaxNestingRead(createDeepNestedObjectDoc(9));
+    }
+
+    private void _testMaxNestingRead(JsonNode docRoot) throws Exception
+    {
+        byte[] doc = MAPPER_VANILLA.writeValueAsBytes(docRoot);
+        try (JsonParser p = MAPPER_CONSTRAINED.createParser(doc)) {
+            int maxDepth = 0;
+            while (p.nextToken() != null) {
+                maxDepth = Math.max(maxDepth, p.getParsingContext().getNestingDepth());
+            }
+            assertEquals(10, maxDepth);
+        }
+    }
+
     @Test
     public void testDeepNestingArrayReadAsync() throws Exception {
         _testDeepNestingReadAsync(createDeepNestedArrayDoc(13));
