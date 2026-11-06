@@ -115,6 +115,10 @@ No changes since 2.21
  (fix by @cowtowncoder, w/ Claude code)
 #895: (smile) Enforce `maxNestingDepth` in non-blocking parser
  (contributed by @Dhanu-dynamic)
+#896: (avro) Negative byte size of skipped Array/Map block moves input pointer backwards,
+  causing infinite loop (with both native and Apache decoders); also stricter
+  validation of other lengths and item counts
+ (contributed by @Dhanu-dynamic)
 
 2.21.8 (17-Oct-2026)
 
