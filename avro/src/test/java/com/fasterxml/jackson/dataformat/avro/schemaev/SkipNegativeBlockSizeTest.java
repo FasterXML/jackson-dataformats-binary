@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.core.exc.StreamReadException;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.avro.*;
 import com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheAvroFactory;
 
@@ -154,18 +155,38 @@ public class SkipNegativeBlockSizeTest extends AvroTestBase
                 "Invalid item count for Array/Map block: "+Long.MIN_VALUE);
     }
 
-    // Positive item count is used to skip elements one by one: for zero-length
-    // elements (`null`s) no input is consumed, so huge count must be rejected
+    // Zero-length elements (`null`s etc) consume no input, so skipping must not
+    // iterate over them: item count is not bounded by input length. Use multiple
+    // blocks of huge counts, as each one costs only a few bytes
     @ParameterizedTest
     @MethodSource("mappers")
-    public void testSkipNullArrayWithHugeCount(AvroMapper mapper) throws Exception {
+    public void testSkipZeroLengthArrayWithHugeCounts(AvroMapper mapper) throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        _writeLong(bytes, Long.MAX_VALUE);
+        for (int i = 0; i < 100; ++i) {
+            _writeLong(bytes, (i & 1) == 0 ? Long.MAX_VALUE : Integer.MAX_VALUE);
+        }
         bytes.write(0); // end-of-array
         bytes.write(0x0E); // `after`: 7
-        _verifyFail(mapper, _writerSchema("{'type':'array','items':'null'}"),
-                bytes.toByteArray(),
-                "Invalid item count for Array/Map block: "+Long.MAX_VALUE);
+        final byte[] doc = bytes.toByteArray();
+        for (String elemType : new String[] {
+                "'null'",
+                "{'type':'fixed','name':'Empty','size':0}",
+                "{'type':'record','name':'Nulls','fields':["
+                    +"{'name':'a','type':'null'},{'name':'b','type':'null'}]}",
+        }) {
+            _verifySkip(mapper, _writerSchema("{'type':'array','items':"+elemType+"}"), doc);
+        }
+    }
+
+    // ... but non-zero-length elements do get skipped one by one
+    @ParameterizedTest
+    @MethodSource("mappers")
+    public void testSkipNonZeroLengthArray(AvroMapper mapper) throws Exception {
+        // record with `null` and `int` fields: 2 blocks with 2 + 1 elements
+        _verifySkip(mapper, _writerSchema("{'type':'array','items':"
+                + "{'type':'record','name':'Elem','fields':["
+                + "{'name':'a','type':'null'},{'name':'b','type':'int'}]}}"),
+                new byte[] { 0x04, 0x02, 0x04, 0x02, 0x06, 0x00, 0x0E });
     }
 
     // Size of skipped block must be checked against max document length before skipping
@@ -208,17 +229,37 @@ public class SkipNegativeBlockSizeTest extends AvroTestBase
         verifyException(e, "exceeds the maximum allowed ("+MAX_DOC_LEN);
     }
 
+    // Verifies with both `byte[]` and `InputStream` input
     private void _verifyFail(AvroMapper mapper, String writerSchemaJson, byte[] doc,
             String expMsg) throws Exception
     {
         final AvroSchema writerSchema = mapper.schemaFrom(writerSchemaJson);
         final AvroSchema readerSchema = mapper.schemaFrom(READER_SCHEMA_JSON);
+        final ObjectReader r = mapper.readerFor(Reader.class)
+                .with(writerSchema.withReaderSchema(readerSchema));
         StreamReadException e = assertTimeoutPreemptively(Duration.ofSeconds(5),
-                () -> assertThrows(StreamReadException.class,
-                        () -> mapper.readerFor(Reader.class)
-                            .with(writerSchema.withReaderSchema(readerSchema))
-                            .readValue(doc)));
+                () -> assertThrows(StreamReadException.class, () -> r.readValue(doc)));
         verifyException(e, expMsg);
+        e = assertTimeoutPreemptively(Duration.ofSeconds(5),
+                () -> assertThrows(StreamReadException.class,
+                        () -> r.readValue(new ByteArrayInputStream(doc))));
+        verifyException(e, expMsg);
+    }
+
+    // Verifies with both `byte[]` and `InputStream` input
+    private void _verifySkip(AvroMapper mapper, String writerSchemaJson, byte[] doc)
+        throws Exception
+    {
+        final AvroSchema writerSchema = mapper.schemaFrom(writerSchemaJson);
+        final AvroSchema readerSchema = mapper.schemaFrom(READER_SCHEMA_JSON);
+        final ObjectReader r = mapper.readerFor(Reader.class)
+                .with(writerSchema.withReaderSchema(readerSchema));
+        Reader result = assertTimeoutPreemptively(Duration.ofSeconds(5),
+                () -> r.<Reader>readValue(doc));
+        assertEquals(7, result.after);
+        result = assertTimeoutPreemptively(Duration.ofSeconds(5),
+                () -> r.<Reader>readValue(new ByteArrayInputStream(doc)));
+        assertEquals(7, result.after);
     }
 
     // zigzag + varint encoding of Avro `long`

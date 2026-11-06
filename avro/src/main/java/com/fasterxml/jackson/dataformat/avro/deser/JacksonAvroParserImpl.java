@@ -1047,17 +1047,7 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             _skipL(bytecount);
             result = decodeLong();
         }
-        _verifyPositiveSkipCount(result);
         return result;
-    }
-
-    // Positive item count of skipped block is used as-is to skip elements one by one:
-    // for zero-length elements (like `null`s) no input is consumed, so must limit
-    private void _verifyPositiveSkipCount(long count) throws IOException {
-        if (count > Integer.MAX_VALUE) {
-            _reportError("Invalid item count for Array/Map block: "+count
-                    +" (exceeds maximum of "+Integer.MAX_VALUE+")");
-        }
     }
 
     // `Long.MIN_VALUE` cannot be negated into valid (positive) item count

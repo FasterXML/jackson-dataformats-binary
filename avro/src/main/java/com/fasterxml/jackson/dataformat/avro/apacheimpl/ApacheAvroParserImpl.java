@@ -540,12 +540,6 @@ public class ApacheAvroParserImpl extends AvroParserImpl
             _skipBytes(bytecount);
             result = _decoder.readLong();
         }
-        // Positive item count is used as-is to skip elements one by one: for
-        // zero-length elements (like `null`s) no input is consumed, so must limit
-        if (result > Integer.MAX_VALUE) {
-            _reportError("Invalid item count for Array/Map block: "+result
-                    +" (exceeds maximum of "+Integer.MAX_VALUE+")");
-        }
         return result;
     }
 

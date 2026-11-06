@@ -159,9 +159,44 @@ public abstract class AvroReaderFactory
             if (EnumSet.class.getName().equals(typeId)) {
                 typeId += "<" + elementTypeId + ">";
             }
-            return ArrayReader.construct(scalar, typeId, elementTypeId);
+            return ArrayReader.construct(scalar, typeId, elementTypeId,
+                    _isZeroLength(elementType));
         }
-        return ArrayReader.construct(createReader(elementType), typeId, elementTypeId);
+        return ArrayReader.construct(createReader(elementType), typeId, elementTypeId,
+                _isZeroLength(elementType));
+    }
+
+    /**
+     * Helper method for checking whether values of given type are encoded with no
+     * bytes at all: {@code null}, zero-length {@code fixed}, and Records with only
+     * such fields. All other types take at least one byte.
+     *
+     * @since 2.21.9
+     */
+    static boolean _isZeroLength(Schema schema) {
+        return _isZeroLength(schema, Collections.newSetFromMap(new IdentityHashMap<>()));
+    }
+
+    private static boolean _isZeroLength(Schema schema, Set<Schema> seen) {
+        switch (schema.getType()) {
+        case NULL:
+            return true;
+        case FIXED:
+            return schema.getFixedSize() == 0;
+        case RECORD:
+            // recursive Record type cannot be zero-length (not encodable)
+            if (!seen.add(schema)) {
+                return false;
+            }
+            for (Schema.Field field : schema.getFields()) {
+                if (!_isZeroLength(field.schema(), seen)) {
+                    return false;
+                }
+            }
+            return true;
+        default:
+            return false;
+        }
     }
 
     protected AvroStructureReader createMapReader(Schema schema) throws IOException
@@ -279,10 +314,13 @@ public abstract class AvroReaderFactory
             String typeId = AvroSchemaHelper.getTypeId(readerSchema);
             String elementTypeId = readerSchema.getProp(AvroSchemaHelper.AVRO_SCHEMA_PROP_ELEMENT_CLASS);
 
+            // NOTE: encoding (and so length) determined by writer schema
+            final boolean zeroLength = _isZeroLength(writerElementType);
             if (scalar != null) {
-                return ArrayReader.construct(scalar, typeId, elementTypeId);
+                return ArrayReader.construct(scalar, typeId, elementTypeId, zeroLength);
             }
-            return ArrayReader.construct(createReader(writerElementType, readerSchema.getElementType()), typeId, elementTypeId);
+            return ArrayReader.construct(createReader(writerElementType, readerSchema.getElementType()),
+                    typeId, elementTypeId, zeroLength);
         }
 
         protected AvroStructureReader createMapReader(Schema writerSchema, Schema readerSchema) throws IOException
