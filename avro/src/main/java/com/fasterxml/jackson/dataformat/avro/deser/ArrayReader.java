@@ -20,7 +20,7 @@ public abstract class ArrayReader extends AvroStructureReader
      *
      * @since 2.21.9
      */
-    protected final boolean _zeroLengthElements;
+    final boolean _zeroLengthElements;
 
     protected int _state;
     protected long _count;
