@@ -111,6 +111,8 @@ No changes since 2.21
 #888: (cbor, smile) `nextFieldName(SerializableString)` matches against JSON-escaped
   name bytes (`asQuotedUTF8()`)
  (fix by @cowtowncoder, w/ Claude code)
+#895: (smile) Enforce `maxNestingDepth` in non-blocking parser
+ (contributed by @Dhanu-dynamic)
 
 2.21.8 (17-Oct-2026)
 
