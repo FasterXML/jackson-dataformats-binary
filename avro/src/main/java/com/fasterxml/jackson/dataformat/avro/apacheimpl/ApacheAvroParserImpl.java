@@ -187,7 +187,11 @@ public class ApacheAvroParserImpl extends AvroParserImpl
      */
     private void _validateValueLength(long len) throws IOException {
         if (_lengthCheckingInput != null) {
-            _streamReadConstraints.validateDocumentLength(_decodedLength() + len);
+            long total = _decodedLength() + len;
+            if (total < 0L) { // overflow for huge `len`
+                total = Long.MAX_VALUE;
+            }
+            _streamReadConstraints.validateDocumentLength(total);
         }
     }
 
@@ -410,6 +414,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
             }
             _binaryValue = NO_BYTES;
         } else {
+            _validateValueLength(len);
             _binaryValue = _readBytes(len);
         }
         return JsonToken.VALUE_EMBEDDED_OBJECT;
@@ -534,6 +539,12 @@ public class ApacheAvroParserImpl extends AvroParserImpl
             _validateValueLength(bytecount);
             _skipBytes(bytecount);
             result = _decoder.readLong();
+        }
+        // Positive item count is used as-is to skip elements one by one: for
+        // zero-length elements (like `null`s) no input is consumed, so must limit
+        if (result > Integer.MAX_VALUE) {
+            _reportError("Invalid item count for Array/Map block: "+result
+                    +" (exceeds maximum of "+Integer.MAX_VALUE+")");
         }
         return result;
     }

@@ -1,10 +1,13 @@
 package com.fasterxml.jackson.dataformat.avro;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheAvroFactory;
 
@@ -53,6 +56,28 @@ public class ReadInvalidLengthsTest extends AvroTestBase
                         .with(mapper.schemaFrom(schemaJson))
                         .readValue(new byte[] { 0x01 }));
             verifyException(e, "Invalid length indicator for Bytes: -1");
+        }
+    }
+
+    // Declared length of Bytes value must be checked against max document length
+    // before reading content
+    @Test
+    public void testBytesLengthTooLong() throws Exception
+    {
+        final int maxDocLen = 1000;
+        final String schemaJson = aposToQuotes("{'type':'record','name':'Root','fields':["
+                + "{'name':'data','type':'bytes'}]}");
+        // length 1,000,000 (zigzag 2,000,000 as varint); content missing
+        final byte[] doc = new byte[] { (byte) 0x80, (byte) 0x89, (byte) 0x7A };
+        for (AvroFactory f : new AvroFactory[] { new AvroFactory(), new ApacheAvroFactory() }) {
+            f.setStreamReadConstraints(StreamReadConstraints.builder()
+                    .maxDocumentLength(maxDocLen).build());
+            final AvroMapper mapper = AvroMapper.builder(f).build();
+            StreamConstraintsException e = assertThrows(StreamConstraintsException.class,
+                    () -> mapper.readerFor(BytesValue.class)
+                        .with(mapper.schemaFrom(schemaJson))
+                        .readValue(new ByteArrayInputStream(doc)));
+            verifyException(e, "exceeds the maximum allowed ("+maxDocLen);
         }
     }
 

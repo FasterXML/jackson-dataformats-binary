@@ -154,6 +154,20 @@ public class SkipNegativeBlockSizeTest extends AvroTestBase
                 "Invalid item count for Array/Map block: "+Long.MIN_VALUE);
     }
 
+    // Positive item count is used to skip elements one by one: for zero-length
+    // elements (`null`s) no input is consumed, so huge count must be rejected
+    @ParameterizedTest
+    @MethodSource("mappers")
+    public void testSkipNullArrayWithHugeCount(AvroMapper mapper) throws Exception {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        _writeLong(bytes, Long.MAX_VALUE);
+        bytes.write(0); // end-of-array
+        bytes.write(0x0E); // `after`: 7
+        _verifyFail(mapper, _writerSchema("{'type':'array','items':'null'}"),
+                bytes.toByteArray(),
+                "Invalid item count for Array/Map block: "+Long.MAX_VALUE);
+    }
+
     // Size of skipped block must be checked against max document length before skipping
     @ParameterizedTest
     @MethodSource("constrainedMappers")
@@ -161,6 +175,16 @@ public class SkipNegativeBlockSizeTest extends AvroTestBase
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         _writeLong(bytes, -1L);
         _writeLong(bytes, 1_000_000L); // byte size way above limit; content missing
+        _verifyLengthFail(mapper, ARRAY_WRITER_SCHEMA_JSON, bytes.toByteArray());
+    }
+
+    // Byte size so big that adding current offset overflows must not pass the check
+    @ParameterizedTest
+    @MethodSource("constrainedMappers")
+    public void testSkipArrayBlockSizeOverflow(AvroMapper mapper) throws Exception {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        _writeLong(bytes, -1L);
+        _writeLong(bytes, Long.MAX_VALUE - 5L);
         _verifyLengthFail(mapper, ARRAY_WRITER_SCHEMA_JSON, bytes.toByteArray());
     }
 

@@ -472,13 +472,16 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             return;
         }
         final byte[] buf = _inputBuffer;
-        if (buf[ptr++] < 0) {
+        int b = buf[ptr++];
+        if (b < 0) {
+            // NOTE: at least 10 bytes available, so can read directly from buffer
+            //   (must not use `_nextByteGuaranteed()`: `_inputPtr` not yet updated)
             int maxLeft = 9;
-            int b;
             do {
-                b = _nextByteGuaranteed();
+                b = buf[ptr++];
             } while ((--maxLeft > 0) && (b < 0));
             if (b < 0) {
+                _inputPtr = ptr;
                 _reportInvalidNegative(b);
             }
         }
@@ -863,7 +866,11 @@ public class JacksonAvroParserImpl extends AvroParserImpl
      * @since 2.18.11
      */
     private final void _validateValueLength(long len) throws IOException {
-        _streamReadConstraints.validateDocumentLength(_currInputProcessed + _inputPtr + len);
+        long total = _currInputProcessed + _inputPtr + len;
+        if (total < 0L) { // overflow for huge `len`
+            total = Long.MAX_VALUE;
+        }
+        _streamReadConstraints.validateDocumentLength(total);
     }
 
     private final void _read(byte[] target, int offset, int len) throws IOException
@@ -1040,7 +1047,17 @@ public class JacksonAvroParserImpl extends AvroParserImpl
             _skipL(bytecount);
             result = decodeLong();
         }
+        _verifyPositiveSkipCount(result);
         return result;
+    }
+
+    // Positive item count of skipped block is used as-is to skip elements one by one:
+    // for zero-length elements (like `null`s) no input is consumed, so must limit
+    private void _verifyPositiveSkipCount(long count) throws IOException {
+        if (count > Integer.MAX_VALUE) {
+            _reportError("Invalid item count for Array/Map block: "+count
+                    +" (exceeds maximum of "+Integer.MAX_VALUE+")");
+        }
     }
 
     // `Long.MIN_VALUE` cannot be negated into valid (positive) item count
