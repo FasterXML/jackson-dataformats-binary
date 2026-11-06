@@ -60,8 +60,7 @@ public abstract class ArrayReader extends AvroStructureReader
     static ArrayReader construct(ScalarDecoder reader, String typeId, String elementTypeId,
             boolean zeroLengthElements)
             throws IOException {
-        return new Scalar(null, reader, null, typeId,
-                elementTypeId != null ? elementTypeId : reader.getTypeId(), zeroLengthElements);
+        return new Scalar(null, reader, null, typeId, elementTypeId, zeroLengthElements);
     }
 
     // @since 2.21.9

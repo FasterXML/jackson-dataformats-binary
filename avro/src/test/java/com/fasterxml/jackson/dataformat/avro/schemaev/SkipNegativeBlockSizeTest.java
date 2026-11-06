@@ -173,6 +173,10 @@ public class SkipNegativeBlockSizeTest extends AvroTestBase
                 "{'type':'fixed','name':'Empty','size':0}",
                 "{'type':'record','name':'Nulls','fields':["
                     +"{'name':'a','type':'null'},{'name':'b','type':'null'}]}",
+                // same (named) Record type used by sibling fields: not recursion
+                "{'type':'record','name':'Pair','fields':["
+                    +"{'name':'a','type':{'type':'record','name':'Empty','fields':[]}},"
+                    +"{'name':'b','type':'Empty'}]}",
         }) {
             _verifySkip(mapper, _writerSchema("{'type':'array','items':"+elemType+"}"), doc);
         }

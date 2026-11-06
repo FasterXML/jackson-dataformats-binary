@@ -153,17 +153,16 @@ public abstract class AvroReaderFactory
         if (elementTypeId == null) {
             elementTypeId = AvroSchemaHelper.getTypeId(elementType);
         }
+        final boolean zeroLength = _isZeroLength(elementType);
 
         if (scalar != null) {
             // EnumSet has to know element type information up front; take advantage of the fact that the id resolver handles canonical IDs
             if (EnumSet.class.getName().equals(typeId)) {
                 typeId += "<" + elementTypeId + ">";
             }
-            return ArrayReader.construct(scalar, typeId, elementTypeId,
-                    _isZeroLength(elementType));
+            return ArrayReader.construct(scalar, typeId, elementTypeId, zeroLength);
         }
-        return ArrayReader.construct(createReader(elementType), typeId, elementTypeId,
-                _isZeroLength(elementType));
+        return ArrayReader.construct(createReader(elementType), typeId, elementTypeId, zeroLength);
     }
 
     /**
@@ -174,26 +173,37 @@ public abstract class AvroReaderFactory
      * @since 2.21.9
      */
     static boolean _isZeroLength(Schema schema) {
-        return _isZeroLength(schema, Collections.newSetFromMap(new IdentityHashMap<>()));
+        return _isZeroLength(schema, null);
     }
 
-    private static boolean _isZeroLength(Schema schema, Set<Schema> seen) {
+    // @param path Records being checked (enclosing ones), to detect recursion;
+    //    {@code null} if none (allocated lazily, only needed for Records)
+    private static boolean _isZeroLength(Schema schema, Set<Schema> path) {
         switch (schema.getType()) {
         case NULL:
             return true;
         case FIXED:
             return schema.getFixedSize() == 0;
         case RECORD:
-            // recursive Record type cannot be zero-length (not encodable)
-            if (!seen.add(schema)) {
+            if (path == null) {
+                path = Collections.newSetFromMap(new IdentityHashMap<>());
+            }
+            // recursive Record type cannot be zero-length (not encodable). NOTE: only
+            // Records on the current path count; same type may well be used by
+            // sibling fields
+            if (!path.add(schema)) {
                 return false;
             }
-            for (Schema.Field field : schema.getFields()) {
-                if (!_isZeroLength(field.schema(), seen)) {
-                    return false;
+            try {
+                for (Schema.Field field : schema.getFields()) {
+                    if (!_isZeroLength(field.schema(), path)) {
+                        return false;
+                    }
                 }
+                return true;
+            } finally {
+                path.remove(schema);
             }
-            return true;
         default:
             return false;
         }
