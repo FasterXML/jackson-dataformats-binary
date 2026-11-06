@@ -182,6 +182,22 @@ public class SkipNegativeBlockSizeTest extends AvroTestBase
         }
     }
 
+    // Checking whether element type is zero-length must not take exponential time
+    // when same Record type is reused by sibling fields at every nesting level
+    @ParameterizedTest
+    @MethodSource("mappers")
+    public void testZeroLengthCheckWithDeeplyReusedRecords(AvroMapper mapper) throws Exception {
+        final int levels = 40;
+        String elemType = "{'type':'record','name':'R"+levels+"','fields':[]}";
+        for (int i = levels-1; i >= 0; --i) {
+            elemType = "{'type':'record','name':'R"+i+"','fields':["
+                    +"{'name':'a','type':"+elemType+"},{'name':'b','type':'R"+(i+1)+"'}]}";
+        }
+        // empty array (count 0), then `after`
+        _verifySkip(mapper, _writerSchema("{'type':'array','items':"+elemType+"}"),
+                new byte[] { 0x00, 0x0E });
+    }
+
     // ... but non-zero-length elements do get skipped one by one
     @ParameterizedTest
     @MethodSource("mappers")

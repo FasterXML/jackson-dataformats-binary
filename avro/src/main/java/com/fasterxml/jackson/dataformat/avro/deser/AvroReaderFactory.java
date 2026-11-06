@@ -173,18 +173,30 @@ public abstract class AvroReaderFactory
      * @since 2.21.9
      */
     static boolean _isZeroLength(Schema schema) {
-        return _isZeroLength(schema, null);
+        return _isZeroLength(schema, null, new int[] { MAX_ZERO_LENGTH_RECORD_CHECKS });
     }
+
+    /**
+     * Maximum number of Records to check when determining whether a type is zero-length:
+     * same Record type may be reused by multiple fields, so number of checks could
+     * grow exponentially with nesting depth. If exceeded, type considered not to be
+     * zero-length (which only means that skipping iterates over elements).
+     */
+    private final static int MAX_ZERO_LENGTH_RECORD_CHECKS = 1000;
 
     // @param path Records being checked (enclosing ones), to detect recursion;
     //    {@code null} if none (allocated lazily, only needed for Records)
-    private static boolean _isZeroLength(Schema schema, Set<Schema> path) {
+    // @param checksLeft Number of Records still allowed to be checked (shared)
+    private static boolean _isZeroLength(Schema schema, Set<Schema> path, int[] checksLeft) {
         switch (schema.getType()) {
         case NULL:
             return true;
         case FIXED:
             return schema.getFixedSize() == 0;
         case RECORD:
+            if (--checksLeft[0] < 0) {
+                return false;
+            }
             if (path == null) {
                 path = Collections.newSetFromMap(new IdentityHashMap<>());
             }
@@ -196,7 +208,7 @@ public abstract class AvroReaderFactory
             }
             try {
                 for (Schema.Field field : schema.getFields()) {
-                    if (!_isZeroLength(field.schema(), path)) {
+                    if (!_isZeroLength(field.schema(), path, checksLeft)) {
                         return false;
                     }
                 }
