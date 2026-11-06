@@ -73,3 +73,8 @@ DongNyoung Lee (@Dongnyoung)
 * Contributed fix for #797: (avro) Apache decoder fails with `UnsupportedOperationException`
   when `AvroReadFeature.AVRO_BUFFERING` disabled
  (3.1.8)
+
+Dhanraj E (@Dhanu-dynamic)
+
+* Contributed #895: (smile) Enforce `maxNestingDepth` in non-blocking parser
+ (3.1.9)
