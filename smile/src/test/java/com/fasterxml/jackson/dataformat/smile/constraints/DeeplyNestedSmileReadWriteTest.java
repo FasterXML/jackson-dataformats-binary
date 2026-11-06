@@ -73,6 +73,37 @@ public class DeeplyNestedSmileReadWriteTest extends AsyncTestBase
             } catch (StreamConstraintsException e) {
                 assertEquals("Document nesting depth (11) exceeds the maximum allowed (10, from `StreamReadConstraints.getMaxNestingDepth()`)",
                         e.getMessage());
+            } finally {
+                p.close();
+            }
+        }
+    }
+
+    // Nesting exactly at the limit (root + 9 = 10 levels) must still be accepted
+    @Test
+    public void testMaxNestingArrayReadAsync() throws Exception {
+        _testMaxNestingReadAsync(createDeepNestedArrayDoc(9));
+    }
+
+    @Test
+    public void testMaxNestingObjectReadAsync() throws Exception {
+        _testMaxNestingReadAsync(createDeepNestedObjectDoc(9));
+    }
+
+    private void _testMaxNestingReadAsync(JsonNode docRoot) throws Exception
+    {
+        byte[] doc = MAPPER_VANILLA.writeValueAsBytes(docRoot);
+        for (int bytesPerFeed : new int[] { 1, 1000 }) {
+            AsyncReaderWrapper p = asyncForBytes((SmileFactory) MAPPER_CONSTRAINED.getFactory(),
+                    bytesPerFeed, doc, 0);
+            try {
+                int maxDepth = 0;
+                while (p.nextToken() != null) {
+                    maxDepth = Math.max(maxDepth, p.parser().getParsingContext().getNestingDepth());
+                }
+                assertEquals(10, maxDepth, "bytesPerFeed: "+bytesPerFeed);
+            } finally {
+                p.close();
             }
         }
     }
