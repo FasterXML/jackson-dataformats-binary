@@ -171,23 +171,45 @@ public class ApacheAvroParserImpl extends AvroParserImpl
     public JsonToken nextToken() throws IOException
     {
         JsonToken t = super.nextToken();
-        final LengthCheckingInputStream input = _lengthCheckingInput;
-        if (input != null) {
-            long consumed = input.bytesRead();
-            if (_bufferingDecoder) {
-                // NOTE: for a buffering decoder this is what remains in its buffer,
-                //   undecoded; a direct decoder does not buffer, so raw count is exact
-                consumed -= _decoder.inputStream().available();
-            }
-            // NOTE: for a direct decoder, raw count may include one byte read ahead by
-            //   `checkInputEnd()` and pushed back ([dataformats-binary#797]). That byte
-            //   is always part of the document, so it cannot cause false failures; it
-            //   only means an over-limit error may be reported one token earlier
+        if (_lengthCheckingInput != null) {
+            long consumed = _decodedLength();
             if (consumed > 0L) {
                 _streamReadConstraints.validateDocumentLength(consumed);
             }
         }
         return t;
+    }
+
+    // Exact decoding position (bytes decoded so far); only to be called if
+    // `_lengthCheckingInput` is not null
+    private long _decodedLength() throws IOException {
+        long consumed = _lengthCheckingInput.bytesRead();
+        if (_bufferingDecoder) {
+            // NOTE: for a buffering decoder this is what remains in its buffer,
+            //   undecoded; a direct decoder does not buffer, so raw count is exact
+            consumed -= _decoder.inputStream().available();
+        }
+        // NOTE: for a direct decoder, raw count may include one byte read ahead by
+        //   `checkInputEnd()` and pushed back ([dataformats-binary#797]). That byte
+        //   is always part of the document, so it cannot cause false failures; it
+        //   only means an over-limit error may be reported one token earlier
+        //   (and within a value it has already been decoded, so count is exact)
+        return consumed;
+    }
+
+    /**
+     * Checks that a value of given length, about to be skipped, would not exceed
+     * maximum document length: done up front so as not to skip (read) content
+     * past the limit. Fixed-buffer input has its length validated up front by factory.
+     */
+    private void _validateValueLength(long len) throws IOException {
+        if (_lengthCheckingInput != null) {
+            long total = _decodedLength() + len;
+            if (total < 0L) { // overflow for huge `len`
+                total = Long.MAX_VALUE;
+            }
+            _streamReadConstraints.validateDocumentLength(total);
+        }
     }
 
     @Override
@@ -388,15 +410,25 @@ public class ApacheAvroParserImpl extends AvroParserImpl
 
     @Override
     public void skipString() throws IOException {
-        _decoder.skipString();
+        // Not delegated to `BinaryDecoder.skipString()`: it does not check sign of length
+        long len = _decoder.readLong();
+        if (len < 0L) {
+            _reportError("Invalid length indicator for String: "+len);
+        }
+        _validateValueLength(len);
+        _skipBytes(len);
     }
 
     @Override
     public JsonToken decodeBytes() throws IOException {
         int len = _decoder.readInt();
         if (len <= 0) {
+            if (len < 0) {
+                _reportError("Invalid length indicator for Bytes: "+len);
+            }
             _binaryValue = NO_BYTES;
         } else {
+            _validateValueLength(len);
             _binaryValue = _readBytes(len);
         }
         return JsonToken.VALUE_EMBEDDED_OBJECT;
@@ -440,7 +472,13 @@ public class ApacheAvroParserImpl extends AvroParserImpl
 
     @Override
     public void skipBytes() throws IOException {
-        _decoder.skipBytes();
+        // Not delegated to `BinaryDecoder.skipBytes()`: it does not check sign of length
+        long len = _decoder.readLong();
+        if (len < 0L) {
+            _reportError("Invalid length indicator for Bytes: "+len);
+        }
+        _validateValueLength(len);
+        _skipBytes(len);
     }
 
     @Override
@@ -468,7 +506,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
 
     @Override
     public long skipArray() throws IOException {
-        return _decoder.skipArray();
+        return _skipChunkElements(false);
     }
 
     // // // Map decoding
@@ -490,7 +528,44 @@ public class ApacheAvroParserImpl extends AvroParserImpl
 
     @Override
     public long skipMap() throws IOException {
-        return _decoder.skipMap();
+        return _skipChunkElements(true);
+    }
+
+    // Used for skipping Arrays and Maps, instead of `BinaryDecoder.skipArray()`/`skipMap()`
+    // which do not check the sign of block byte size: a negative size would move
+    // decoder position backwards (possibly causing an infinite loop)
+    private long _skipChunkElements(boolean isMap) throws IOException {
+        long result = _decoder.readLong();
+        while (result < 0L) {
+            if (result == Long.MIN_VALUE) { // cannot be negated into valid count
+                _reportError("Invalid item count for Array/Map block: "+result);
+            }
+            long bytecount = _decoder.readLong();
+            if (bytecount < 0L) {
+                _reportError("Invalid byte size for Array/Map block: "+bytecount);
+            }
+            // Every Map entry has a key, at least 1 byte (length): Array elements may
+            // be zero-length (like `null`s) so no similar check is possible for Arrays
+            if (isMap && (bytecount < -result)) {
+                _reportError("Invalid byte size for Map block: "+bytecount
+                        +" (less than entry count "+(-result)+")");
+            }
+            _validateValueLength(bytecount);
+            _skipBytes(bytecount);
+            result = _decoder.readLong();
+        }
+        return result;
+    }
+
+    // Caller must verify that `len` is not negative
+    private void _skipBytes(long len) throws IOException {
+        while (len > Integer.MAX_VALUE) {
+            _decoder.skipFixed(Integer.MAX_VALUE);
+            len -= Integer.MAX_VALUE;
+        }
+        if (len > 0L) {
+            _decoder.skipFixed((int) len);
+        }
     }
 
     // // // Misc other decoding
