@@ -22,8 +22,10 @@ Active maintainers:
 #888: (cbor, smile) `nextFieldName(SerializableString)` matches against JSON-escaped
   name bytes (`asQuotedUTF8()`)
  (fix by @cowtowncoder, w/ Claude code)
-- (avro) Negative byte size of skipped Array/Map block moves input pointer backwards,
+#896: (avro) Negative byte size of skipped Array/Map block moves input pointer backwards,
   causing infinite loop
+ (contributed by @Dhanu-dynamic)
+#895: (smile) Enforce `maxNestingDepth` in non-blocking parser
  (contributed by @Dhanu-dynamic)
 
 2.21.8 (17-Oct-2026)

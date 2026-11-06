@@ -401,6 +401,7 @@ public abstract class NonBlockingParserBase
     protected final JsonToken _startArrayScope() throws IOException
     {
         _streamReadContext = _streamReadContext.createChildArrayContext(-1, -1);
+        _streamReadConstraints.validateNestingDepth(_streamReadContext.getNestingDepth());
         _majorState = MAJOR_ARRAY_ELEMENT;
         _majorStateAfterValue = MAJOR_ARRAY_ELEMENT;
         return _updateToken(JsonToken.START_ARRAY);
@@ -409,6 +410,7 @@ public abstract class NonBlockingParserBase
     protected final JsonToken _startObjectScope() throws IOException
     {
         _streamReadContext = _streamReadContext.createChildObjectContext(-1, -1);
+        _streamReadConstraints.validateNestingDepth(_streamReadContext.getNestingDepth());
         _majorState = MAJOR_OBJECT_FIELD;
         _majorStateAfterValue = MAJOR_OBJECT_FIELD;
         return _updateToken(JsonToken.START_OBJECT);
