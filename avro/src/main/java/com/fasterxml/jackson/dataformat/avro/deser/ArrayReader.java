@@ -46,11 +46,23 @@ public abstract class ArrayReader extends AvroStructureReader
             parser.streamReadConstraints().validateNestingDepth(_nestingDepth);
     }
 
+    /**
+     * @deprecated Since 2.21.9: no longer used by Jackson. Readers constructed with
+     *   this method do not know whether elements are zero-length, and so skip them
+     *   one by one.
+     */
+    @Deprecated // since 2.21.9
     public static ArrayReader construct(ScalarDecoder reader, String typeId, String elementTypeId)
             throws IOException {
         return construct(reader, typeId, elementTypeId, false);
     }
 
+    /**
+     * @deprecated Since 2.21.9: no longer used by Jackson. Readers constructed with
+     *   this method do not know whether elements are zero-length, and so skip them
+     *   one by one.
+     */
+    @Deprecated // since 2.21.9
     public static ArrayReader construct(AvroStructureReader reader, String typeId, String elementTypeId)
             throws IOException{
         return construct(reader, typeId, elementTypeId, false);
@@ -110,10 +122,6 @@ public abstract class ArrayReader extends AvroStructureReader
     private final static class Scalar extends ArrayReader
     {
         private final ScalarDecoder _elementReader;
-
-        public Scalar(ScalarDecoder reader, String typeId, String elementTypeId) throws IOException {
-            this(null, reader, null, typeId, elementTypeId != null ? elementTypeId : reader.getTypeId(), false);
-        }
 
         private Scalar(AvroReadContext parent, ScalarDecoder reader,
                 AvroParserImpl parser, String typeId, String elementTypeId,
@@ -183,10 +191,6 @@ public abstract class ArrayReader extends AvroStructureReader
     private final static class NonScalar extends ArrayReader
     {
         private final AvroStructureReader _elementReader;
-
-        public NonScalar(AvroStructureReader reader, String typeId, String elementTypeId) throws IOException {
-            this(null, reader, null, typeId, elementTypeId, false);
-        }
 
         private NonScalar(AvroReadContext parent,
                 AvroStructureReader reader,
