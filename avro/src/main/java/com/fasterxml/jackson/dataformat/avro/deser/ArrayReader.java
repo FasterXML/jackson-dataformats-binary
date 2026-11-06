@@ -71,31 +71,6 @@ public abstract class ArrayReader extends AvroStructureReader
         return new NonScalar(null, reader, null, typeId, elementTypeId, zeroLengthElements);
     }
 
-    /**
-     * Helper method for skipping all remaining blocks of the Array: elements are
-     * skipped one by one, unless they take no bytes at all.
-     */
-    final void _skipBlocks(AvroParserImpl parser, ElementSkipper skipper)
-        throws IOException
-    {
-        // As per Avro spec/ref impl suggestion:
-        long l;
-        while ((l = parser.skipArray()) > 0L) {
-            // Nothing to skip for zero-length elements; and must not iterate since
-            // count is not bounded by input length (each block takes only a few bytes)
-            if (!_zeroLengthElements) {
-                while (--l >= 0) {
-                    skipper.skipElement(parser);
-                }
-            }
-        }
-    }
-
-    @FunctionalInterface
-    interface ElementSkipper {
-        void skipElement(AvroParserImpl parser) throws IOException;
-    }
-
     @Override
     public String nextFieldName() throws IOException {
         nextToken();
@@ -192,7 +167,17 @@ public abstract class ArrayReader extends AvroStructureReader
 
         @Override
         public void skipValue(AvroParserImpl parser) throws IOException {
-            _skipBlocks(parser, _elementReader::skipValue);
+            // As per Avro spec/ref impl suggestion:
+            long l;
+            while ((l = parser.skipArray()) > 0L) {
+                // Nothing to skip for zero-length elements; and must not iterate since
+                // count is not bounded by input length (each block takes only a few bytes)
+                if (!_zeroLengthElements) {
+                    while (--l >= 0) {
+                        _elementReader.skipValue(parser);
+                    }
+                }
+            }
         }
     }
 
@@ -251,7 +236,17 @@ public abstract class ArrayReader extends AvroStructureReader
 
         @Override
         public void skipValue(AvroParserImpl parser) throws IOException {
-            _skipBlocks(parser, _elementReader::skipValue);
+            // As per Avro spec/ref impl suggestion:
+            long l;
+            while ((l = parser.skipArray()) > 0L) {
+                // Nothing to skip for zero-length elements; and must not iterate since
+                // count is not bounded by input length (each block takes only a few bytes)
+                if (!_zeroLengthElements) {
+                    while (--l >= 0) {
+                        _elementReader.skipValue(parser);
+                    }
+                }
+            }
         }
     }
 }
