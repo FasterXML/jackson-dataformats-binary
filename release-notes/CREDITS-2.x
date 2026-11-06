@@ -486,3 +486,8 @@ PJ Fanning (@pjfanning)
  (2.21.7)
 * Fixed #816: (avro) `UnionReader.nextToken()` does not validate union index
  (2.21.8)
+
+Dhanraj E (@Dhanu-dynamic)
+
+* Contributed #895: (smile) Enforce `maxNestingDepth` in non-blocking parser
+ (2.21.9)
