@@ -112,6 +112,8 @@ implementations)
 #889: (smile) Speed up UTF-8 validation of 3- and 4-byte sequences with
   second-byte range check keyed on lead byte
  (fix by @cowtowncoder, w/ Claude code)
+#895: (smile) Enforce `maxNestingDepth` in non-blocking parser
+ (contributed by @Dhanu-dynamic)
 - (avro) Generated `array` schemas missing `java-class` for `java.util.List`,
   breaking round-trip via Apache `ReflectDatumReader`
 
