@@ -9,6 +9,8 @@ import tools.jackson.core.exc.StreamConstraintsException;
 import tools.jackson.dataformat.smile.BaseTestForSmile;
 import tools.jackson.dataformat.smile.SmileFactory;
 import tools.jackson.dataformat.smile.SmileMapper;
+import tools.jackson.dataformat.smile.async.AsyncReaderWrapper;
+import tools.jackson.dataformat.smile.async.AsyncReaderWrapperForByteArray;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -89,6 +91,66 @@ public class DeepNestingSmileParserTest extends BaseTestForSmile
             while (p.nextToken() != null) {
                 ;
             }
+        }
+    }
+
+    // Non-blocking parser must enforce the same default limit
+
+    @Test
+    public void testDeeplyNestedObjectsAsync() throws Exception
+    {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        genDeepDoc(out, 1500);
+        _verifyAsyncDepthFailure(out.toByteArray());
+    }
+
+    @Test
+    public void testDeeplyNestedObjectsAsyncWithUnconstrainedMapper() throws Exception
+    {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        genDeepDoc(out, 1500);
+        _readAllAsync(UNCONSTRAINED_MAPPER, out.toByteArray());
+    }
+
+    @Test
+    public void testDeeplyNestedArraysAsync() throws Exception
+    {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        genDeepArrayDoc(out, 1500);
+        _verifyAsyncDepthFailure(out.toByteArray());
+    }
+
+    @Test
+    public void testDeeplyNestedArraysAsyncWithUnconstrainedMapper() throws Exception
+    {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        genDeepArrayDoc(out, 1500);
+        _readAllAsync(UNCONSTRAINED_MAPPER, out.toByteArray());
+    }
+
+    private void _verifyAsyncDepthFailure(byte[] doc)
+    {
+        try {
+            _readAllAsync(DEFAULT_MAPPER, doc);
+            fail("expected StreamConstraintsException");
+        } catch (StreamConstraintsException e) {
+            String exceptionPrefix = String.format("Document nesting depth (%d) exceeds the maximum allowed",
+                    StreamReadConstraints.DEFAULT_MAX_DEPTH + 1);
+            assertTrue(e.getMessage().startsWith(exceptionPrefix),
+                    "StreamConstraintsException message is as expected?");
+        }
+    }
+
+    private void _readAllAsync(SmileMapper mapper, byte[] doc)
+    {
+        AsyncReaderWrapper p = new AsyncReaderWrapperForByteArray(
+                mapper.reader().createNonBlockingByteArrayParser(), 1000, doc, 0);
+        try {
+            while (p.nextToken() != null) {
+                ;
+            }
+        } finally {
+            p.close();
         }
     }
 
