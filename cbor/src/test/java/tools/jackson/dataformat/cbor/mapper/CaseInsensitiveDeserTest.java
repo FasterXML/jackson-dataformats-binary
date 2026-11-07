@@ -51,7 +51,7 @@ public class CaseInsensitiveDeserTest extends CBORTestBase
     @Test
     public void testCaseInsensitiveDeserialization() throws Exception
     {
-        byte[] DOC = cborDoc(aposToQuotes(
+        byte[] DOC = cborDoc(a2q(
                 "{'Value1' : {'nAme' : 'fruit', 'vALUe' : 'apple'}, 'valUE2' : {'NAME' : 'color', 'value' : 'red'}}"));
 
         // first, verify default settings which do not accept improper case
@@ -74,7 +74,7 @@ public class CaseInsensitiveDeserTest extends CBORTestBase
         assertEquals(result.value2.name, "color");
         assertEquals(result.value2.value, "red");
 
-        DOC = cborDoc(aposToQuotes(
+        DOC = cborDoc(a2q(
                 "{'valuE1' : {'name' : 'fruit', 'Value' : 'pear'}, 'value2' : {'Name' : 'color', 'VALUE' : 'blue'}}"));
         result = r.readValue(DOC);
         assertEquals(result.value1.name, "fruit");
@@ -111,7 +111,7 @@ public class CaseInsensitiveDeserTest extends CBORTestBase
     @Test
     public void testCreatorWithInsensitive() throws Exception
     {
-        final byte[] CBOR = cborDoc(aposToQuotes("{'VALUE':3}"));
+        final byte[] CBOR = cborDoc(a2q("{'VALUE':3}"));
         InsensitiveCreator bean = INSENSITIVE_MAPPER.readValue(CBOR, InsensitiveCreator.class);
         assertEquals(3, bean.v);
     }

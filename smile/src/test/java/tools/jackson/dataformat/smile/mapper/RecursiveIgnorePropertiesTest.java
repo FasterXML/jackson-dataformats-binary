@@ -27,7 +27,7 @@ public class RecursiveIgnorePropertiesTest extends BaseTestForSmile
     @Test
     public void testRecursiveForDeser() throws Exception
     {
-        byte[] doc = _smileDoc(aposToQuotes("{ 'name': 'admin',\n"
+        byte[] doc = _smileDoc(a2q("{ 'name': 'admin',\n"
 //                + "    'person_z': [ { 'name': 'admin' } ]"
               + "    'person_z': { 'name': 'admin' }"
                 + "}"));
