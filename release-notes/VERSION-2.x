@@ -77,6 +77,9 @@ Active maintainers:
  (fix by @pjfanning, w/ Claude code)
 #869: (smile) Wrong cached property name returned for names containing 0xFF bytes
  (fix by @pjfanning, w/ Claude code)
+#901: (avro) Apache decoder allocates buffer for full declared length of `string` value
+  or Map key before reading content; also enforce `maxStringLength` constraint
+ (contributed by @Dhanu-dynamic, w/ Claude code)
 
 2.22.5 (not yet released)
 
