@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.apacheimpl;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DecoderFactory;
@@ -8,6 +9,7 @@ import org.apache.avro.io.DecoderFactory;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroParserImpl;
@@ -399,7 +401,63 @@ public class ApacheAvroParserImpl extends AvroParserImpl
 
     @Override
     public void decodeString() throws IOException {
-        _textValue = _decoder.readString();
+        _textValue = _readString();
+    }
+
+    /**
+     * Helper method for reading a {@code string} value or Map key. Not done using
+     * {@link BinaryDecoder#readString()}, which allocates a buffer for the full
+     * declared length before reading any content (and keeps it as scratch buffer
+     * of the decoder, which gets recycled). Instead, content that fits in the
+     * (recyclable) input buffer is read into it; longer content is read using
+     * {@link #_readBytes(int)}.
+     *<p>
+     * Value length is validated against {@link StreamReadConstraints#getMaxStringLength()}:
+     * up front if even the shortest possible decoded {@code String} (one {@code char}
+     * per 3 bytes of UTF-8) would be too long, and otherwise once decoded.
+     */
+    private String _readString() throws IOException
+    {
+        final int len = _decoder.readInt();
+        if (len <= 0) {
+            if (len < 0) {
+                _reportError("Invalid length indicator for String: "+len);
+            }
+            return "";
+        }
+        _validateValueLength(len);
+        // UTF-8 needs at most 3 bytes per `char`: anything longer is too long whatever
+        // the content. Not via `validateStringLength()`, to report actual (byte) length
+        final int maxLen = _streamReadConstraints.getMaxStringLength();
+        if ((len / 3) > maxLen) {
+            throw new StreamConstraintsException(String.format(
+                    "String value length (%d bytes, so at least %d chars) exceeds the maximum allowed (%d, from `StreamReadConstraints.getMaxStringLength()`)",
+                    len, len / 3, maxLen));
+        }
+        final String str;
+        final byte[] buf = _scratchBuffer();
+        if (len <= buf.length) {
+            // this is simple raw read, safe to use:
+            _decoder.readFixed(buf, 0, len);
+            str = new String(buf, 0, len, StandardCharsets.UTF_8);
+        } else {
+            str = new String(_readBytes(len), StandardCharsets.UTF_8);
+        }
+        _streamReadConstraints.validateStringLength(str.length());
+        return str;
+    }
+
+    /**
+     * Accessor for the (recyclable) input buffer, used as scratch space: decoder
+     * does its own buffering so the buffer is otherwise unused.
+     */
+    private byte[] _scratchBuffer() {
+        byte[] buf = _inputBuffer;
+        if (buf == null) { // `byte[]` input: no buffer allocated by constructor
+            _inputBuffer = buf = _ioContext.allocReadIOBuffer();
+            _bufferRecyclable = true; // so that it gets released on close
+        }
+        return buf;
     }
 
     @Override
@@ -452,13 +510,8 @@ public class ApacheAvroParserImpl extends AvroParserImpl
             _decoder.readFixed(b, 0, len);
             return b;
         }
-        // Decoder does its own buffering so the (recyclable) input buffer is otherwise
-        // unused: reuse it as scratch space instead of allocating a chunk-sized array
-        byte[] chunk = _inputBuffer;
-        if (chunk == null) { // `byte[]` input: no buffer allocated by constructor
-            _inputBuffer = chunk = _ioContext.allocReadIOBuffer();
-            _bufferRecyclable = true; // so that it gets released on close
-        }
+        // Reuse input buffer as scratch space instead of allocating a chunk-sized array
+        final byte[] chunk = _scratchBuffer();
         final ByteArrayBuilder bb = _getByteArrayBuilder();
         int left = len;
         while (left > 0) {
@@ -513,7 +566,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
 
     @Override
     public String decodeMapKey() throws IOException {
-        return _decoder.readString();
+        return _readString();
     }
 
     @Override
