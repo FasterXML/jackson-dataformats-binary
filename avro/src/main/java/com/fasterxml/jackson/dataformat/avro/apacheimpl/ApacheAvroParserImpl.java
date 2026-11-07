@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro.apacheimpl;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DecoderFactory;
@@ -385,7 +386,29 @@ public class ApacheAvroParserImpl extends AvroParserImpl
 
     @Override
     public void decodeString() throws IOException {
-        _textValue = _decoder.readString();
+        _textValue = _readString();
+    }
+
+    /**
+     * Helper method for reading a {@code string} value or Map key. Not done using
+     * {@link BinaryDecoder#readString()}, which allocates a buffer for the full
+     * declared length before reading any content (and keeps it as scratch buffer
+     * of the decoder, which gets recycled): content is read using
+     * {@link #_readBytes(int)} instead.
+     *
+     * @since 2.21.9
+     */
+    private String _readString() throws IOException
+    {
+        final int len = _decoder.readInt();
+        if (len <= 0) {
+            if (len < 0) {
+                _reportError("Invalid length indicator for String: "+len);
+            }
+            return "";
+        }
+        _validateValueLength(len);
+        return new String(_readBytes(len), StandardCharsets.UTF_8);
     }
 
     @Override
@@ -499,7 +522,7 @@ public class ApacheAvroParserImpl extends AvroParserImpl
 
     @Override
     public String decodeMapKey() throws IOException {
-        return _decoder.readString();
+        return _readString();
     }
 
     @Override
