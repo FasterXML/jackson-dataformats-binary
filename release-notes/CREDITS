@@ -122,3 +122,6 @@ Dhanraj E (@Dhanu-dynamic)
 * Contributed #896: (avro) Negative byte size of skipped Array/Map block moves input
   pointer backwards, causing infinite loop
  (3.1.9)
+* Contributed #901: (avro) Apache decoder allocates buffer for full declared length
+  of `string` value or Map key before reading content
+ (3.1.9)
