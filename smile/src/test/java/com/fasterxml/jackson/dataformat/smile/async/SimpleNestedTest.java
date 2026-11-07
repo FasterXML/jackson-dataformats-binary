@@ -26,7 +26,7 @@ public class SimpleNestedTest extends AsyncTestBase
     @Test
     public void testStuffInObject() throws Exception
     {
-        byte[] data = _smileDoc(aposToQuotes("{'foobar':[1,2,-999],'other':{'':null} }"), true);
+        byte[] data = _smileDoc(a2q("{'foobar':[1,2,-999],'other':{'':null} }"), true);
 
         SmileFactory f = F_REQ_HEADERS;
         _testStuffInObject(f, data, 0, 100);
@@ -79,7 +79,7 @@ public class SimpleNestedTest extends AsyncTestBase
     @Test
     public void testStuffInArray() throws Exception
     {
-        byte[] data = _smileDoc(aposToQuotes("[true,{'extraOrdinary':''},[null],{'extraOrdinary':23}]"), true);
+        byte[] data = _smileDoc(a2q("[true,{'extraOrdinary':''},[null],{'extraOrdinary':23}]"), true);
 
         SmileFactory f = F_REQ_HEADERS;
         _testStuffInArray(f, data, 0, 100);

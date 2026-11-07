@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class Evolution275Test extends AvroTestBase
 {
     // Original schema with 8 fields (simulating the issue scenario)
-    static String SCHEMA_V1_JSON = aposToQuotes("{\n"+
+    static String SCHEMA_V1_JSON = a2q("{\n"+
             " 'type':'record',\n"+
             " 'name':'Employee',\n"+
             " 'fields':[\n"+
@@ -56,7 +56,7 @@ public class Evolution275Test extends AvroTestBase
             "}\n");
 
     // Updated schema adding a 9th field with null default at the end
-    static String SCHEMA_V2_JSON = aposToQuotes("{\n"+
+    static String SCHEMA_V2_JSON = a2q("{\n"+
             " 'type':'record',\n"+
             " 'name':'Employee',\n"+
             " 'fields':[\n"+
@@ -73,7 +73,7 @@ public class Evolution275Test extends AvroTestBase
             "}\n");
 
     // Simpler test with just 2 fields + new field with null default
-    static String SCHEMA_SIMPLE_V1_JSON = aposToQuotes("{\n"+
+    static String SCHEMA_SIMPLE_V1_JSON = a2q("{\n"+
             " 'type':'record',\n"+
             " 'name':'SimpleRecord',\n"+
             " 'fields':[\n"+
@@ -82,7 +82,7 @@ public class Evolution275Test extends AvroTestBase
             " ]\n"+
             "}\n");
 
-    static String SCHEMA_SIMPLE_V2_JSON = aposToQuotes("{\n"+
+    static String SCHEMA_SIMPLE_V2_JSON = a2q("{\n"+
             " 'type':'record',\n"+
             " 'name':'SimpleRecord',\n"+
             " 'fields':[\n"+

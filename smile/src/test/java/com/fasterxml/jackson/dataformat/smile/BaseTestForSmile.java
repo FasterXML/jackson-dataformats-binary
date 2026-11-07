@@ -249,6 +249,7 @@ public abstract class BaseTestForSmile
     /**********************************************************
      */
 
+    @Deprecated // use `a2q()` instead
     protected static String aposToQuotes(String str) {
         return a2q(str);
     }

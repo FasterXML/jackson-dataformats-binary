@@ -46,13 +46,13 @@ public class MapSkipEvolutionTest extends AvroTestBase
         public int after;
     }
 
-    private final static String SCALAR_MAP_WRITER_SCHEMA_JSON = aposToQuotes("{"
+    private final static String SCALAR_MAP_WRITER_SCHEMA_JSON = a2q("{"
             + "'type':'record','name':'Root','fields':["
             + "{'name':'map','type':{'type':'map','values':'int'}},"
             + "{'name':'after','type':'int'}"
             + "]}");
 
-    private final static String STRUCT_MAP_WRITER_SCHEMA_JSON = aposToQuotes("{"
+    private final static String STRUCT_MAP_WRITER_SCHEMA_JSON = a2q("{"
             + "'type':'record','name':'Root','fields':["
             + "{'name':'map','type':{'type':'map','values':"
             + "{'type':'record','name':'Point','fields':["
@@ -60,7 +60,7 @@ public class MapSkipEvolutionTest extends AvroTestBase
             + "{'name':'after','type':'int'}"
             + "]}");
 
-    private final static String READER_SCHEMA_JSON = aposToQuotes("{"
+    private final static String READER_SCHEMA_JSON = a2q("{"
             + "'type':'record','name':'Root','fields':["
             + "{'name':'after','type':'int'}"
             + "]}");

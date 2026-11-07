@@ -289,7 +289,7 @@ public class BigDecimalSerializationAndDeserializationTest extends AvroTestBase 
 
     // Record with a single 'value' property, typed as a union of 'null' plus given branches
     private AvroSchema _unionSchema(String branches) throws Exception {
-        return MAPPER.schemaFrom(aposToQuotes("{"
+        return MAPPER.schemaFrom(a2q("{"
                 +"'type':'record',"
                 +"'name':'Test',"
                 +"'fields':[{'name':'value', 'type':['null',"+branches+"]}]"

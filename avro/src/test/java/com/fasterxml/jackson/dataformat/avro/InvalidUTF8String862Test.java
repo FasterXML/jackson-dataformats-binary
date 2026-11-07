@@ -68,14 +68,14 @@ public class InvalidUTF8String862Test extends AvroTestBase
 
     private final AvroMapper MAPPER = newMapper();
 
-    private final AvroSchema STRING_SCHEMA = parseSchema(MAPPER, aposToQuotes(
+    private final AvroSchema STRING_SCHEMA = parseSchema(MAPPER, a2q(
             "{'type':'record','name':'R','fields':[{'name':'s','type':'string'}]}"));
 
-    private final AvroSchema STRING_INT_SCHEMA = parseSchema(MAPPER, aposToQuotes(
+    private final AvroSchema STRING_INT_SCHEMA = parseSchema(MAPPER, a2q(
             "{'type':'record','name':'R','fields':[{'name':'s','type':'string'},"
             +"{'name':'i','type':'int'}]}"));
 
-    private final AvroSchema MAP_SCHEMA = parseSchema(MAPPER, aposToQuotes(
+    private final AvroSchema MAP_SCHEMA = parseSchema(MAPPER, a2q(
             "{'type':'map','values':'int'}"));
 
     @Test

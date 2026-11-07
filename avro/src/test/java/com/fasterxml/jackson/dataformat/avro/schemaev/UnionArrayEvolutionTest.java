@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class UnionArrayEvolutionTest extends AvroTestBase {
 
-    static String SCHEMA_V1_ARRAY_JSON = aposToQuotes("{\n"+
+    static String SCHEMA_V1_ARRAY_JSON = a2q("{\n"+
             " 'namespace':'org.example.testsnippets',\n"+
             " 'type':'record',\n"+
             " 'name':'TestDto',\n"+
@@ -22,7 +22,7 @@ public class UnionArrayEvolutionTest extends AvroTestBase {
             " ]\n"+
             "}\n");
 
-    static String SCHEMA_V2_ARRAY_JSON = aposToQuotes("{\n"+
+    static String SCHEMA_V2_ARRAY_JSON = a2q("{\n"+
             " 'namespace':'org.example.testsnippets',\n"+
             " 'type':'record',\n"+
             " 'name':'TestDto',\n"+

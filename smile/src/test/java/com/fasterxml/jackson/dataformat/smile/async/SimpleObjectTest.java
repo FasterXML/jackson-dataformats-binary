@@ -44,7 +44,7 @@ public class SimpleObjectTest extends AsyncTestBase
     public void testBooleans() throws IOException
     {
         final SmileFactory f = F_REQ_HEADERS;
-        byte[] data = _smileDoc(aposToQuotes("{ 'a':true, 'b':false, 'acdc':true, '"+UNICODE_SHORT_NAME+"':true, 'a1234567':false }"), true);
+        byte[] data = _smileDoc(a2q("{ 'a':true, 'b':false, 'acdc':true, '"+UNICODE_SHORT_NAME+"':true, 'a1234567':false }"), true);
         // first, no offsets
         _testBooleans(f, data, 0, 100);
         _testBooleans(f, data, 0, 3);

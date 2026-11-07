@@ -47,7 +47,7 @@ public class ReadInvalidLengthsTest extends AvroTestBase
     @Test
     public void testNegativeBytesLength() throws Exception
     {
-        final String schemaJson = aposToQuotes("{'type':'record','name':'Root','fields':["
+        final String schemaJson = a2q("{'type':'record','name':'Root','fields':["
                 + "{'name':'data','type':'bytes'}]}");
         for (AvroMapper mapper : new AvroMapper[] { NATIVE_MAPPER, APACHE_MAPPER }) {
             // length of -1 (zigzag 0x01)
@@ -65,7 +65,7 @@ public class ReadInvalidLengthsTest extends AvroTestBase
     public void testBytesLengthTooLong() throws Exception
     {
         final int maxDocLen = 1000;
-        final String schemaJson = aposToQuotes("{'type':'record','name':'Root','fields':["
+        final String schemaJson = a2q("{'type':'record','name':'Root','fields':["
                 + "{'name':'data','type':'bytes'}]}");
         // length 1,000,000 (zigzag 2,000,000 as varint); content missing
         final byte[] doc = new byte[] { (byte) 0x80, (byte) 0x89, (byte) 0x7A };
@@ -86,7 +86,7 @@ public class ReadInvalidLengthsTest extends AvroTestBase
     @Test
     public void testMinLongArrayItemCount() throws Exception
     {
-        final String schemaJson = aposToQuotes("{'type':'record','name':'Root','fields':["
+        final String schemaJson = a2q("{'type':'record','name':'Root','fields':["
                 + "{'name':'list','type':{'type':'array','items':'int'}}]}");
         StreamReadException e = assertThrows(StreamReadException.class,
                 () -> NATIVE_MAPPER.readerFor(ListValue.class)
@@ -98,7 +98,7 @@ public class ReadInvalidLengthsTest extends AvroTestBase
     @Test
     public void testMinLongMapItemCount() throws Exception
     {
-        final String schemaJson = aposToQuotes("{'type':'record','name':'Root','fields':["
+        final String schemaJson = a2q("{'type':'record','name':'Root','fields':["
                 + "{'name':'map','type':{'type':'map','values':'int'}}]}");
         StreamReadException e = assertThrows(StreamReadException.class,
                 () -> NATIVE_MAPPER.readerFor(MapValue.class)

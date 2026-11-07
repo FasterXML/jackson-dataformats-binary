@@ -38,7 +38,7 @@ public abstract class AvroTestBase
             +" {\"name\": \"boss\", \"type\": [\"Employee\",\"null\"]}\n"
             +"]}";
 
-    protected final String EMPLOYEE_ARRAY_SCHEMA_JSON = aposToQuotes(
+    protected final String EMPLOYEE_ARRAY_SCHEMA_JSON = a2q(
             "{"
             +"'name': 'EmployeeArray',\n"
             +"'type': 'array',\n"
@@ -286,7 +286,7 @@ public abstract class AvroTestBase
 
     protected AvroSchema parseSchema(AvroMapper mapper, String schemaAsJson) {
         try {
-            return getMapper().schemaFrom(aposToQuotes(schemaAsJson));
+            return getMapper().schemaFrom(a2q(schemaAsJson));
         } catch (IOException e) {
             fail("Could not parse Avro Schema from: "+schemaAsJson+", problem: "+e);
             return null;
@@ -340,8 +340,13 @@ public abstract class AvroTestBase
         return "\""+str+"\"";
     }
 
-    protected static String aposToQuotes(String json) {
+    protected static String a2q(String json) {
         return json.replace("'", "\"");
+    }
+
+    @Deprecated // use `a2q()` instead
+    protected static String aposToQuotes(String json) {
+        return a2q(json);
     }
 
     /*

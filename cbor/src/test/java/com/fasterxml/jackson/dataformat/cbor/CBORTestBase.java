@@ -348,6 +348,7 @@ public abstract class CBORTestBase
     /**********************************************************
      */
 
+    @Deprecated // use `a2q()` instead
     protected static String aposToQuotes(String str) {
         return a2q(str);
     }

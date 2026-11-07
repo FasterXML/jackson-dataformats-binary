@@ -22,7 +22,7 @@ public class AvroUnionIndexBoundsTest extends AvroTestBase
             "{'type':'enum','name':'Color','symbols':['RED','GREEN']}";
 
     // Reader schema without field "value", to force skipping it
-    private final static String SKIPPING_READER_SCHEMA_JSON = aposToQuotes("{"
+    private final static String SKIPPING_READER_SCHEMA_JSON = a2q("{"
             + "'type':'record','name':'Root','fields':[{'name':'after','type':'int'}]}");
 
     // zig-zag varints: 10 -> index 5; 1 -> index -1
@@ -81,7 +81,7 @@ public class AvroUnionIndexBoundsTest extends AvroTestBase
     }
 
     private static String _writerSchemaJson(String valueType) {
-        return aposToQuotes("{"
+        return a2q("{"
                 + "'type':'record','name':'Root','fields':["
                 + "{'name':'value','type':" + valueType + "},"
                 + "{'name':'after','type':'int'}"

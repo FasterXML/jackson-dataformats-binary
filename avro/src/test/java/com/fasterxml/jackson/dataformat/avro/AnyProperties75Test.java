@@ -38,7 +38,7 @@ public class AnyProperties75Test extends AvroTestBase
     @Test
     public void testReadWriteIntSequence() throws Exception
     {
-        final String SCHEMA_JSON = aposToQuotes("{\n"
+        final String SCHEMA_JSON = a2q("{\n"
                 + "    'type': 'record',\n"
                 + "    'name': 'Pojo75',\n"
                 + "    'fields': [\n"

@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class SkipNonSkippableStreamTest extends AvroTestBase
 {
     // NOTE: Avro requires named types to match, hence same record name for both
-    static String SCHEMA_WITH_DATA_JSON = aposToQuotes("{\n"+
+    static String SCHEMA_WITH_DATA_JSON = a2q("{\n"+
             " 'type':'record',\n"+
             " 'name':'Blob',\n"+
             " 'fields':[\n"+
@@ -31,7 +31,7 @@ public class SkipNonSkippableStreamTest extends AvroTestBase
             "}\n");
 
     // Reader schema without `data`/`text`: both writer values have to be skipped
-    static String SCHEMA_NO_DATA_JSON = aposToQuotes("{\n"+
+    static String SCHEMA_NO_DATA_JSON = a2q("{\n"+
             " 'type':'record',\n"+
             " 'name':'Blob',\n"+
             " 'fields':[\n"+

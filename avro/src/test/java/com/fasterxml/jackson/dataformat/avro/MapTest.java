@@ -238,13 +238,13 @@ public class MapTest extends AvroTestBase
         public int after;
     }
 
-    private final static String INT_MAP_WRAPPER_SCHEMA_JSON = aposToQuotes("{"
+    private final static String INT_MAP_WRAPPER_SCHEMA_JSON = a2q("{"
             + "'type':'record','name':'Wrapper','fields':["
             + "{'name':'map','type':{'type':'map','values':'int'}},"
             + "{'name':'after','type':'int'}"
             + "]}");
 
-    private final static String POINT_MAP_WRAPPER_SCHEMA_JSON = aposToQuotes("{"
+    private final static String POINT_MAP_WRAPPER_SCHEMA_JSON = a2q("{"
             + "'type':'record','name':'Wrapper','fields':["
             + "{'name':'map','type':{'type':'map','values':"
             + "{'type':'record','name':'Point','fields':["
