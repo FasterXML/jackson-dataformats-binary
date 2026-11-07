@@ -27,7 +27,7 @@ public class RecursiveIgnorePropertiesTest extends CBORTestBase
     @Test
     public void testRecursiveForDeser() throws Exception
     {
-        byte[] doc = cborDoc(aposToQuotes("{ 'name': 'admin',\n"
+        byte[] doc = cborDoc(a2q("{ 'name': 'admin',\n"
 //                + "    'person_z': [ { 'name': 'admin' } ]"
               + "    'person_z': { 'name': 'admin' }"
                 + "}"));

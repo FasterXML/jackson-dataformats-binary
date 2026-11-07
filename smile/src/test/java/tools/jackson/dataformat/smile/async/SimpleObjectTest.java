@@ -33,7 +33,7 @@ public class SimpleObjectTest extends AsyncTestBase
     @Test
     public void testBooleans() throws IOException
     {
-        byte[] data = _smileDoc(aposToQuotes("{ 'a':true, 'b':false, 'acdc':true, '"+UNICODE_SHORT_NAME+"':true, 'a1234567':false }"), true);
+        byte[] data = _smileDoc(a2q("{ 'a':true, 'b':false, 'acdc':true, '"+UNICODE_SHORT_NAME+"':true, 'a1234567':false }"), true);
         // first, no offsets
         _testBooleans(data, 0, 100);
         _testBooleans(data, 0, 3);

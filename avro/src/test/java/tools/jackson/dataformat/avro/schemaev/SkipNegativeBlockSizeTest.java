@@ -38,7 +38,7 @@ public class SkipNegativeBlockSizeTest extends AvroTestBase
 
     private final static String BYTES_WRITER_SCHEMA_JSON = _writerSchema("'bytes'");
 
-    private final static String READER_SCHEMA_JSON = aposToQuotes("{"
+    private final static String READER_SCHEMA_JSON = a2q("{"
             + "'type':'record','name':'Root','fields':["
             + "{'name':'after','type':'int'}"
             + "]}");
@@ -288,7 +288,7 @@ public class SkipNegativeBlockSizeTest extends AvroTestBase
     }
 
     private static String _writerSchema(String skippedType) {
-        return aposToQuotes("{"
+        return a2q("{"
                 + "'type':'record','name':'Root','fields':["
                 + "{'name':'skipped','type':" + skippedType + "},"
                 + "{'name':'after','type':'int'}"

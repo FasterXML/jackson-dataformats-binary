@@ -178,7 +178,7 @@ public class ParserNextXxxTest extends BaseTestForSmile
 
     private void _testNextTextValue(SmileFactory f, String textValue) throws Exception
     {
-        String doc = aposToQuotes(String.format(
+        String doc = a2q(String.format(
                 "['%s',true,{'a':'%s'},123, 0.5]",
                 textValue, textValue));
         byte[] docBytes = _smileDoc(doc, true);

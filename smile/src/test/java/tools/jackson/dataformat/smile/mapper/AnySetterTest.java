@@ -226,7 +226,7 @@ public class AnySetterTest extends BaseTestForSmile
         try {
             MAPPER.readerFor(MapImitatorDisabled.class)
                 .with(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                .readValue(_smileDoc(aposToQuotes("{'value':3}")));
+                .readValue(_smileDoc(a2q("{'value':3}")));
             fail("Should not pass");
         } catch (UnrecognizedPropertyException e) {
             verifyException(e, "Unrecognized property \"value\"");
@@ -327,7 +327,7 @@ public class AnySetterTest extends BaseTestForSmile
         Map<Integer, Integer> integerGenericMap = new HashMap<Integer, Integer>();
         integerGenericMap.put(111, 6);
 
-        MyWrapper deserialized = mapper.readValue(_smileDoc(aposToQuotes(
+        MyWrapper deserialized = mapper.readValue(_smileDoc(a2q(
                 "{'myStringGeneric':{'staticallyMappedProperty':'Test','testStringKey':5},'myIntegerGeneric':{'staticallyMappedProperty':'Test2','111':6}}"
                 )), MyWrapper.class);
         MyGeneric<String> stringGeneric = deserialized.getMyStringGeneric();

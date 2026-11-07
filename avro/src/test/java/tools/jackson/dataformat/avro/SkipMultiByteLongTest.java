@@ -38,20 +38,20 @@ public class SkipMultiByteLongTest extends AvroTestBase
         public int after;
     }
 
-    private final static String FULL_SCHEMA_JSON = aposToQuotes("{"
+    private final static String FULL_SCHEMA_JSON = a2q("{"
             + "'type':'record','name':'Root','fields':["
             + "{'name':'big','type':'long'},"
             + "{'name':'after','type':'int'},"
             + "{'name':'pad','type':'string'}"
             + "]}");
 
-    private final static String PARTIAL_SCHEMA_JSON = aposToQuotes("{"
+    private final static String PARTIAL_SCHEMA_JSON = a2q("{"
             + "'type':'record','name':'Root','fields':["
             + "{'name':'after','type':'int'},"
             + "{'name':'pad','type':'string'}"
             + "]}");
 
-    private final static String LIST_SCHEMA_JSON = aposToQuotes("{"
+    private final static String LIST_SCHEMA_JSON = a2q("{"
             + "'type':'record','name':'Root','fields':["
             + "{'name':'list','type':{'type':'array','items':'int'}},"
             + "{'name':'after','type':'int'}"

@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 //   it should not be.
 public class AmbiguousUnionWriteTest extends AvroTestBase
 {
-    protected final String SCHEMA_WITH_AMBIGUITY = aposToQuotes("{\n"
+    protected final String SCHEMA_WITH_AMBIGUITY = a2q("{\n"
             +"'type': 'record',\n"
             +"'name': 'WithUnion',\n"
             +"'fields': [\n"

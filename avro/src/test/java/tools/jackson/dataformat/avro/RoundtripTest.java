@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class RoundtripTest extends MapTest
 {
-    static String SCHEMA_ISSUE_16 = aposToQuotes("{\n"+
+    static String SCHEMA_ISSUE_16 = a2q("{\n"+
         " 'namespace':'org.example.testsnippets',\n"+
         " 'type':'record',\n"+
         " 'name':'TestDto',\n"+
