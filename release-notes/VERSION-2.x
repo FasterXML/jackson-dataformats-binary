@@ -123,6 +123,9 @@ No changes since 2.21
   causing infinite loop (with both native and Apache decoders); also stricter
   validation of other lengths and item counts
  (contributed by @Dhanu-dynamic)
+#901: (avro) Apache decoder allocates buffer for full declared length of `string` value
+  or Map key before reading content; also enforce `maxStringLength` constraint
+ (contributed by @Dhanu-dynamic, w/ Claude code)
 
 2.21.8 (17-Oct-2026)
 
