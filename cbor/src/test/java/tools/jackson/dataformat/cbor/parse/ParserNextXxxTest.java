@@ -219,7 +219,7 @@ public class ParserNextXxxTest extends CBORTestBase
     private void _testNextTextValue(String textValue, int intValue, boolean slow)
         throws Exception
     {
-        String doc = aposToQuotes(String.format(
+        String doc = a2q(String.format(
                 "['%s',true,{'a':'%s'},%d, 0.5]",
                 textValue, textValue, intValue));
         InputStream in = new ByteArrayInputStream(cborDoc(doc));

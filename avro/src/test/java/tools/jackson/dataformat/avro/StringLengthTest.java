@@ -39,10 +39,10 @@ public class StringLengthTest extends AvroTestBase
         public MapWrapper(Map<String, Integer> m) { this.m = m; }
     }
 
-    private final static String STRING_SCHEMA_JSON = aposToQuotes("{'type':'record','name':'StringWrapper',"
+    private final static String STRING_SCHEMA_JSON = a2q("{'type':'record','name':'StringWrapper',"
             +"'fields':[{'name':'s','type':'string'}]}");
 
-    private final static String MAP_SCHEMA_JSON = aposToQuotes("{'type':'record','name':'MapWrapper',"
+    private final static String MAP_SCHEMA_JSON = a2q("{'type':'record','name':'MapWrapper',"
             +"'fields':[{'name':'m','type':{'type':'map','values':'int'}}]}");
 
     // Lower `maxStringLength` used for constraint tests

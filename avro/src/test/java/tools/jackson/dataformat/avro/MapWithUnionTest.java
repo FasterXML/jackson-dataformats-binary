@@ -136,7 +136,7 @@ public class MapWithUnionTest extends AvroTestBase
     @Test
     public void testRootUnionResolvingToMapType() throws Exception
     {
-        AvroSchema schema = MAPPER.schemaFrom(aposToQuotes(
+        AvroSchema schema = MAPPER.schemaFrom(a2q(
                 "['null',{'type':'map','values':'string'}]"));
 
         Map<String,Object> input = _map("key1", "val1", "key2", "val2");
@@ -153,7 +153,7 @@ public class MapWithUnionTest extends AvroTestBase
     @Test
     public void testUnionResolvingToMapType() throws Exception
     {
-        AvroSchema schema = MAPPER.schemaFrom(aposToQuotes("{"
+        AvroSchema schema = MAPPER.schemaFrom(a2q("{"
                 +"'type':'record',"
                 +"'name':'Test',"
                 +"'fields':["

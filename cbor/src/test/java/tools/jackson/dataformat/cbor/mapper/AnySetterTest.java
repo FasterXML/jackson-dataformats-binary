@@ -230,7 +230,7 @@ public class AnySetterTest extends CBORTestBase
         try {
             MAPPER.readerFor(MapImitatorDisabled.class)
                 .with(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                .readValue(cborDoc(aposToQuotes("{'value':3}")));
+                .readValue(cborDoc(a2q("{'value':3}")));
             fail("Should not pass");
         } catch (UnrecognizedPropertyException e) {
             verifyException(e, "Unrecognized property \"value\"");
@@ -335,7 +335,7 @@ public class AnySetterTest extends CBORTestBase
         Map<Integer, Integer> integerGenericMap = new HashMap<Integer, Integer>();
         integerGenericMap.put(111, 6);
 
-        MyWrapper deserialized = mapper.readValue(cborDoc(aposToQuotes(
+        MyWrapper deserialized = mapper.readValue(cborDoc(a2q(
                 "{'myStringGeneric':{'staticallyMappedProperty':'Test','testStringKey':5},'myIntegerGeneric':{'staticallyMappedProperty':'Test2','111':6}}"
                 )), MyWrapper.class);
         MyGeneric<String> stringGeneric = deserialized.getMyStringGeneric();

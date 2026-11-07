@@ -59,21 +59,21 @@ public class PropertyAliasTest extends CBORTestBase
         AliasBean bean;
 
         // first, one indicated by field annotation, set via field
-        bean = MAPPER.readValue(cborDoc(aposToQuotes("{'Name':'Foobar','a':3,'xyz':37}")),
+        bean = MAPPER.readValue(cborDoc(a2q("{'Name':'Foobar','a':3,'xyz':37}")),
                 AliasBean.class);
         assertEquals("Foobar", bean.name);
         assertEquals(3, bean._a);
         assertEquals(37, bean._xyz);
 
         // then method-bound one
-        bean = MAPPER.readValue(cborDoc(aposToQuotes("{'name':'Foobar','a':3,'Xyz':37}")),
+        bean = MAPPER.readValue(cborDoc(a2q("{'name':'Foobar','a':3,'Xyz':37}")),
                 AliasBean.class);
         assertEquals("Foobar", bean.name);
         assertEquals(3, bean._a);
         assertEquals(37, bean._xyz);
 
         // and finally, constructor-backed one
-        bean = MAPPER.readValue(cborDoc(aposToQuotes("{'name':'Foobar','A':3,'xyz':37}")),
+        bean = MAPPER.readValue(cborDoc(a2q("{'name':'Foobar','A':3,'xyz':37}")),
                 AliasBean.class);
         assertEquals("Foobar", bean.name);
         assertEquals(3, bean._a);
@@ -83,7 +83,7 @@ public class PropertyAliasTest extends CBORTestBase
     @Test
     public void testAliasWithPolymorphic() throws Exception
     {
-        PolyWrapperForAlias value = MAPPER.readValue(cborDoc(aposToQuotes(
+        PolyWrapperForAlias value = MAPPER.readValue(cborDoc(a2q(
                 "{'value': ['ab', {'nm' : 'Bob', 'A' : 17} ] }"
                 )), PolyWrapperForAlias.class);
         assertNotNull(value.value);

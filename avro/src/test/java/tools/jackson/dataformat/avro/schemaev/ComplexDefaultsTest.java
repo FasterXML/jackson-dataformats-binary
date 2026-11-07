@@ -206,7 +206,7 @@ public class ComplexDefaultsTest extends AvroTestBase
     @Test
     public void testIntDefaultValuePrecision() throws Exception
     {
-        final AvroSchema srcSchema = MAPPER.schemaFrom(aposToQuotes("{"
+        final AvroSchema srcSchema = MAPPER.schemaFrom(a2q("{"
                 +"'type':'record','name':'RootType',"
                 +"'fields':["
                 +"  {'name':'x','type':'int'},"
@@ -214,7 +214,7 @@ public class ComplexDefaultsTest extends AvroTestBase
                 +"]"
                 +"}"));
         // Default value 20000001 exceeds float's 24-bit mantissa (max exact int: 16777216)
-        final AvroSchema dstSchema = MAPPER.schemaFrom(aposToQuotes("{"
+        final AvroSchema dstSchema = MAPPER.schemaFrom(a2q("{"
                 +"'type':'record','name':'RootType',"
                 +"'fields':["
                 +"  {'name':'x','type':'int'},"
@@ -242,12 +242,12 @@ public class ComplexDefaultsTest extends AvroTestBase
     @Test
     public void testLongDefaultValuePrecision() throws Exception
     {
-        final AvroSchema srcSchema = MAPPER.schemaFrom(aposToQuotes("{"
+        final AvroSchema srcSchema = MAPPER.schemaFrom(a2q("{"
                 +"'type':'record','name':'RootType',"
                 +"'fields':[{'name':'x','type':'int'}]"
                 +"}"));
         // Default value 9007199254740993 exceeds float AND double integer precision
-        final AvroSchema dstSchema = MAPPER.schemaFrom(aposToQuotes("{"
+        final AvroSchema dstSchema = MAPPER.schemaFrom(a2q("{"
                 +"'type':'record','name':'RootType',"
                 +"'fields':["
                 +"  {'name':'x','type':'int'},"

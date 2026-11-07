@@ -183,7 +183,7 @@ public class BigDecimalSerializationAndDeserializationTest extends AvroTestBase 
     public void testBigDecimalUnionPrefersStringOverDouble() throws Exception
     {
         // Union with string first, double second
-        String schemaJson = aposToQuotes("{" +
+        String schemaJson = a2q("{" +
                 "'type':'record'," +
                 "'name':'Test'," +
                 "'fields':[" +
@@ -209,7 +209,7 @@ public class BigDecimalSerializationAndDeserializationTest extends AvroTestBase 
     @Test
     public void testBigDecimalUnionPrefersBytesOverDouble() throws Exception
     {
-        String schemaJson = aposToQuotes("{" +
+        String schemaJson = a2q("{" +
                 "'type':'record'," +
                 "'name':'Test'," +
                 "'fields':[" +
@@ -238,7 +238,7 @@ public class BigDecimalSerializationAndDeserializationTest extends AvroTestBase 
     @Test
     public void testBigDecimalUnionSkipsPlainBytes() throws Exception
     {
-        String schemaJson = aposToQuotes("{" +
+        String schemaJson = a2q("{" +
                 "'type':'record'," +
                 "'name':'Test'," +
                 "'fields':[" +
@@ -264,7 +264,7 @@ public class BigDecimalSerializationAndDeserializationTest extends AvroTestBase 
     @Test
     public void testBigDecimalUnionPrefersBytesOverString() throws Exception
     {
-        String schemaJson = aposToQuotes("{" +
+        String schemaJson = a2q("{" +
                 "'type':'record'," +
                 "'name':'Test'," +
                 "'fields':[" +
@@ -290,7 +290,7 @@ public class BigDecimalSerializationAndDeserializationTest extends AvroTestBase 
     @Test
     public void testBigDecimalUnionPrefersFixedOverString() throws Exception
     {
-        String schemaJson = aposToQuotes("{" +
+        String schemaJson = a2q("{" +
                 "'type':'record'," +
                 "'name':'Test'," +
                 "'fields':[" +
@@ -317,7 +317,7 @@ public class BigDecimalSerializationAndDeserializationTest extends AvroTestBase 
     @Test
     public void testBigDecimalUnionSkipsPlainFixed() throws Exception
     {
-        String schemaJson = aposToQuotes("{" +
+        String schemaJson = a2q("{" +
                 "'type':'record'," +
                 "'name':'Test'," +
                 "'fields':[" +
