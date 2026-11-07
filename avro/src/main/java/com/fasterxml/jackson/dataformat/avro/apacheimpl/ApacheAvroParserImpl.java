@@ -9,6 +9,7 @@ import org.apache.avro.io.DecoderFactory;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.core.io.IOContext;
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 import com.fasterxml.jackson.dataformat.avro.deser.AvroParserImpl;
@@ -410,8 +411,15 @@ public class ApacheAvroParserImpl extends AvroParserImpl
             }
             return "";
         }
-        _streamReadConstraints.validateStringLength(len / 3);
         _validateValueLength(len);
+        // UTF-8 needs at most 3 bytes per `char`: anything longer is too long whatever
+        // the content. Not via `validateStringLength()`, to report actual (byte) length
+        final int maxLen = _streamReadConstraints.getMaxStringLength();
+        if ((len / 3) > maxLen) {
+            throw new StreamConstraintsException(String.format(
+                    "String value length (%d bytes, so at least %d chars) exceeds the maximum allowed (%d, from `StreamReadConstraints.getMaxStringLength()`)",
+                    len, len / 3, maxLen));
+        }
         final String str;
         final byte[] buf = _scratchBuffer();
         if (len <= buf.length) {

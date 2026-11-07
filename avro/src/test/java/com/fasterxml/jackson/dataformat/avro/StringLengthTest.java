@@ -3,17 +3,16 @@ package com.fasterxml.jackson.dataformat.avro;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.StreamReadConstraints;
-import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.avro.apacheimpl.ApacheAvroFactory;
 import com.fasterxml.jackson.dataformat.avro.testsupport.ThrottledInputStream;
@@ -22,7 +21,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 // Same as [dataformats-binary#819] but for `string` values and Map keys: declared
 // length exceeding available content should fail on end-of-input, without first
-// allocating a buffer for the full declared length
+// allocating a buffer for the full declared length. Plus [dataformats-binary#901]:
+// `maxStringLength` constraint must be enforced by both backends.
 public class StringLengthTest extends AvroTestBase
 {
     static class StringWrapper {
@@ -45,9 +45,6 @@ public class StringLengthTest extends AvroTestBase
     private final static String MAP_SCHEMA_JSON = aposToQuotes("{'type':'record','name':'MapWrapper',"
             +"'fields':[{'name':'m','type':{'type':'map','values':'int'}}]}");
 
-    private final AvroMapper JACKSON_MAPPER = AvroMapper.builder(new AvroFactory()).build();
-    private final AvroMapper APACHE_MAPPER = AvroMapper.builder(new ApacheAvroFactory()).build();
-
     // Lower `maxStringLength` used for constraint tests
     private final static int MAX_STRING_LENGTH = 1000;
 
@@ -57,12 +54,20 @@ public class StringLengthTest extends AvroTestBase
     // Longest length Apache Avro decoder itself accepts for a `string`
     private final static int HUGE_LENGTH = Integer.MAX_VALUE - 8;
 
+    // Native and Apache backends, without string length limit: so that huge declared
+    // lengths fail on end-of-input, not on (Apache backend's up-front) length check
+    private final static AvroMapper[] MAPPERS = _mappers(Integer.MAX_VALUE);
+
+    private final static AvroMapper[] LIMITED_MAPPERS = _mappers(MAX_STRING_LENGTH);
+
     @Test
     public void testTruncatedString() throws Exception
     {
         for (int len : new int[] { HUGE_LENGTH, LONG_LENGTH, 10 }) {
             byte[] doc = _concat(_lengthPrefix(len), new byte[3]);
-            _testTruncated(STRING_SCHEMA_JSON, StringWrapper.class, doc);
+            for (AvroMapper mapper : MAPPERS) {
+                _verifyTruncated(_reader(mapper, StringWrapper.class, STRING_SCHEMA_JSON), doc);
+            }
         }
     }
 
@@ -72,146 +77,116 @@ public class StringLengthTest extends AvroTestBase
         for (int len : new int[] { HUGE_LENGTH, LONG_LENGTH, 10 }) {
             // one-entry block, then the key
             byte[] doc = _concat(_lengthPrefix(1), _concat(_lengthPrefix(len), new byte[3]));
-            _testTruncated(MAP_SCHEMA_JSON, MapWrapper.class, doc);
-        }
-    }
-
-    // String length constraint must be enforced by both backends, for `string`
-    // values and Map keys; and for Apache backend, both up front (declared length
-    // long enough to exceed limit whatever the content) and after decoding
-    @Test
-    public void testStringLengthLimit() throws Exception
-    {
-        for (AvroMapper mapper : _mappers(MAX_STRING_LENGTH)) {
-            final AvroSchema stringSchema = mapper.schemaFrom(STRING_SCHEMA_JSON);
-            final AvroSchema mapSchema = mapper.schemaFrom(MAP_SCHEMA_JSON);
-            final ObjectReader stringReader = mapper.readerFor(StringWrapper.class).with(stringSchema);
-            final ObjectReader mapReader = mapper.readerFor(MapWrapper.class).with(mapSchema);
-
-            // At the limit: fine, including multi-byte content longer (in bytes) than limit
-            for (String ok : new String[] { _repeat("a", MAX_STRING_LENGTH),
-                    _repeat("\u20AC", MAX_STRING_LENGTH) }) {
-                byte[] doc = mapper.writer(stringSchema).writeValueAsBytes(new StringWrapper(ok));
-                assertEquals(ok, ((StringWrapper) stringReader.readValue(doc)).s);
-                doc = mapper.writer(mapSchema).writeValueAsBytes(
-                        new MapWrapper(Collections.singletonMap(ok, 1)));
-                assertEquals(Collections.singletonMap(ok, 1), ((MapWrapper) mapReader.readValue(doc)).m);
+            for (AvroMapper mapper : MAPPERS) {
+                _verifyTruncated(_reader(mapper, MapWrapper.class, MAP_SCHEMA_JSON), doc);
             }
-
-            // Over the limit: one char over (only detected once decoded), then
-            // long enough to be rejected based on declared length
-            for (int len : new int[] { MAX_STRING_LENGTH + 1, 5 * MAX_STRING_LENGTH }) {
-                final String tooLong = _repeat("a", len);
-                byte[] doc = mapper.writer(stringSchema).writeValueAsBytes(new StringWrapper(tooLong));
-                _verifyTooLong(stringReader, doc);
-                doc = mapper.writer(mapSchema).writeValueAsBytes(
-                        new MapWrapper(Collections.singletonMap(tooLong, 1)));
-                _verifyTooLong(mapReader, doc);
-            }
-        }
-    }
-
-    private void _verifyTooLong(ObjectReader r, byte[] doc) throws Exception
-    {
-        for (Object input : new Object[] { doc, _stream(doc) }) {
-            // (databind wraps `StreamConstraintsException` for Map values)
-            JsonProcessingException e = assertThrows(JsonProcessingException.class,
-                    () -> {
-                        if (input instanceof byte[]) {
-                            r.readValue((byte[]) input);
-                        } else {
-                            r.readValue((InputStream) input);
-                        }
-                    });
-            verifyException(e, "String value length");
-            verifyException(e, "exceeds the maximum allowed ("+MAX_STRING_LENGTH);
         }
     }
 
     @Test
     public void testNegativeStringLength() throws Exception
     {
-        for (AvroMapper mapper : new AvroMapper[] { JACKSON_MAPPER, APACHE_MAPPER }) {
-            final ObjectReader r = mapper.readerFor(StringWrapper.class)
-                    .with(mapper.schemaFrom(STRING_SCHEMA_JSON));
-            try {
-                r.readValue(_lengthPrefix(-1));
-                fail("Should not pass");
-            } catch (StreamReadException e) {
+        for (AvroMapper mapper : MAPPERS) {
+            for (IOException e : _readFailures(_reader(mapper, StringWrapper.class, STRING_SCHEMA_JSON),
+                    _lengthPrefix(-1))) {
                 verifyException(e, "Invalid length indicator for String: -1");
             }
         }
     }
 
     @Test
-    public void testLongValidString() throws Exception
+    public void testValidStrings() throws Exception
     {
-        final String value = _longString();
-        for (AvroMapper mapper : new AvroMapper[] { JACKSON_MAPPER, APACHE_MAPPER }) {
-            final AvroSchema schema = mapper.schemaFrom(STRING_SCHEMA_JSON);
-            byte[] doc = mapper.writer(schema).writeValueAsBytes(new StringWrapper(value));
-            final ObjectReader r = mapper.readerFor(StringWrapper.class).with(schema);
-            assertEquals(value, ((StringWrapper) r.readValue(doc)).s);
-            assertEquals(value, ((StringWrapper) r.readValue(
-                    ThrottledInputStream.wrap(new ByteArrayInputStream(doc), 1000))).s);
-            assertEquals("", ((StringWrapper) r.readValue(
-                    mapper.writer(schema).writeValueAsBytes(new StringWrapper("")))).s);
+        for (AvroMapper mapper : MAPPERS) {
+            _verifyValid(mapper, "");
+            _verifyValid(mapper, "a");
+            _verifyValid(mapper, _longString());
         }
     }
 
+    // For Apache backend, limit is checked both up front (declared length long
+    // enough to exceed limit whatever the content) and after decoding
     @Test
-    public void testLongValidMapKey() throws Exception
+    public void testStringLengthLimit() throws Exception
     {
-        final Map<String, Integer> value = new LinkedHashMap<>();
-        value.put("a", 1);
-        value.put(_longString(), 2);
-        value.put("", 3);
-        for (AvroMapper mapper : new AvroMapper[] { JACKSON_MAPPER, APACHE_MAPPER }) {
-            final AvroSchema schema = mapper.schemaFrom(MAP_SCHEMA_JSON);
-            byte[] doc = mapper.writer(schema).writeValueAsBytes(new MapWrapper(value));
-            final ObjectReader r = mapper.readerFor(MapWrapper.class).with(schema);
-            assertEquals(value, ((MapWrapper) r.readValue(doc)).m);
-            assertEquals(value, ((MapWrapper) r.readValue(
-                    ThrottledInputStream.wrap(new ByteArrayInputStream(doc), 1000))).m);
-        }
-    }
+        for (AvroMapper mapper : LIMITED_MAPPERS) {
+            // At the limit: fine, including multi-byte content longer (in bytes) than limit
+            _verifyValid(mapper, _repeat("a", MAX_STRING_LENGTH));
+            _verifyValid(mapper, _repeat("€", MAX_STRING_LENGTH));
 
-    // Mix of 1-, 2-, 3- and 4-byte UTF-8 characters, so some cross chunk boundaries
-    private static String _longString() {
-        final String[] parts = { "abc", "é", "€", "😀" };
-        StringBuilder sb = new StringBuilder(LONG_LENGTH + 4);
-        for (int i = 0; sb.length() < LONG_LENGTH; ++i) {
-            sb.append(parts[i % parts.length]);
-        }
-        return sb.toString();
-    }
-
-    private void _testTruncated(String schemaJson, Class<?> type, byte[] doc) throws Exception
-    {
-        // Lift string length limit, so that huge declared lengths fail on
-        // end-of-input, not on (Apache backend's up-front) length check
-        for (AvroMapper mapper : _mappers(Integer.MAX_VALUE)) {
-            final ObjectReader r = mapper.readerFor(type).with(mapper.schemaFrom(schemaJson));
-            _verifyTruncated(r, doc);
-            _verifyTruncated(r, _stream(doc));
-        }
-    }
-
-    private void _verifyTruncated(ObjectReader r, Object input) throws Exception
-    {
-        try {
-            if (input instanceof byte[]) {
-                r.readValue((byte[]) input);
-            } else {
-                r.readValue((InputStream) input);
+            // Over the limit: one char over (only detected once decoded), and
+            // long enough to be rejected based on declared length
+            for (int len : new int[] { MAX_STRING_LENGTH + 1, 5 * MAX_STRING_LENGTH }) {
+                _verifyTooLong(mapper, _repeat("a", len));
             }
-            fail("Should not pass");
-        } catch (EOFException e) {
-            // Apache decoder reports end-of-input as-is
-        } catch (JsonProcessingException e) {
-            verifyException(e, "end-of-input");
+        }
+
+        // Apache backend's up-front check reports actual (byte) length
+        final AvroMapper apacheMapper = LIMITED_MAPPERS[1];
+        final String tooLong = _repeat("a", 5 * MAX_STRING_LENGTH);
+        for (IOException e : _readFailures(_reader(apacheMapper, StringWrapper.class, STRING_SCHEMA_JSON),
+                _stringDoc(apacheMapper, tooLong))) {
+            verifyException(e, "String value length (5000 bytes, so at least 1666 chars)");
         }
     }
+
+    /*
+    /**********************************************************************
+    /* Helper methods, verification
+    /**********************************************************************
+     */
+
+    // Verifies that `value` is read back as-is both as `string` value and as Map
+    // key (followed by another entry), from both `byte[]` and stream
+    private void _verifyValid(AvroMapper mapper, String value) throws Exception
+    {
+        ObjectReader r = _reader(mapper, StringWrapper.class, STRING_SCHEMA_JSON);
+        byte[] doc = _stringDoc(mapper, value);
+        assertEquals(value, r.<StringWrapper>readValue(doc).s);
+        assertEquals(value, r.<StringWrapper>readValue(_stream(doc)).s);
+
+        Map<String, Integer> map = _map(value);
+        r = _reader(mapper, MapWrapper.class, MAP_SCHEMA_JSON);
+        doc = _mapDoc(mapper, map);
+        assertEquals(map, r.<MapWrapper>readValue(doc).m);
+        assertEquals(map, r.<MapWrapper>readValue(_stream(doc)).m);
+    }
+
+    private void _verifyTooLong(AvroMapper mapper, String value) throws Exception
+    {
+        // (exception may be wrapped by databind, so only verify message)
+        for (IOException e : _readFailures(_reader(mapper, StringWrapper.class, STRING_SCHEMA_JSON),
+                _stringDoc(mapper, value))) {
+            verifyException(e, "exceeds the maximum allowed ("+MAX_STRING_LENGTH);
+        }
+        for (IOException e : _readFailures(_reader(mapper, MapWrapper.class, MAP_SCHEMA_JSON),
+                _mapDoc(mapper, _map(value)))) {
+            verifyException(e, "exceeds the maximum allowed ("+MAX_STRING_LENGTH);
+        }
+    }
+
+    private void _verifyTruncated(ObjectReader r, byte[] doc)
+    {
+        for (IOException e : _readFailures(r, doc)) {
+            // Apache decoder reports end-of-input as-is
+            if (!(e instanceof EOFException)) {
+                verifyException(e, "end-of-input");
+            }
+        }
+    }
+
+    // Reads `doc` both from `byte[]` and stream, expecting both to fail
+    private static List<IOException> _readFailures(ObjectReader r, byte[] doc) {
+        return Arrays.asList(
+                assertThrows(IOException.class, () -> r.readValue(doc)),
+                assertThrows(IOException.class, () -> r.readValue(_stream(doc))));
+    }
+
+    /*
+    /**********************************************************************
+    /* Helper methods, set up
+    /**********************************************************************
+     */
 
     private static AvroMapper[] _mappers(int maxStringLength) {
         final StreamReadConstraints constraints = StreamReadConstraints.builder()
@@ -222,6 +197,39 @@ public class StringLengthTest extends AvroTestBase
         apacheF.setStreamReadConstraints(constraints);
         return new AvroMapper[] { AvroMapper.builder(jacksonF).build(),
                 AvroMapper.builder(apacheF).build() };
+    }
+
+    private static ObjectReader _reader(AvroMapper mapper, Class<?> type, String schemaJson)
+            throws IOException {
+        return mapper.readerFor(type).with(mapper.schemaFrom(schemaJson));
+    }
+
+    private static byte[] _stringDoc(AvroMapper mapper, String value) throws IOException {
+        return mapper.writer(mapper.schemaFrom(STRING_SCHEMA_JSON))
+                .writeValueAsBytes(new StringWrapper(value));
+    }
+
+    private static byte[] _mapDoc(AvroMapper mapper, Map<String, Integer> map) throws IOException {
+        return mapper.writer(mapper.schemaFrom(MAP_SCHEMA_JSON))
+                .writeValueAsBytes(new MapWrapper(map));
+    }
+
+    // Map with given key, followed by another entry
+    private static Map<String, Integer> _map(String key) {
+        Map<String, Integer> map = new LinkedHashMap<>();
+        map.put(key, 1);
+        map.put("next", 2);
+        return map;
+    }
+
+    // Mix of 1-, 2-, 3- and 4-byte UTF-8 characters, so some cross chunk boundaries
+    private static String _longString() {
+        final String[] parts = { "abc", "é", "€", "😀" };
+        StringBuilder sb = new StringBuilder(LONG_LENGTH + 4);
+        for (int i = 0; sb.length() < LONG_LENGTH; ++i) {
+            sb.append(parts[i % parts.length]);
+        }
+        return sb.toString();
     }
 
     private static String _repeat(String str, int count) {
