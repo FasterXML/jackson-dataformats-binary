@@ -393,10 +393,13 @@ public class ApacheAvroParserImpl extends AvroParserImpl
      * Helper method for reading a {@code string} value or Map key. Not done using
      * {@link BinaryDecoder#readString()}, which allocates a buffer for the full
      * declared length before reading any content (and keeps it as scratch buffer
-     * of the decoder, which gets recycled): content is read using
-     * {@link #_readBytes(int)} instead.
-     *
-     * @since 2.21.9
+     * of the decoder, which gets recycled). Instead, content that fits in the
+     * (recyclable) input buffer is read into it; longer content is read using
+     * {@link #_readBytes(int)}.
+     *<p>
+     * Value length is validated against {@link StreamReadConstraints#getMaxStringLength()}:
+     * up front if even the shortest possible decoded {@code String} (one {@code char}
+     * per 3 bytes of UTF-8) would be too long, and otherwise once decoded.
      */
     private String _readString() throws IOException
     {
@@ -407,8 +410,32 @@ public class ApacheAvroParserImpl extends AvroParserImpl
             }
             return "";
         }
+        _streamReadConstraints.validateStringLength(len / 3);
         _validateValueLength(len);
-        return new String(_readBytes(len), StandardCharsets.UTF_8);
+        final String str;
+        final byte[] buf = _scratchBuffer();
+        if (len <= buf.length) {
+            // this is simple raw read, safe to use:
+            _decoder.readFixed(buf, 0, len);
+            str = new String(buf, 0, len, StandardCharsets.UTF_8);
+        } else {
+            str = new String(_readBytes(len), StandardCharsets.UTF_8);
+        }
+        _streamReadConstraints.validateStringLength(str.length());
+        return str;
+    }
+
+    /**
+     * Accessor for the (recyclable) input buffer, used as scratch space: decoder
+     * does its own buffering so the buffer is otherwise unused.
+     */
+    private byte[] _scratchBuffer() {
+        byte[] buf = _inputBuffer;
+        if (buf == null) { // `byte[]` input: no buffer allocated by constructor
+            _inputBuffer = buf = _ioContext.allocReadIOBuffer();
+            _bufferRecyclable = true; // so that it gets released on close
+        }
+        return buf;
     }
 
     @Override
@@ -461,13 +488,8 @@ public class ApacheAvroParserImpl extends AvroParserImpl
             _decoder.readFixed(b, 0, len);
             return b;
         }
-        // Decoder does its own buffering so the (recyclable) input buffer is otherwise
-        // unused: reuse it as scratch space instead of allocating a chunk-sized array
-        byte[] chunk = _inputBuffer;
-        if (chunk == null) { // `byte[]` input: no buffer allocated by constructor
-            _inputBuffer = chunk = _ioContext.allocReadIOBuffer();
-            _bufferRecyclable = true; // so that it gets released on close
-        }
+        // Reuse input buffer as scratch space instead of allocating a chunk-sized array
+        final byte[] chunk = _scratchBuffer();
         final ByteArrayBuilder bb = _getByteArrayBuilder();
         int left = len;
         while (left > 0) {
