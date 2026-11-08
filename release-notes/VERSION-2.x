@@ -14,7 +14,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.23.0 (not yet released)
+2.23.0 (07-Nov-2026)
 
 #745: (avro) Fix Avro bugs
 #797: (avro) Apache decoder fails with `UnsupportedOperationException` when
