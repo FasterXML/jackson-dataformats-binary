@@ -125,3 +125,15 @@ Dhanraj E (@Dhanu-dynamic)
 * Contributed #901: (avro) Apache decoder allocates buffer for full declared length
   of `string` value or Map key before reading content
  (3.1.9)
+
+@birTiwana
+
+* Reported #343: (avro) Add `AvroReadFeature.READ_SINGLE_OBJECT_ENCODING` to decode Avro
+  "Single Object Encoding"
+ (3.4.0)
+
+Vineet Singh (@Vineet829)
+
+* Contributed #343: (avro) Add `AvroReadFeature.READ_SINGLE_OBJECT_ENCODING` to decode Avro
+  "Single Object Encoding"
+ (3.4.0)

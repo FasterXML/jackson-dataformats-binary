@@ -14,6 +14,13 @@ implementations)
 === Releases ===
 ------------------------------------------------------------------------
 
+3.4.0 (not yet released)
+
+#343: (avro) Add `AvroReadFeature.READ_SINGLE_OBJECT_ENCODING` to decode Avro
+  "Single Object Encoding" (as written by `BinaryMessageEncoder`)
+ (reported by @birTiwana)
+ (contributed by @Vineet829)
+
 3.3.0 (07-Nov-2026)
 
 #398: (protobuf) Add `ProtobufReadFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE`
