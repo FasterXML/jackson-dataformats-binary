@@ -13,13 +13,20 @@ public class RootReader extends AvroReadContext
 {
     private final AvroParserImpl _parser;
     private final AvroStructureReader _valueReader;
+    private final Long _singleObjectFingerprint;
 
     public RootReader(AvroParserImpl parser,
             AvroStructureReader valueReader) {
+        this(parser, valueReader, null);
+    }
+
+    RootReader(AvroParserImpl parser,
+            AvroStructureReader valueReader, Long singleObjectFingerprint) {
         super(null, null);
         _type = TYPE_ROOT;
         _parser = parser;
         _valueReader = valueReader;
+        _singleObjectFingerprint = singleObjectFingerprint;
     }
 
     @Override
@@ -29,9 +36,13 @@ public class RootReader extends AvroReadContext
         if (_parser.checkInputEnd()) {
             // 26-Aug-2019, tatu: As per [dataformats-binary#177], 0-field Records consume
             //    no content, and if so we MUST NOT indicate end-of-content:
-            if (!_valueReader.consumesNoContent()) {
+            // [dataformats-binary#343]: unless each value has a header
+            if ((_singleObjectFingerprint != null) || !_valueReader.consumesNoContent()) {
                 return null;
             }
+        }
+        if (_singleObjectFingerprint != null) {
+            _parser._readSingleObjectHeader(_singleObjectFingerprint);
         }
         return _valueReader.newReader(this, _parser).nextToken();
     }
