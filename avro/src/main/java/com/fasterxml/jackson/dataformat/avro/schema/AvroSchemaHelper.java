@@ -472,9 +472,10 @@ public abstract class AvroSchemaHelper
             int lastDot = sb.length();
             while (true) {
                 try {
-                    // Try to resolve the class
+                    // Try to resolve the class; only need to know it exists, so
+                    // must not initialize it (name comes from possibly untrusted schema)
                     String className = sb.toString();
-                    Class.forName(className);
+                    Class.forName(className, false, FullNameResolver.class.getClassLoader());
                     return className;
                 } catch (ClassNotFoundException e) {
                     // Class does not exist - perhaps last dot is actually a nested class
