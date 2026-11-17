@@ -477,8 +477,9 @@ public abstract class AvroSchemaHelper
                     String className = sb.toString();
                     Class.forName(className, false, FullNameResolver.class.getClassLoader());
                     return className;
-                } catch (ClassNotFoundException e) {
-                    // Class does not exist - perhaps last dot is actually a nested class
+                } catch (ClassNotFoundException | LinkageError e) {
+                    // Class does not exist (or cannot be loaded; e.g. missing superclass,
+                    // case-only name mismatch) - perhaps last dot is actually a nested class
                     lastDot = sb.lastIndexOf(".", lastDot);
                     if (lastDot == -1) {
                         // No more dots so we are unable to resolve, should we throw an exception?
