@@ -251,6 +251,34 @@ public class IonTimestampInstantDeserializerTest {
         assertEquals(expected, actual, "The value is not correct.");
     }
 
+    // Fraction digits past nanoseconds are truncated
+    @Test
+    public void testDeserializationAsIonTimestampSubNanos() throws Exception {
+        assertEquals(Instant.ofEpochSecond(1577836800L, 123456789),
+                READER.readValue("2020-01-01T00:00:00.1234567891Z"));
+        assertEquals(Instant.ofEpochSecond(-1L, 500000000),
+                READER.readValue("1969-12-31T23:59:59.5Z"));
+    }
+
+    /**
+     * Binary Ion timestamp with fractional seconds of 1E-10000000 (exponent is
+     * encoded, not digits): like with decimal values above, should not take long.
+     */
+    @Timeout(value = 100, unit = TimeUnit.MILLISECONDS)
+    @Test
+    public void testDeserializationAsIonTimestampLargeFractionScale() throws Exception {
+        final byte[] doc = new byte[] {
+                (byte) 0xE0, 0x01, 0x00, (byte) 0xEA, // Ion 1.0 binary version marker
+                0x6D, // timestamp, 13 bytes
+                (byte) 0x80, // offset: +00:00
+                0x0F, (byte) 0xE4, (byte) 0x81, (byte) 0x81, // 2020-01-01
+                (byte) 0x80, (byte) 0x80, (byte) 0x80, // 00:00:00
+                0x44, 0x62, 0x2D, (byte) 0x80, // fraction exponent: -10000000
+                0x01 // fraction coefficient: 1
+        };
+        assertEquals(Instant.ofEpochSecond(1577836800L), READER.readValue(doc));
+    }
+
     /*
      **********************************************************************
      * Deserialization of actuals with type info
