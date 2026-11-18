@@ -94,13 +94,6 @@ public abstract class AvroParser extends ParserBase
 
     protected AvroReadContext _avroContext;
 
-    /**
-     * Native type ids (from schema) seen, mapped to ids exposed by {@link #getTypeId()}.
-     *
-     * @since 2.24
-     */
-    private final java.util.Map<String, String> _resolvedTypeIds = new java.util.HashMap<>();
-
     /*
     /**********************************************************************
     /* Life-cycle
@@ -231,6 +224,9 @@ public abstract class AvroParser extends ParserBase
             } catch (IOException e) {
                 throw new IllegalArgumentException(e);
             }
+            // 17-Nov-2026, tatu: was never assigned before 2.24; needed for
+            //   resolving type ids [dataformats-binary#908]
+            _rootSchema = (AvroSchema) schema;
         } else {
             throw new IllegalArgumentException("Can not use FormatSchema of type "
                     +schema.getClass().getName());
@@ -247,13 +243,12 @@ public abstract class AvroParser extends ParserBase
     @Override
     public Object getTypeId() throws IOException {
         final String typeId = (_avroContext == null) ? null : _avroContext.getTypeId();
-        if (typeId == null) {
-            return null;
+        if ((typeId == null) || (_rootSchema == null)) {
+            return typeId;
         }
         // [dataformats-binary#908]: names from schema use dot as separator for
-        // nested classes too: need to find the actual class name. Outcome (found
-        // or not) only retained here, for duration of parsing.
-        return _resolvedTypeIds.computeIfAbsent(typeId, AvroTypeIdClassNames::resolve);
+        // nested classes too: need to find name of the actual class
+        return _rootSchema.resolveTypeId(typeId);
     }
 
     /*

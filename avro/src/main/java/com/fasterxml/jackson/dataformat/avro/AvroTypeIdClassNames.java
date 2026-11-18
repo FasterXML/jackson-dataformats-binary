@@ -1,7 +1,5 @@
 package com.fasterxml.jackson.dataformat.avro;
 
-import com.fasterxml.jackson.databind.util.LRUMap;
-
 /**
  * Helper class for translating native type ids into names of Java classes:
  * needed since names of record, enum and fixed schemas (as of Avro 1.9) use
@@ -25,14 +23,6 @@ final class AvroTypeIdClassNames
     // probing is done: well above length of any real class name
     final static int MAX_CLASS_NAME_LENGTH = 1024;
 
-    /**
-     * Names from schema for which class was found, mapped to name of that class.
-     * Only names are retained (no references to classes), and only for successful
-     * lookups: whether class is found may depend on context ClassLoader, so failure
-     * must not be remembered beyond a single parser.
-     */
-    private final static LRUMap<String, String> CLASS_NAMES = new LRUMap<>(80, 800);
-
     private AvroTypeIdClassNames() { }
 
     /**
@@ -41,36 +31,33 @@ final class AvroTypeIdClassNames
      *   {@code EnumSet} and {@code EnumMap} (like {@code java.util.EnumSet<package.Outer.Inner>}),
      *   for which the first type parameter is name from schema.
      *
-     * @return Type id with name of class found, if any; {@code typeId} itself otherwise
+     * @return Type id with name of class found, if any (may be {@code typeId} itself);
+     *    {@code null} if no class was found
      */
     static String resolve(String typeId)
     {
         final int start = typeId.indexOf('<') + 1;
         if (start == 0) {
-            return _resolveClassName(typeId);
+            return _findClassName(typeId);
         }
         int end = typeId.indexOf(',', start);
         if (end < 0) {
             end = typeId.indexOf('>', start);
             if (end < 0) { // malformed, leave for databind to report
-                return typeId;
+                return null;
             }
         }
-        return typeId.substring(0, start)
-                + _resolveClassName(typeId.substring(start, end))
-                + typeId.substring(end);
+        final String className = _findClassName(typeId.substring(start, end));
+        return (className == null) ? null
+                : typeId.substring(0, start) + className + typeId.substring(end);
     }
 
-    private static String _resolveClassName(String name)
+    private static String _findClassName(String name)
     {
         // Nothing to probe without namespace; and no real class has name
         // very long or nested very deep
         if ((name.indexOf('.') < 0) || !_shouldProbe(name)) {
-            return name;
-        }
-        String className = CLASS_NAMES.get(name);
-        if (className != null) {
-            return className;
+            return null;
         }
         // 23-Aug-2024:[dataformats-binary#167] Based on SpecificData::getClass
         //   from Apache Avro. Initially assume that namespace is a Java package
@@ -80,13 +67,11 @@ final class AvroTypeIdClassNames
             // Class does not exist - perhaps last dot is actually a nested class
             lastDot = sb.lastIndexOf(".", lastDot);
             if (lastDot < 0) {
-                return name;
+                return null;
             }
             sb.setCharAt(lastDot, '$');
         }
-        className = sb.toString();
-        CLASS_NAMES.put(name, className);
-        return className;
+        return sb.toString();
     }
 
     // Same lookup order as databind has: context ClassLoader (if any) first

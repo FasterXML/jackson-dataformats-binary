@@ -2,6 +2,7 @@ package com.fasterxml.jackson.dataformat.avro;
 
 import java.io.IOException;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.avro.Schema;
@@ -36,6 +37,15 @@ public class AvroSchema implements FormatSchema
      * Lazily instantiated value reader for this schema.
      */
     protected final AtomicReference<AvroStructureReader> _reader = new AtomicReference<>();
+
+    /**
+     * Type ids (as used by {@link AvroStructureReader}s of this schema) for which
+     * Java class was found, mapped to type id with name of that class: see
+     * {@link #resolveTypeId}. Bounded by number of types schema has.
+     *
+     * @since 2.24
+     */
+    private final ConcurrentHashMap<String, String> _resolvedTypeIds = new ConcurrentHashMap<>();
 
     public AvroSchema(Schema asch)
     {
@@ -158,6 +168,31 @@ r.getType().getName(), w.getFullName(), r.getFullName()));
     /* Factory methods
     /**********************************************************************
      */
+
+    /**
+     * Method for translating type id from this schema into one with name of the
+     * actual Java class: names of record, enum and fixed schemas use dot as the
+     * separator between enclosing and nested class ({@code package.Outer.Inner})
+     * so need to probe to find the class ({@code package.Outer$Inner}).
+     * Only successful lookups are retained: whether class is found may depend on
+     * context ClassLoader, so failure must not be remembered.
+     *
+     * @return Type id with name of class found, if any; {@code typeId} itself otherwise
+     *
+     * @since 2.24
+     */
+    String resolveTypeId(String typeId)
+    {
+        String resolved = _resolvedTypeIds.get(typeId);
+        if (resolved == null) {
+            resolved = AvroTypeIdClassNames.resolve(typeId);
+            if (resolved == null) {
+                return typeId;
+            }
+            _resolvedTypeIds.put(typeId, resolved);
+        }
+        return resolved;
+    }
 
     public AvroStructureReader getReader() throws IOException
     {

@@ -145,24 +145,31 @@ public class NestedClassTypeId908Test extends AvroTestBase
     }
 
     // Failure to find class (here: due to context ClassLoader not being set) must
-    // not be remembered by mapper: lookup may succeed later on
+    // not be remembered by mapper or schema: lookup may succeed later on
     @Test
-    public void testFailedLookupNotRetainedByMapper() throws Exception
+    public void testFailedLookupNotRetained() throws Exception
     {
         final AvroMapper mapper = newMapper();
+        final AvroSchema schema = mapper.schemaFrom(SCHEMA_JSON);
         try (URLClassLoader loader = isolatedLoader()) {
-            assertTrue(_roundTrip(mapper, loader, null) instanceof Map<?,?>);
-            assertTrue(_roundTrip(mapper, loader, null) instanceof Map<?,?>);
+            assertTrue(_roundTrip(mapper, schema, loader, null) instanceof Map<?,?>);
+            assertTrue(_roundTrip(mapper, schema, loader, null) instanceof Map<?,?>);
 
-            Object result = _roundTrip(mapper, loader, loader);
+            Object result = _roundTrip(mapper, schema, loader, loader);
             assertEquals(NS + "$ImplB", result.getClass().getName());
             assertSame(loader, result.getClass().getClassLoader());
         }
     }
 
+    private Object _roundTrip(AvroMapper mapper,
+            ClassLoader beanLoader, ClassLoader contextLoader) throws Exception
+    {
+        return _roundTrip(mapper, mapper.schemaFrom(SCHEMA_JSON), beanLoader, contextLoader);
+    }
+
     // Writes `Bean` with `ImplB` value, reads it back using given context
     // ClassLoader (if any); returns value of `Bean.value`
-    private Object _roundTrip(AvroMapper mapper,
+    private Object _roundTrip(AvroMapper mapper, AvroSchema schema,
             ClassLoader beanLoader, ClassLoader contextLoader) throws Exception
     {
         final Class<?> beanClass = beanLoader.loadClass(NS + "$Bean");
@@ -171,7 +178,6 @@ public class NestedClassTypeId908Test extends AvroTestBase
         implB.getClass().getField("b").set(implB, 42);
         beanClass.getField("value").set(bean, implB);
 
-        final AvroSchema schema = mapper.schemaFrom(SCHEMA_JSON);
         final byte[] avro = mapper.writer(schema).writeValueAsBytes(bean);
         // union index 1 (zigzag: 2), then int 42 (zigzag: 84)
         assertArrayEquals(new byte[] { 2, 84 }, avro);
