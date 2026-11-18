@@ -14,6 +14,12 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.23.1 (not yet released)
+
+#906: (avro) Do not initialize class named by Avro schema when resolving its full name;
+  also skip nested-class probing for schema namespaces with more than 32 dots
+ (contributed by @Dhanu-dynamic)
+
 2.23.0 (07-Nov-2026)
 
 #745: (avro) Fix Avro bugs
