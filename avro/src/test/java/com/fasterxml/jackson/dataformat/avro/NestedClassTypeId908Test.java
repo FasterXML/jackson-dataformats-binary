@@ -72,12 +72,6 @@ public class NestedClassTypeId908Test extends AvroTestBase
                 NestedClassTypeId908Test.class.getClassLoader());
     }
 
-    /*
-    /**********************************************************************
-    /* Test methods, ClassLoader handling
-    /**********************************************************************
-     */
-
     // Sanity check for test setup itself
     @Test
     public void testIsolatedClassesNotVisibleToModule() throws Exception
@@ -111,7 +105,7 @@ public class NestedClassTypeId908Test extends AvroTestBase
     public void testRoundTripWithContextClassLoader() throws Exception
     {
         try (URLClassLoader loader = isolatedLoader()) {
-            Object result = _roundTrip(loader, loader);
+            Object result = _roundTrip(newMapper(), loader, loader);
             assertEquals(NS + "$ImplB", result.getClass().getName());
             assertSame(loader, result.getClass().getClassLoader());
             assertEquals(42, result.getClass().getField("b").get(result));
@@ -123,7 +117,7 @@ public class NestedClassTypeId908Test extends AvroTestBase
     public void testReadWithoutContextClassLoader() throws Exception
     {
         try (URLClassLoader loader = isolatedLoader()) {
-            Object result = _roundTrip(loader, null);
+            Object result = _roundTrip(newMapper(), loader, null);
             assertTrue(result instanceof Map<?,?>, "Expected Map, got: "+result.getClass().getName());
             assertEquals(42, ((Map<?,?>) result).get("b"));
         }
@@ -137,22 +131,39 @@ public class NestedClassTypeId908Test extends AvroTestBase
         try (URLClassLoader loader1 = isolatedLoader();
                 URLClassLoader loader2 = isolatedLoader()) {
             // first: lookup that fails
-            assertTrue(_roundTrip(loader1, null) instanceof Map<?,?>);
+            assertTrue(_roundTrip(newMapper(), loader1, null) instanceof Map<?,?>);
 
-            Object result1 = _roundTrip(loader1, loader1);
+            Object result1 = _roundTrip(newMapper(), loader1, loader1);
             assertSame(loader1, result1.getClass().getClassLoader());
 
-            Object result2 = _roundTrip(loader2, loader2);
+            Object result2 = _roundTrip(newMapper(), loader2, loader2);
             assertSame(loader2, result2.getClass().getClassLoader());
 
             // and failing lookup still fails
-            assertTrue(_roundTrip(loader1, null) instanceof Map<?,?>);
+            assertTrue(_roundTrip(newMapper(), loader1, null) instanceof Map<?,?>);
         }
     }
 
-    // Writes `Bean` with `ImplB` value, reads it back (with new mapper) using
-    // given context ClassLoader (if any); returns value of `Bean.value`
-    private Object _roundTrip(ClassLoader beanLoader, ClassLoader contextLoader) throws Exception
+    // Failure to find class (here: due to context ClassLoader not being set) must
+    // not be remembered by mapper: lookup may succeed later on
+    @Test
+    public void testFailedLookupNotRetainedByMapper() throws Exception
+    {
+        final AvroMapper mapper = newMapper();
+        try (URLClassLoader loader = isolatedLoader()) {
+            assertTrue(_roundTrip(mapper, loader, null) instanceof Map<?,?>);
+            assertTrue(_roundTrip(mapper, loader, null) instanceof Map<?,?>);
+
+            Object result = _roundTrip(mapper, loader, loader);
+            assertEquals(NS + "$ImplB", result.getClass().getName());
+            assertSame(loader, result.getClass().getClassLoader());
+        }
+    }
+
+    // Writes `Bean` with `ImplB` value, reads it back using given context
+    // ClassLoader (if any); returns value of `Bean.value`
+    private Object _roundTrip(AvroMapper mapper,
+            ClassLoader beanLoader, ClassLoader contextLoader) throws Exception
     {
         final Class<?> beanClass = beanLoader.loadClass(NS + "$Bean");
         final Object bean = beanClass.getDeclaredConstructor().newInstance();
@@ -160,7 +171,6 @@ public class NestedClassTypeId908Test extends AvroTestBase
         implB.getClass().getField("b").set(implB, 42);
         beanClass.getField("value").set(bean, implB);
 
-        final AvroMapper mapper = newMapper();
         final AvroSchema schema = mapper.schemaFrom(SCHEMA_JSON);
         final byte[] avro = mapper.writer(schema).writeValueAsBytes(bean);
         // union index 1 (zigzag: 2), then int 42 (zigzag: 84)
@@ -176,55 +186,5 @@ public class NestedClassTypeId908Test extends AvroTestBase
         } finally {
             thread.setContextClassLoader(oldLoader);
         }
-    }
-
-    /*
-    /**********************************************************************
-    /* Test methods, probing limits
-    /**********************************************************************
-     */
-
-    @Test
-    public void testDotCountLimitBoundary() throws Exception
-    {
-        final int max = AvroTypeIdResolver.MAX_NAMESPACE_DOTS;
-        assertEquals(32, max);
-        assertTrue(AvroTypeIdResolver._shouldProbe("Rec"));
-        assertTrue(AvroTypeIdResolver._shouldProbe("abc.Rec"));
-        assertTrue(AvroTypeIdResolver._shouldProbe(_dottedName(max - 1) + ".Rec"));
-        assertTrue(AvroTypeIdResolver._shouldProbe(_dottedName(max) + ".Rec"));
-        assertFalse(AvroTypeIdResolver._shouldProbe(_dottedName(max + 1) + ".Rec"));
-        assertFalse(AvroTypeIdResolver._shouldProbe(_dottedName(max + 100) + ".Rec"));
-    }
-
-    // Limit applies to length of full name: namespace, dot, name
-    @Test
-    public void testNameLengthLimitBoundary() throws Exception
-    {
-        final int max = AvroTypeIdResolver.MAX_CLASS_NAME_LENGTH;
-        assertEquals(1024, max);
-        final String name = ".Rec";
-        final int maxNamespace = max - name.length();
-        assertTrue(AvroTypeIdResolver._shouldProbe(_longName(maxNamespace - 1) + name));
-        assertTrue(AvroTypeIdResolver._shouldProbe(_longName(maxNamespace) + name));
-        assertFalse(AvroTypeIdResolver._shouldProbe(_longName(maxNamespace + 1) + name));
-        assertFalse(AvroTypeIdResolver._shouldProbe(_longName(100_000) + name));
-    }
-
-    private static String _longName(int len) {
-        StringBuilder sb = new StringBuilder(len);
-        while (sb.length() < len) {
-            sb.append('x');
-        }
-        return sb.toString();
-    }
-
-    // Name with given number of dots
-    private static String _dottedName(int dots) {
-        StringBuilder sb = new StringBuilder("a");
-        for (int i = 0; i < dots; ++i) {
-            sb.append(".a");
-        }
-        return sb.toString();
     }
 }

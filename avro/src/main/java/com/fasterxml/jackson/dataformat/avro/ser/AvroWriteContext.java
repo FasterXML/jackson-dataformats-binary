@@ -321,11 +321,11 @@ public abstract class AvroWriteContext
             //  - Number wrappers (Integer, ...)
 
             final String typeId = AvroSchemaHelper.getTypeId(raw);
-            final String altTypeId = _dottedTypeId(typeId);
+            final String dottedTypeId = _dottedTypeId(typeId);
             for (int i = 0, size = types.size(); i < size; ++i) {
                 Schema schema = types.get(i);
                 // Exact schema match?
-                if (_matchesTypeId(typeId, altTypeId, AvroSchemaHelper.getTypeId(schema))) {
+                if (_matchesTypeId(typeId, dottedTypeId, AvroSchemaHelper.getTypeId(schema))) {
                     return i;
                 }
             }
@@ -371,11 +371,11 @@ public abstract class AvroWriteContext
             }
 
             final String typeId = AvroSchemaHelper.getTypeId(raw);
-            final String altTypeId = _dottedTypeId(typeId);
+            final String dottedTypeId = _dottedTypeId(typeId);
             for (int i = 0, size = types.size(); i < size; ++i) {
                 Schema schema = types.get(i);
                 // Exact schema match?
-                if (_matchesTypeId(typeId, altTypeId, AvroSchemaHelper.getTypeId(schema))) {
+                if (_matchesTypeId(typeId, dottedTypeId, AvroSchemaHelper.getTypeId(schema))) {
                     return schema;
                 }
             }
@@ -418,16 +418,19 @@ public abstract class AvroWriteContext
     }
 
     // [dataformats-binary#908]: schemas (as of Avro 1.9) use dot as separator for
-    // nested classes too, whereas class names use dollar sign: so need to match
-    // class name against both variants. Done by comparing names only, without
-    // trying to load class named by schema.
+    // nested classes too, whereas class names use dollar sign (and schemas may
+    // use mix of the two): so if no exact match, compare with separators unified.
+    // Done by comparing names only, without trying to load class named by schema.
     private static String _dottedTypeId(String typeId) {
-        return (typeId.indexOf('$') < 0) ? null : typeId.replace('$', '.');
+        return (typeId.indexOf('$') < 0) ? typeId : typeId.replace('$', '.');
     }
 
-    private static boolean _matchesTypeId(String typeId, String altTypeId, String schemaTypeId) {
+    private static boolean _matchesTypeId(String typeId, String dottedTypeId, String schemaTypeId) {
+        if (schemaTypeId == null) {
+            return false;
+        }
         return typeId.equals(schemaTypeId)
-                || ((altTypeId != null) && altTypeId.equals(schemaTypeId));
+                || dottedTypeId.equals(_dottedTypeId(schemaTypeId));
     }
 
     private static Schema _findNotNull(List<Schema> types)

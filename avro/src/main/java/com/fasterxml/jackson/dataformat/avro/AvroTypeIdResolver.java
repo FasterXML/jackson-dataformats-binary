@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.*;
 
 import com.fasterxml.jackson.databind.DatabindContext;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
@@ -35,21 +37,18 @@ public class AvroTypeIdResolver extends ClassNameIdResolver
     // probing is done: well above length of any real class name
     final static int MAX_CLASS_NAME_LENGTH = 1024;
 
-    // Marker for type ids for which no class was found
-    private final static Object NO_CLASS = new Object();
-
     private final Map<String, Class<?>> _idTypes = new HashMap<>();
 
     /**
-     * Results of probing for (possibly nested) classes by type id: either resolved
-     * {@link JavaType} or marker for "no class found". Needed since type ids of
-     * names that are not classes (common when reading untyped content) would
-     * otherwise be probed for on every value read.
+     * Type ids for which probing found a class, mapped to the id of that class:
+     * for example {@code package.Outer.Inner} to {@code package.Outer$Inner}.
+     * Only successful lookups are retained: whether class is found may depend on
+     * context ClassLoader at the time, so failure must not be remembered.
      * Per-resolver (and thereby per-mapper), unlike JVM-wide cache used before 2.24.
      *
      * @since 2.24
      */
-    private final LRUMap<String, Object> _probedTypes = new LRUMap<>(16, 200);
+    private final LRUMap<String, String> _resolvedIds = new LRUMap<>(16, 200);
 
     public AvroTypeIdResolver(JavaType baseType, TypeFactory typeFactory,
             PolymorphicTypeValidator ptv,
@@ -59,13 +58,11 @@ public class AvroTypeIdResolver extends ClassNameIdResolver
         if (subTypes != null) {
             for (NamedType namedType : subTypes) {
                 //registerSubtype(namedType.getType(), namedType.getName());
-                _idTypes.put(namedType.getName(), namedType.getType());
-            }
-            // [dataformats-binary#908]: type ids from schema use dots for nested classes
-            // too: add aliases so that registered subtypes are found without probing
-            // (but never overriding exact matches)
-            for (NamedType namedType : subTypes) {
                 final String name = namedType.getName();
+                _idTypes.put(name, namedType.getType());
+                // [dataformats-binary#908]: type ids from schema use dots for nested classes
+                // too: add aliases so that registered subtypes are found without probing
+                // (but never overriding exact matches)
                 if ((name != null) && name.indexOf('$') >= 0) {
                     _idTypes.putIfAbsent(name.replace('$', '.'), namedType.getType());
                 }
@@ -94,11 +91,9 @@ public class AvroTypeIdResolver extends ClassNameIdResolver
                 id = _idFrom(null, subType, _typeFactory);
             } else {
                 // [dataformats-binary#908]: may need to probe for nested classes
-                JavaType type = _probeForType(id, ctxt);
-                if (type != null) {
-                    return type;
-                }
+                id = _resolveNestedTypeId(id, ctxt);
             }
+            // NOTE: always resolve via super class, for checks it has
             return super._typeFromId(id, ctxt);
         } catch (InvalidTypeIdException | IllegalArgumentException e) {
             // AvroTypeDeserializer expects null if we can't map the type ID to a class; It will throw an appropriate error if we can't
@@ -108,21 +103,50 @@ public class AvroTypeIdResolver extends ClassNameIdResolver
     }
 
     /**
+     * @return Id of the class that given type id refers to, if one found by probing
+     *    for nested classes; {@code id} itself otherwise
+     */
+    private String _resolveNestedTypeId(String id, DatabindContext ctxt) throws IOException
+    {
+        String resolved = _resolvedIds.get(id);
+        if (resolved != null) {
+            return resolved;
+        }
+        // If only registered subtypes are allowed, nothing to probe for (all
+        // of them have been checked already), and must not load other classes
+        if ((ctxt instanceof DeserializationContext)
+                && ((DeserializationContext) ctxt).isEnabled(
+                        DeserializationFeature.FAIL_ON_SUBTYPE_CLASS_NOT_REGISTERED)) {
+            return id;
+        }
+        resolved = _findNestedTypeId(ctxt, _baseType, id, _subTypeValidator);
+        if (resolved == null) {
+            return id;
+        }
+        _resolvedIds.put(id, resolved);
+        return resolved;
+    }
+
+    /**
      * Method that tries to find class that given type id (name from Avro schema)
-     * refers to: first as-is, then considering that trailing segments may be
-     * names of nested classes (based on {@code SpecificData.getClass()} of Apache Avro).
+     * refers to: first as-is, then considering that dots may be separators
+     * between enclosing and nested class, starting with the last one
+     * (based on {@code SpecificData.getClass()} of Apache Avro).
      * Lookups use same mechanism (and so same ClassLoaders) as databind does,
-     * and are subject to the configured {@link PolymorphicTypeValidator}.
+     * and are subject to given {@link PolymorphicTypeValidator}.
      *<p>
      * Also handles canonical generic type ids {@code AvroReaderFactory} produces for
      * {@code EnumSet} and {@code EnumMap} (like {@code java.util.EnumSet<package.Outer.Inner>}),
      * for which the first type parameter is name from schema.
      *
-     * @return Type resolved, if any; {@code null} if no class was found
+     * @return Type id with name of class found, if any (may be {@code id} itself);
+     *    {@code null} if no class was found
      *
      * @since 2.24
      */
-    protected JavaType _probeForType(String id, DatabindContext ctxt) throws IOException
+    static String _findNestedTypeId(DatabindContext ctxt, JavaType baseType, String id,
+            PolymorphicTypeValidator ptv)
+        throws IOException
     {
         // Name to probe is either the whole id, or the first type parameter
         final int ltIndex = id.indexOf('<');
@@ -138,49 +162,38 @@ public class AvroTypeIdResolver extends ClassNameIdResolver
                 return null;
             }
         }
-        // Only probe names that could be dotted nested class names; and for
+        // Only probe names that could be those of nested classes; and for
         // which variants are worth trying (no real class has name very long
         // or nested very deep)
         final String name = id.substring(start, end);
-        if ((name.indexOf('.') < 0) || (name.indexOf('$') >= 0) || (name.indexOf('<') >= 0)
-                || !_shouldProbe(name)) {
+        if ((name.indexOf('.') < 0) || (name.indexOf('<') >= 0) || !_shouldProbe(name)) {
             return null;
         }
-        Object cached = _probedTypes.get(id);
-        if (cached != null) {
-            return (cached == NO_CLASS) ? null : (JavaType) cached;
-        }
-        JavaType type = null;
         final StringBuilder sb = new StringBuilder(id);
         int lastDot = end;
         while (true) {
-            type = _findType(sb.toString(), ctxt, ltIndex >= 0);
+            final String candidate = sb.toString();
+            JavaType type;
+            try {
+                // returns `null` if no class found...
+                type = ctxt.resolveAndValidateSubType(baseType, candidate, ptv);
+            } catch (IllegalArgumentException e) {
+                // ... except that for generic types failure to find class (of type
+                // parameter) is signaled with exception by `TypeFactory`
+                if (ltIndex < 0) {
+                    throw e;
+                }
+                type = null;
+            }
             if (type != null) {
-                break;
+                return candidate;
             }
             // Class does not exist - perhaps last dot is actually a nested class
             lastDot = sb.lastIndexOf(".", lastDot);
             if (lastDot < start) {
-                break;
+                return null;
             }
             sb.setCharAt(lastDot, '$');
-        }
-        _probedTypes.put(id, (type == null) ? NO_CLASS : type);
-        return type;
-    }
-
-    private JavaType _findType(String id, DatabindContext ctxt, boolean generic) throws IOException
-    {
-        if (!generic) {
-            // returns `null` if no class found
-            return ctxt.resolveAndValidateSubType(_baseType, id, _subTypeValidator);
-        }
-        // But for generic types failure to find class (of type parameter) is
-        // signaled with exception by `TypeFactory`
-        try {
-            return ctxt.resolveAndValidateSubType(_baseType, id, _subTypeValidator);
-        } catch (IllegalArgumentException e) {
-            return null;
         }
     }
 

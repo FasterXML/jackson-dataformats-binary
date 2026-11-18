@@ -102,6 +102,9 @@ public class AvroModule extends Module
         SimpleDeserializers desers = new SimpleDeserializers();
         desers.addDeserializer(Object.class, new AvroUntypedDeserializer());
         context.addDeserializers(desers);
+        // 17-Nov-2026, tatu: [dataformats-binary#908] Type ids for nested classes
+        //   need resolving for standard (non-Avro) type id resolvers too
+        context.addDeserializationProblemHandler(new AvroNestedClassTypeIdHandler());
     }
 
     // since 2.9
