@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.avro.Schema;
@@ -19,12 +20,29 @@ public class SchemaNameClassInitTest extends AvroTestBase
 {
     static class InitTracker {
         static volatile boolean initialized;
+        static volatile boolean enumInitialized;
+        static volatile boolean fixedInitialized;
     }
 
     // Never referenced by test code: only named by the schema below
     static class NotToBeInitialized {
         static {
             InitTracker.initialized = true;
+        }
+    }
+
+    // Likewise only named by ENUM / FIXED schemas
+    enum EnumNotToBeInitialized {
+        A, B;
+
+        static {
+            InitTracker.enumInitialized = true;
+        }
+    }
+
+    static class FixedNotToBeInitialized {
+        static {
+            InitTracker.fixedInitialized = true;
         }
     }
 
@@ -55,6 +73,26 @@ public class SchemaNameClassInitTest extends AvroTestBase
                 AvroSchemaHelper.getFullName(schema.getAvroSchema().getField("value").schema()));
         // ... but without running its static initializer
         assertFalse(InitTracker.initialized);
+    }
+
+    @Test
+    public void testEnumSchemaDoesNotInitializeNamedClass() throws Exception
+    {
+        Schema schema = Schema.createEnum("EnumNotToBeInitialized", null,
+                SchemaNameClassInitTest.class.getName(), Arrays.asList("A", "B"));
+        assertEquals(SchemaNameClassInitTest.class.getName() + "$EnumNotToBeInitialized",
+                AvroSchemaHelper.getFullName(schema));
+        assertFalse(InitTracker.enumInitialized);
+    }
+
+    @Test
+    public void testFixedSchemaDoesNotInitializeNamedClass() throws Exception
+    {
+        Schema schema = Schema.createFixed("FixedNotToBeInitialized", null,
+                SchemaNameClassInitTest.class.getName(), 4);
+        assertEquals(SchemaNameClassInitTest.class.getName() + "$FixedNotToBeInitialized",
+                AvroSchemaHelper.getFullName(schema));
+        assertFalse(InitTracker.fixedInitialized);
     }
 
     // Namespace with more dots than any real class name must not be probed

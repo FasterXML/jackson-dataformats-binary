@@ -31,7 +31,8 @@ Active maintainers:
 #901: (avro) Apache decoder allocates buffer for full declared length of `string` value
   or Map key before reading content; also enforce `maxStringLength` constraint
  (contributed by @Dhanu-dynamic, w/ Claude code)
-#906: (avro) Do not initialize class named by Avro schema when resolving its full name
+#906: (avro) Do not initialize class named by Avro schema when resolving its full name;
+  also skip nested-class probing for schema namespaces with more than 32 dots
  (contributed by @Dhanu-dynamic)
 
 2.21.8 (17-Oct-2026)
