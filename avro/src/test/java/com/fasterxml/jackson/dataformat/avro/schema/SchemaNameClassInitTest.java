@@ -116,28 +116,45 @@ public class SchemaNameClassInitTest extends AvroTestBase
     {
         final int max = AvroSchemaHelper.MAX_NAMESPACE_DOTS;
         assertEquals(32, max);
-        assertFalse(AvroSchemaHelper._dotCountExceeds("", max));
-        assertFalse(AvroSchemaHelper._dotCountExceeds("abc", max));
-        assertFalse(AvroSchemaHelper._dotCountExceeds(_dottedName(max - 1), max));
-        assertFalse(AvroSchemaHelper._dotCountExceeds(_dottedName(max), max));
-        assertTrue(AvroSchemaHelper._dotCountExceeds(_dottedName(max + 1), max));
-        assertTrue(AvroSchemaHelper._dotCountExceeds(_dottedName(max + 100), max));
+        assertTrue(AvroSchemaHelper._shouldProbe("", "Rec"));
+        assertTrue(AvroSchemaHelper._shouldProbe("abc", "Rec"));
+        assertTrue(AvroSchemaHelper._shouldProbe(_dottedName(max - 1), "Rec"));
+        assertTrue(AvroSchemaHelper._shouldProbe(_dottedName(max), "Rec"));
+        assertFalse(AvroSchemaHelper._shouldProbe(_dottedName(max + 1), "Rec"));
+        assertFalse(AvroSchemaHelper._shouldProbe(_dottedName(max + 100), "Rec"));
     }
 
-    // Name longer than any class name can be is not probed (or cached) either,
-    // even with few dots: fallback to plain dotted name
+    // Limit applies to length of full name: namespace, dot, name
     @Test
-    @Timeout(value = 10, unit = TimeUnit.SECONDS)
+    public void testNameLengthLimitBoundary() throws Exception
+    {
+        final int max = AvroSchemaHelper.MAX_CLASS_NAME_LENGTH;
+        assertEquals(1024, max);
+        final String name = "Rec";
+        final int maxNamespace = max - 1 - name.length();
+        assertTrue(AvroSchemaHelper._shouldProbe(_longName(maxNamespace - 1), name));
+        assertTrue(AvroSchemaHelper._shouldProbe(_longName(maxNamespace), name));
+        assertFalse(AvroSchemaHelper._shouldProbe(_longName(maxNamespace + 1), name));
+        assertFalse(AvroSchemaHelper._shouldProbe(_longName(100_000), name));
+        // and long simple name counts too
+        assertFalse(AvroSchemaHelper._shouldProbe("a.b", _longName(max)));
+    }
+
+    // Over-long name with few dots: fallback to plain dotted name
+    @Test
     public void testNoClassProbingForExcessivelyLongNamespace() throws Exception
     {
-        StringBuilder sb = new StringBuilder(AvroSchemaHelper.MAX_CLASS_NAME_LENGTH + 100);
-        sb.append("a.b.c.");
-        while (sb.length() < AvroSchemaHelper.MAX_CLASS_NAME_LENGTH) {
-            sb.append('x');
-        }
-        final String namespace = sb.toString();
+        final String namespace = "a.b.c." + _longName(AvroSchemaHelper.MAX_CLASS_NAME_LENGTH);
         Schema schema = Schema.createRecord("Rec", null, namespace, false);
         assertEquals(namespace + ".Rec", AvroSchemaHelper.getFullName(schema));
+    }
+
+    private static String _longName(int len) {
+        StringBuilder sb = new StringBuilder(len);
+        while (sb.length() < len) {
+            sb.append('x');
+        }
+        return sb.toString();
     }
 
     private static String _dottedName(int dots) {

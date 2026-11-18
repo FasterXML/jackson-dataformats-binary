@@ -446,19 +446,25 @@ public abstract class AvroSchemaHelper
     // Maximum number of dots in namespace for which nested-class probing is done
     final static int MAX_NAMESPACE_DOTS = 32;
 
-    // Maximum length of a class name (JVM limit for name in class file, in bytes,
-    // so no name with more chars than this can be that of a loadable class)
-    final static int MAX_CLASS_NAME_LENGTH = 65535;
+    // Maximum length of full name (namespace, dot, name) for which nested-class
+    // probing is done: well above length of any real class name
+    final static int MAX_CLASS_NAME_LENGTH = 1024;
 
+    // Whether to probe for nested classes for given (possibly untrusted) schema
+    // name: each dot of namespace means one more class loading attempt, and both
+    // probed and cached names are retained, so limit both dots and length.
     // Package-visible for tests
-    static boolean _dotCountExceeds(String str, int max) {
+    static boolean _shouldProbe(String namespace, String name) {
+        if ((namespace.length() + 1 + name.length()) > MAX_CLASS_NAME_LENGTH) {
+            return false;
+        }
         int count = 0;
-        for (int ix = str.indexOf('.'); ix >= 0; ix = str.indexOf('.', ix + 1)) {
-            if (++count > max) {
-                return true;
+        for (int ix = namespace.indexOf('.'); ix >= 0; ix = namespace.indexOf('.', ix + 1)) {
+            if (++count > MAX_NAMESPACE_DOTS) {
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     // @since 2.11.3
@@ -468,20 +474,15 @@ public abstract class AvroSchemaHelper
         public final static FullNameResolver instance = new FullNameResolver();
 
         public String resolve(final String namespace, final String name) {
-            // Name too long to be that of any class: no probing, and keep it out of cache
-            if ((namespace.length() + name.length()) >= MAX_CLASS_NAME_LENGTH) {
+            // No real class has name this long or nested this deep: skip
+            // probing (and caching) altogether
+            if (!_shouldProbe(namespace, name)) {
                 return namespace + '.' + name;
             }
             final FullNameKey cacheKey = new FullNameKey(namespace, name);
             String schemaName = SCHEMA_NAME_CACHE.get(cacheKey);
 
             if (schemaName == null) {
-                // Each dot of the (possibly untrusted) namespace means one more class
-                // loading attempt: no real class name is nested this deep, so skip
-                // probing (and caching) altogether
-                if (_dotCountExceeds(namespace, MAX_NAMESPACE_DOTS)) {
-                    return namespace + '.' + name;
-                }
                 schemaName = _resolve(cacheKey);
                 SCHEMA_NAME_CACHE.put(cacheKey, schemaName);
             }
