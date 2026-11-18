@@ -454,13 +454,18 @@ public abstract class AvroSchemaHelper
             String schemaName = SCHEMA_NAME_CACHE.get(cacheKey);
 
             if (schemaName == null) {
-                schemaName = _resolve(cacheKey);
-                SCHEMA_NAME_CACHE.put(cacheKey, schemaName);
+                // Result is only reliable (and cacheable) if no candidate failed
+                // with a possibly transient linkage problem
+                final boolean[] cacheable = { true };
+                schemaName = _resolve(cacheKey, cacheable);
+                if (cacheable[0]) {
+                    SCHEMA_NAME_CACHE.put(cacheKey, schemaName);
+                }
             }
             return schemaName;
         }
 
-        private static String _resolve(FullNameKey key) {
+        private static String _resolve(FullNameKey key, boolean[] cacheable) {
             // 28-Feb-2020: [dataformats-binary#195] somewhat complicated logic of trying
             //     to support differences between avro-lib 1.8 and 1.9...
             //     Check if this is a nested class
@@ -480,6 +485,12 @@ public abstract class AvroSchemaHelper
                 } catch (ClassNotFoundException | LinkageError e) {
                     // Class does not exist (or cannot be loaded; e.g. missing superclass,
                     // case-only name mismatch) - perhaps last dot is actually a nested class
+                    // But: `LinkageError`s other than `NoClassDefFoundError` (circularity,
+                    // duplicate definition under concurrent loading) may be transient,
+                    // in which case class may well exist: must not cache the outcome
+                    if ((e instanceof LinkageError) && !(e instanceof NoClassDefFoundError)) {
+                        cacheable[0] = false;
+                    }
                     lastDot = sb.lastIndexOf(".", lastDot);
                     if (lastDot == -1) {
                         // No more dots so we are unable to resolve, should we throw an exception?
