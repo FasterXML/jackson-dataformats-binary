@@ -94,6 +94,13 @@ public abstract class AvroParser extends ParserBase
 
     protected AvroReadContext _avroContext;
 
+    /**
+     * Native type ids (from schema) seen, mapped to ids exposed by {@link #getTypeId()}.
+     *
+     * @since 2.24
+     */
+    private final java.util.Map<String, String> _resolvedTypeIds = new java.util.HashMap<>();
+
     /*
     /**********************************************************************
     /* Life-cycle
@@ -239,7 +246,25 @@ public abstract class AvroParser extends ParserBase
 
     @Override
     public Object getTypeId() throws IOException {
-        return _avroContext != null ? _avroContext.getTypeId() : null;
+        if (_avroContext == null) {
+            return null;
+        }
+        final String typeId = _avroContext.getTypeId();
+        if (typeId == null) {
+            return null;
+        }
+        // [dataformats-binary#908]: names from schema use dot as separator for
+        // nested classes too: need to find the actual class name. Outcome (found
+        // or not) only retained here, for duration of parsing.
+        String resolved = _resolvedTypeIds.get(typeId);
+        if (resolved == null) {
+            resolved = AvroTypeIdClassNames.resolve(typeId);
+            if (resolved == null) {
+                resolved = typeId;
+            }
+            _resolvedTypeIds.put(typeId, resolved);
+        }
+        return resolved;
     }
 
     /*

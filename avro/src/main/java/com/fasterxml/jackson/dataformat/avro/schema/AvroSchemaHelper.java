@@ -362,7 +362,7 @@ public abstract class AvroSchemaHelper
      * this method no longer probes for existence of classes to figure out
      * whether a namespace refers to a package or an enclosing class
      * (see [dataformats-binary#908]). Resolution of name into an actual class
-     * is done by {@code AvroTypeIdResolver}, when (and only if) class is needed.
+     * is done by {@code AvroParser.getTypeId()}, when (and only if) type id is needed.
      */
     public static String getFullName(Schema schema) {
         final Schema.Type type = schema.getType();

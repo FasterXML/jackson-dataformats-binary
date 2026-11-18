@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 // Limits on probing for nested classes named by (possibly untrusted) schema:
 // each dot of name means one more class loading attempt. Originally added
-// in [dataformats-binary#906]; probing moved to `AvroTypeIdResolver`
+// in [dataformats-binary#906]; probing moved to `AvroParser.getTypeId()`
 // in [dataformats-binary#908]
 public class NestedClassProbeLimits908Test extends AvroTestBase
 {
@@ -43,28 +43,28 @@ public class NestedClassProbeLimits908Test extends AvroTestBase
     @Test
     public void testDotCountLimitBoundary() throws Exception
     {
-        final int max = AvroTypeIdResolver.MAX_NAMESPACE_DOTS;
+        final int max = AvroTypeIdClassNames.MAX_NAMESPACE_DOTS;
         assertEquals(32, max);
-        assertTrue(AvroTypeIdResolver._shouldProbe("Rec"));
-        assertTrue(AvroTypeIdResolver._shouldProbe("abc.Rec"));
-        assertTrue(AvroTypeIdResolver._shouldProbe(_dottedName(max - 1) + ".Rec"));
-        assertTrue(AvroTypeIdResolver._shouldProbe(_dottedName(max) + ".Rec"));
-        assertFalse(AvroTypeIdResolver._shouldProbe(_dottedName(max + 1) + ".Rec"));
-        assertFalse(AvroTypeIdResolver._shouldProbe(_dottedName(max + 100) + ".Rec"));
+        assertTrue(AvroTypeIdClassNames._shouldProbe("Rec"));
+        assertTrue(AvroTypeIdClassNames._shouldProbe("abc.Rec"));
+        assertTrue(AvroTypeIdClassNames._shouldProbe(_dottedName(max - 1) + ".Rec"));
+        assertTrue(AvroTypeIdClassNames._shouldProbe(_dottedName(max) + ".Rec"));
+        assertFalse(AvroTypeIdClassNames._shouldProbe(_dottedName(max + 1) + ".Rec"));
+        assertFalse(AvroTypeIdClassNames._shouldProbe(_dottedName(max + 100) + ".Rec"));
     }
 
     // Limit applies to length of full name: namespace, dot, name
     @Test
     public void testNameLengthLimitBoundary() throws Exception
     {
-        final int max = AvroTypeIdResolver.MAX_CLASS_NAME_LENGTH;
+        final int max = AvroTypeIdClassNames.MAX_CLASS_NAME_LENGTH;
         assertEquals(1024, max);
         final String name = ".Rec";
         final int maxNamespace = max - name.length();
-        assertTrue(AvroTypeIdResolver._shouldProbe(_longName(maxNamespace - 1) + name));
-        assertTrue(AvroTypeIdResolver._shouldProbe(_longName(maxNamespace) + name));
-        assertFalse(AvroTypeIdResolver._shouldProbe(_longName(maxNamespace + 1) + name));
-        assertFalse(AvroTypeIdResolver._shouldProbe(_longName(100_000) + name));
+        assertTrue(AvroTypeIdClassNames._shouldProbe(_longName(maxNamespace - 1) + name));
+        assertTrue(AvroTypeIdClassNames._shouldProbe(_longName(maxNamespace) + name));
+        assertFalse(AvroTypeIdClassNames._shouldProbe(_longName(maxNamespace + 1) + name));
+        assertFalse(AvroTypeIdClassNames._shouldProbe(_longName(100_000) + name));
     }
 
     // Sanity check that probing is done (and counted) for names within limits:
@@ -89,7 +89,7 @@ public class NestedClassProbeLimits908Test extends AvroTestBase
     public void testNoProbingForExcessivelyLongName() throws Exception
     {
         int count = _readAndCountLoads("probe908z.a.b.c."
-                + _longName(AvroTypeIdResolver.MAX_CLASS_NAME_LENGTH), "probe908z.");
+                + _longName(AvroTypeIdClassNames.MAX_CLASS_NAME_LENGTH), "probe908z.");
         _assertNotProbed(count);
     }
 

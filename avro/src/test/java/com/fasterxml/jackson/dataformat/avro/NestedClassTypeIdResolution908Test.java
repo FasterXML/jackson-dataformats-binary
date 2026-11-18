@@ -5,6 +5,8 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,6 +30,19 @@ public class NestedClassTypeIdResolution908Test extends AvroTestBase
         static class Leaf { public int b; }
     }
 
+    static class InitTracker {
+        static volatile boolean initialized;
+    }
+
+    // Never referenced by test code other than by name
+    static class NotToBeInitialized {
+        public int b;
+
+        static {
+            InitTracker.initialized = true;
+        }
+    }
+
     private final static String NS = NestedClassTypeIdResolution908Test.class.getName();
 
     // Schema with union of 2 records, with given namespaces (if any) and names
@@ -43,6 +58,38 @@ public class NestedClassTypeIdResolution908Test extends AvroTestBase
     private final static byte[] AVRO_SECOND_42 = new byte[] { 2, 84 };
 
     private final AvroMapper MAPPER = newMapper();
+
+    // Type id exposed by parser is name of the actual (nested) class; found
+    // without initializing the class (name comes from possibly untrusted schema)
+    @Test
+    public void testStreamingTypeIdForNestedClass() throws Exception
+    {
+        final AvroSchema schema = MAPPER.schemaFrom(_schemaJson("ImplA", "NotToBeInitialized"));
+        try (JsonParser p = MAPPER.getFactory().createParser(AVRO_SECOND_42)) {
+            p.setSchema(schema);
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertEquals(NS + "$NotToBeInitialized", p.getTypeId());
+            // and same if asked again
+            assertEquals(NS + "$NotToBeInitialized", p.getTypeId());
+        }
+        assertFalse(InitTracker.initialized);
+    }
+
+    // No class to find: name as schema has it
+    @Test
+    public void testStreamingTypeIdForUnknownClass() throws Exception
+    {
+        final AvroSchema schema = MAPPER.schemaFrom(_schemaJson("ImplA", "NoSuchClass"));
+        try (JsonParser p = MAPPER.getFactory().createParser(AVRO_SECOND_42)) {
+            p.setSchema(schema);
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertEquals(NS + ".NoSuchClass", p.getTypeId());
+        }
+    }
 
     // Standard (non-Avro) type id resolver must be able to use native type ids too
     @Test
@@ -65,9 +112,9 @@ public class NestedClassTypeIdResolution908Test extends AvroTestBase
         assertEquals(42, ((ImplB) result.value).b);
     }
 
-    // Probing for nested classes must not bypass check for registered subtypes
+    // Check for registered subtypes must apply to nested classes too
     @Test
-    public void testUnregisteredSubtypeNotProbedFor() throws Exception
+    public void testUnregisteredSubtypeNotAllowed() throws Exception
     {
         final AvroSchema schema = MAPPER.schemaFrom(_schemaJson("ImplA", "ImplB"));
         final byte[] avro = MAPPER.writer(schema).writeValueAsBytes(_objectBean(_implB(42)));
