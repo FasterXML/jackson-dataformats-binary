@@ -1,6 +1,10 @@
 package com.fasterxml.jackson.dataformat.avro.schema;
 
+import java.util.concurrent.TimeUnit;
+
+import org.apache.avro.Schema;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
@@ -51,5 +55,30 @@ public class SchemaNameClassInitTest extends AvroTestBase
                 AvroSchemaHelper.getFullName(schema.getAvroSchema().getField("value").schema()));
         // ... but without running its static initializer
         assertFalse(InitTracker.initialized);
+    }
+
+    // Namespace with more dots than any real class name must not be probed
+    // for nested classes (one class loading attempt per dot)
+    @Test
+    @Timeout(value = 10, unit = TimeUnit.SECONDS)
+    public void testNoClassProbingForExcessivelyDottedNamespace() throws Exception
+    {
+        StringBuilder sb = new StringBuilder("a");
+        for (int i = 0; i < 20_000; ++i) {
+            sb.append(".a");
+        }
+        final String namespace = sb.toString();
+        Schema schema = Schema.createRecord("Rec", null, namespace, false);
+        assertEquals(namespace + ".Rec", AvroSchemaHelper.getFullName(schema));
+    }
+
+    // But nesting within limit is still resolved
+    @Test
+    public void testNestedClassStillResolvedWithinDotLimit() throws Exception
+    {
+        Schema schema = Schema.createRecord("Inner", null,
+                SchemaNameClassInitTest.class.getName(), false);
+        assertEquals(SchemaNameClassInitTest.class.getName() + "$Inner",
+                AvroSchemaHelper.getFullName(schema));
     }
 }

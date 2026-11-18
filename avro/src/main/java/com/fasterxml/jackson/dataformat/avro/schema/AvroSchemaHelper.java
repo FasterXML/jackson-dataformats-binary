@@ -449,7 +449,26 @@ public abstract class AvroSchemaHelper
 
         public final static FullNameResolver instance = new FullNameResolver();
 
+        // Maximum number of dots in namespace for which nested-class probing is done
+        private final static int MAX_NAMESPACE_DOTS = 32;
+
+        private static boolean _dotCountExceeds(String str, int max) {
+            int count = 0;
+            for (int ix = str.indexOf('.'); ix >= 0; ix = str.indexOf('.', ix + 1)) {
+                if (++count > max) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public String resolve(final String namespace, final String name) {
+            // Each dot of the (possibly untrusted) namespace means one more class
+            // loading attempt: no real class name is nested this deep, so skip
+            // probing (and caching) altogether
+            if (_dotCountExceeds(namespace, MAX_NAMESPACE_DOTS)) {
+                return namespace + '.' + name;
+            }
             final FullNameKey cacheKey = new FullNameKey(namespace, name);
             String schemaName = SCHEMA_NAME_CACHE.get(cacheKey);
 
