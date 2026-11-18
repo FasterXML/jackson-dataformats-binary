@@ -519,3 +519,6 @@ Dhanraj E (@Dhanu-dynamic)
 * Contributed #901: (avro) Apache decoder allocates buffer for full declared length
   of `string` value or Map key before reading content
  (2.21.9)
+* Contributed #906: (avro) Do not initialize class named by Avro schema when resolving
+  its full name
+ (2.21.9)
