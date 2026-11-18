@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.introspect.AnnotatedConstructor;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
 import com.fasterxml.jackson.databind.util.ClassUtil;
-import com.fasterxml.jackson.databind.util.LRUMap;
 import com.fasterxml.jackson.dataformat.avro.annotation.AvroNamespace;
 
 public abstract class AvroSchemaHelper
@@ -354,12 +353,15 @@ public abstract class AvroSchemaHelper
     }
 
     /**
-     * Returns the full name of a schema; This is similar to {@link Schema#getFullName()}, except that it properly handles namespaces for
-     * nested classes. (<code>package.name.ClassName$NestedClassName</code> instead of <code>package.name.ClassName$.NestedClassName</code>)
-     * <p>
-     *     <b>WARNING!</b> This method has to probe for nested classes in order to resolve whether or not a schema references a top-level
-     *     class or a nested class and return the corresponding name for each.
-     * </p>
+     * Returns the full name of a schema; This is similar to {@link Schema#getFullName()}, except that it properly handles namespaces
+     * that use dollar sign for nested classes (<code>package.name.ClassName$NestedClassName</code> instead of
+     * <code>package.name.ClassName$.NestedClassName</code>).
+     *<p>
+     * NOTE: since 2.24 this method no longer probes for existence of nested classes (which required loading
+     * classes named by possibly untrusted schema, using this module's {@link ClassLoader}): for namespaces that
+     * use dots for nested classes (Apache Avro 1.9 and later) plain dotted name
+     * (<code>package.name.ClassName.NestedClassName</code>) is returned. Resolution into actual nested class
+     * is done by {@code AvroTypeIdResolver} when deserializing, and by {@link #typeIdMatches} when serializing.
      */
     public static String getFullName(Schema schema) {
         final Schema.Type type = schema.getType();
@@ -380,14 +382,62 @@ public abstract class AvroSchemaHelper
             if (namespace.charAt(len-1) == '$') {
                 return namespace + name;
             }
-            // 19-Sep-2020, tatu: Due to very expensive contortions of lookups introduced
-            //   in [dataformats-binary#195], attempts to resolve [dataformats-binary#219]
-            //   isolated into separate class
-            return FullNameResolver.instance.resolve(namespace, name);
+            // [dataformats-binary#908]: no probing for nested classes
+            return namespace + '.' + name;
 
         default:
             return type.getName();
         }
+    }
+
+    /**
+     * Method for checking whether given Java class has the type id of given schema:
+     * for named types (records, enums, fixed) this means that class name matches full name
+     * of the schema, allowing for nested classes being separated by either dollar sign
+     * (as in class name) or dot (as in namespaces of Apache Avro 1.9 and later).
+     * Does not load any classes.
+     *
+     * @since 2.24
+     */
+    public static boolean typeIdMatches(Class<?> type, Schema schema) {
+        final String typeId = getTypeId(type);
+        switch (schema.getType()) {
+        case RECORD:
+        case ENUM:
+        case FIXED:
+            break;
+        default:
+            return typeId.equals(schema.getProp(AVRO_SCHEMA_PROP_CLASS));
+        }
+        final String name = schema.getName();
+        final String namespace = schema.getNamespace();
+        if (namespace == null || namespace.isEmpty()) {
+            return typeId.equals(name);
+        }
+        final int nsLen = namespace.length();
+        // Namespace either ends with '$', or is separated from name by '.' ('$' in class name)
+        int nameStart = nsLen;
+        if (namespace.charAt(nsLen-1) != '$') {
+            ++nameStart;
+        }
+        if ((typeId.length() != nameStart + name.length()) || !typeId.endsWith(name)) {
+            return false;
+        }
+        if (nameStart > nsLen) {
+            final char sep = typeId.charAt(nsLen);
+            if (sep != '.' && sep != '$') {
+                return false;
+            }
+        }
+        for (int i = 0; i < nsLen; ++i) {
+            final char c = typeId.charAt(i);
+            final char nsc = namespace.charAt(i);
+            // Class name may have '$' where namespace has '.' (but not vice versa)
+            if ((c != nsc) && (c != '$' || nsc != '.')) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static JsonNode nullNode() {
@@ -440,114 +490,6 @@ public abstract class AvroSchemaHelper
                 throw (JsonMappingException) e;
             }
             throw new JsonMappingException(null, "Failed to parse default value", e);
-        }
-    }
-
-    // Maximum number of dots in namespace for which nested-class probing is done
-    final static int MAX_NAMESPACE_DOTS = 32;
-
-    // Maximum length of full name (namespace, dot, name) for which nested-class
-    // probing is done: well above length of any real class name
-    final static int MAX_CLASS_NAME_LENGTH = 1024;
-
-    // Whether to probe for nested classes for given (possibly untrusted) schema
-    // name: each dot of namespace means one more class loading attempt, and both
-    // probed and cached names are retained, so limit both dots and length.
-    // Package-visible for tests
-    static boolean _shouldProbe(String namespace, String name) {
-        if ((namespace.length() + 1 + name.length()) > MAX_CLASS_NAME_LENGTH) {
-            return false;
-        }
-        int count = 0;
-        for (int ix = namespace.indexOf('.'); ix >= 0; ix = namespace.indexOf('.', ix + 1)) {
-            if (++count > MAX_NAMESPACE_DOTS) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    // @since 2.11.3
-    private final static class FullNameResolver {
-        private final LRUMap<FullNameKey, String> SCHEMA_NAME_CACHE = new LRUMap<>(80, 800);
-
-        public final static FullNameResolver instance = new FullNameResolver();
-
-        public String resolve(final String namespace, final String name) {
-            // No real class has name this long or nested this deep: skip
-            // probing (and caching) altogether
-            if (!_shouldProbe(namespace, name)) {
-                return namespace + '.' + name;
-            }
-            final FullNameKey cacheKey = new FullNameKey(namespace, name);
-            String schemaName = SCHEMA_NAME_CACHE.get(cacheKey);
-
-            if (schemaName == null) {
-                schemaName = _resolve(cacheKey);
-                SCHEMA_NAME_CACHE.put(cacheKey, schemaName);
-            }
-            return schemaName;
-        }
-
-        private static String _resolve(FullNameKey key) {
-            // 28-Feb-2020: [dataformats-binary#195] somewhat complicated logic of trying
-            //     to support differences between avro-lib 1.8 and 1.9...
-            //     Check if this is a nested class
-            // 19-Sep-2020, tatu: This is a horrible, horribly inefficient and all-around
-            //    wrong mechanism. To be abolished if possible.
-            // 23-Aug-2024:[dataformats-binary#167] Based on SpecificData::getClass
-            //   from Apache Avro. Initially assume that namespace is a Java package
-            StringBuilder sb = new StringBuilder(key.nameWithSeparator('.'));
-            int lastDot = sb.length();
-            while (true) {
-                try {
-                    // Try to resolve the class; only need to know it exists, so
-                    // must not initialize it (name comes from possibly untrusted schema)
-                    String className = sb.toString();
-                    Class.forName(className, false, FullNameResolver.class.getClassLoader());
-                    return className;
-                } catch (ClassNotFoundException e) {
-                    // Class does not exist - perhaps last dot is actually a nested class.
-                    // NOTE: `LinkageError`s (including `NoClassDefFoundError` for class
-                    // that exists but cannot be loaded, e.g. due to missing superclass)
-                    // are intentionally NOT caught: class may well exist, and fallback
-                    // name would get retained by callers, masking the actual problem
-                    lastDot = sb.lastIndexOf(".", lastDot);
-                    if (lastDot == -1) {
-                        // No more dots so we are unable to resolve, should we throw an exception?
-                        return key.nameWithSeparator('.');
-                    }
-                    sb.setCharAt(lastDot, '$');
-                }
-            }
-        }
-    }
-
-    // @since 2.11.3
-    private final static class FullNameKey {
-        private final String _namespace, _name;
-        private final int _hashCode;
-
-        public FullNameKey(String namespace, String name) {
-            _namespace = namespace;
-            _name = name;
-            _hashCode = namespace.hashCode() + name.hashCode();
-        }
-
-        public String nameWithSeparator(char sep) {
-            return _namespace + sep + _name;
-        }
-
-        @Override
-        public int hashCode() { return _hashCode; }
-
-        @Override
-        public boolean equals(Object o) { // lgtm [java/unchecked-cast-in-equals]
-            if (o == this) return true;
-            if (o == null) return false;
-            // Only used internally don't bother with type checks
-            final FullNameKey other = (FullNameKey) o;
-            return other._name.equals(_name) && other._namespace.equals(_namespace);
         }
     }
 }

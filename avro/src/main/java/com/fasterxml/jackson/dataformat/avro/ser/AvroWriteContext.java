@@ -320,11 +320,10 @@ public abstract class AvroWriteContext
             //  - ByteBuffer
             //  - Number wrappers (Integer, ...)
 
-            String typeId = AvroSchemaHelper.getTypeId(datum.getClass());
             for (int i = 0, size = types.size(); i < size; ++i) {
                 Schema schema = types.get(i);
                 // Exact schema match?
-                if (typeId.equals(AvroSchemaHelper.getTypeId(schema))) {
+                if (AvroSchemaHelper.typeIdMatches(raw, schema)) {
                     return i;
                 }
             }
@@ -369,11 +368,10 @@ public abstract class AvroWriteContext
                 return types.get(_resolveMapIndex(unionSchema, types, datum));
             }
 
-            String typeId = AvroSchemaHelper.getTypeId(datum.getClass());
             for (int i = 0, size = types.size(); i < size; ++i) {
                 Schema schema = types.get(i);
                 // Exact schema match?
-                if (typeId.equals(AvroSchemaHelper.getTypeId(schema))) {
+                if (AvroSchemaHelper.typeIdMatches(raw, schema)) {
                     return schema;
                 }
             }
