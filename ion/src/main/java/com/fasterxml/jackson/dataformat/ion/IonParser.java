@@ -605,7 +605,7 @@ public class IonParser
         _updateToken(JsonToken.VALUE_EMBEDDED_OBJECT);
         IonList l = _system.newEmptyList();
         IonWriter writer = _system.newWriter(l);
-        writer.writeValue(_reader);
+        _copyValue(writer);
         IonValue v = l.get(0);
         v.removeFromContainer();
 
@@ -620,6 +620,42 @@ public class IonParser
             }
         }
         return v;
+    }
+
+    // [dataformats-binary#358]: copy the current value one container level at
+    // a time, instead of `IonWriter.writeValue(IonReader)` for the whole subtree,
+    // so that nesting depth is validated as with `nextToken()`
+    private void _copyValue(IonWriter writer) throws IOException {
+        final int startDepth = _reader.getDepth();
+        final int baseDepth = _parsingContext.getNestingDepth() - startDepth;
+        IonType type = _reader.getType();
+        if (type == null) { // not positioned on a value
+            writer.writeValue(_reader);
+            return;
+        }
+        while (true) {
+            if (type == null) { // end of container
+                _reader.stepOut();
+                writer.stepOut();
+                if (_reader.getDepth() == startDepth) {
+                    return;
+                }
+            } else if (IonType.isContainer(type) && !_reader.isNullValue()) {
+                if (writer.isInStruct()) {
+                    writer.setFieldNameSymbol(_reader.getFieldNameSymbol());
+                }
+                writer.setTypeAnnotationSymbols(_reader.getTypeAnnotationSymbols());
+                writer.stepIn(type);
+                _reader.stepIn();
+                _streamReadConstraints.validateNestingDepth(baseDepth + _reader.getDepth());
+            } else {
+                writer.writeValue(_reader);
+                if (_reader.getDepth() == startDepth) {
+                    return;
+                }
+            }
+            type = _reader.next();
+        }
     }
 
     @Override

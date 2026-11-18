@@ -12,10 +12,13 @@ import com.amazon.ion.system.IonSystemBuilder;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 import com.fasterxml.jackson.dataformat.ion.IonFactory;
 import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
+import com.fasterxml.jackson.dataformat.ion.ionvalue.IonValueMapper;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -48,6 +51,15 @@ public class DeeplyNestedIonReadTest
                 .maxNestingDepth(MAX_DEPTH).build());
         CONSTRAINED_MAPPER = IonObjectMapper.builder(CONSTRAINED_FACTORY).build();
     }
+
+    // For `IonValue` binding: needs `IonValueModule`
+    private final IonObjectMapper CONSTRAINED_VALUE_MAPPER = IonValueMapper.builder(
+            IonFactory.builderForTextualWriters()
+                .ionSystem(ION_SYSTEM)
+                .streamReadConstraints(StreamReadConstraints.builder()
+                        .maxNestingDepth(MAX_DEPTH).build())
+                .build())
+            .build();
 
     @Test
     public void testDeepNestingListReadTextual() throws Exception {
@@ -99,6 +111,25 @@ public class DeeplyNestedIonReadTest
         _verifyTripsLimit(CONSTRAINED_FACTORY.createParser(value));
     }
 
+    // [dataformats-binary#358]: `IonValue` binding copies the value with
+    // `getEmbeddedObject()`, not via `nextToken()`: must also be checked
+    @Test
+    public void testDeepNestingReadAsIonValue() throws Exception {
+        _verifyTripsLimit(TEXT_MAPPER.writeValueAsString(_nestedLists(OVER_LIMIT)), IonValue.class);
+        _verifyTripsLimit(TEXT_MAPPER.writeValueAsString(_nestedStructs(OVER_LIMIT)), IonValue.class);
+        _verifyTripsLimit(BINARY_MAPPER.writeValueAsBytes(_nestedLists(OVER_LIMIT)), IonValue.class);
+    }
+
+    @Test
+    public void testDeepNestingReadAsIonValueProperty() throws Exception {
+        // property value starts one level down, so it trips the limit one level sooner
+        _verifyTripsLimit(TEXT_MAPPER.writeValueAsString(
+                Collections.singletonMap("value", _nestedLists(MAX_DEPTH))), IonValueWrapper.class);
+        assertNotNull(CONSTRAINED_VALUE_MAPPER.readValue(TEXT_MAPPER.writeValueAsString(
+                Collections.singletonMap("value", _nestedLists(MAX_DEPTH - 1))),
+                IonValueWrapper.class).value);
+    }
+
     @Test
     public void testNestingAtLimitPasses() throws Exception {
         // Documents exactly at the limit must still be readable, textual or binary
@@ -109,6 +140,30 @@ public class DeeplyNestedIonReadTest
 
         assertNotNull(CONSTRAINED_MAPPER.readTree(
                 TEXT_MAPPER.writeValueAsString(_nestedLists(MAX_DEPTH))));
+
+        final String doc = TEXT_MAPPER.writeValueAsString(_nestedStructs(MAX_DEPTH));
+        assertEquals(ION_SYSTEM.singleValue(doc), CONSTRAINED_VALUE_MAPPER.readValue(doc, IonValue.class));
+    }
+
+    private void _verifyTripsLimit(Object doc, Class<?> type) throws Exception {
+        try {
+            if (doc instanceof byte[]) {
+                CONSTRAINED_VALUE_MAPPER.readValue((byte[]) doc, type);
+            } else {
+                CONSTRAINED_VALUE_MAPPER.readValue((String) doc, type);
+            }
+            fail("Should not pass: nesting depth should exceed limit");
+        } catch (StreamConstraintsException e) {
+            _verifyException(e);
+        } catch (JsonMappingException e) {
+            // wrapped by databind when thrown for a POJO property
+            assertTrue(e.getCause() instanceof StreamConstraintsException, "Unexpected exception: "+e);
+            _verifyException((StreamConstraintsException) e.getCause());
+        }
+    }
+
+    static class IonValueWrapper {
+        public IonValue value;
     }
 
     private void _verifyTripsLimit(String doc) throws Exception {
