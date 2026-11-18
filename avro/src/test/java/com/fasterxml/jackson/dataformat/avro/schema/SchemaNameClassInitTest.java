@@ -13,6 +13,7 @@ import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // Resolving the Java class name of a record, enum or fixed schema must not
 // initialize the class named by the (possibly untrusted) schema
@@ -108,6 +109,43 @@ public class SchemaNameClassInitTest extends AvroTestBase
         final String namespace = sb.toString();
         Schema schema = Schema.createRecord("Rec", null, namespace, false);
         assertEquals(namespace + ".Rec", AvroSchemaHelper.getFullName(schema));
+    }
+
+    @Test
+    public void testDotCountLimitBoundary() throws Exception
+    {
+        final int max = AvroSchemaHelper.MAX_NAMESPACE_DOTS;
+        assertEquals(32, max);
+        assertFalse(AvroSchemaHelper._dotCountExceeds("", max));
+        assertFalse(AvroSchemaHelper._dotCountExceeds("abc", max));
+        assertFalse(AvroSchemaHelper._dotCountExceeds(_dottedName(max - 1), max));
+        assertFalse(AvroSchemaHelper._dotCountExceeds(_dottedName(max), max));
+        assertTrue(AvroSchemaHelper._dotCountExceeds(_dottedName(max + 1), max));
+        assertTrue(AvroSchemaHelper._dotCountExceeds(_dottedName(max + 100), max));
+    }
+
+    // Name longer than any class name can be is not probed (or cached) either,
+    // even with few dots: fallback to plain dotted name
+    @Test
+    @Timeout(value = 10, unit = TimeUnit.SECONDS)
+    public void testNoClassProbingForExcessivelyLongNamespace() throws Exception
+    {
+        StringBuilder sb = new StringBuilder(AvroSchemaHelper.MAX_CLASS_NAME_LENGTH + 100);
+        sb.append("a.b.c.");
+        while (sb.length() < AvroSchemaHelper.MAX_CLASS_NAME_LENGTH) {
+            sb.append('x');
+        }
+        final String namespace = sb.toString();
+        Schema schema = Schema.createRecord("Rec", null, namespace, false);
+        assertEquals(namespace + ".Rec", AvroSchemaHelper.getFullName(schema));
+    }
+
+    private static String _dottedName(int dots) {
+        StringBuilder sb = new StringBuilder("a");
+        for (int i = 0; i < dots; ++i) {
+            sb.append(".a");
+        }
+        return sb.toString();
     }
 
     // But nesting within limit is still resolved

@@ -443,48 +443,52 @@ public abstract class AvroSchemaHelper
         }
     }
 
+    // Maximum number of dots in namespace for which nested-class probing is done
+    final static int MAX_NAMESPACE_DOTS = 32;
+
+    // Maximum length of a class name (JVM limit for name in class file, in bytes,
+    // so no name with more chars than this can be that of a loadable class)
+    final static int MAX_CLASS_NAME_LENGTH = 65535;
+
+    // Package-visible for tests
+    static boolean _dotCountExceeds(String str, int max) {
+        int count = 0;
+        for (int ix = str.indexOf('.'); ix >= 0; ix = str.indexOf('.', ix + 1)) {
+            if (++count > max) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // @since 2.11.3
     private final static class FullNameResolver {
         private final LRUMap<FullNameKey, String> SCHEMA_NAME_CACHE = new LRUMap<>(80, 800);
 
         public final static FullNameResolver instance = new FullNameResolver();
 
-        // Maximum number of dots in namespace for which nested-class probing is done
-        private final static int MAX_NAMESPACE_DOTS = 32;
-
-        private static boolean _dotCountExceeds(String str, int max) {
-            int count = 0;
-            for (int ix = str.indexOf('.'); ix >= 0; ix = str.indexOf('.', ix + 1)) {
-                if (++count > max) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
         public String resolve(final String namespace, final String name) {
-            // Each dot of the (possibly untrusted) namespace means one more class
-            // loading attempt: no real class name is nested this deep, so skip
-            // probing (and caching) altogether
-            if (_dotCountExceeds(namespace, MAX_NAMESPACE_DOTS)) {
+            // Name too long to be that of any class: no probing, and keep it out of cache
+            if ((namespace.length() + name.length()) >= MAX_CLASS_NAME_LENGTH) {
                 return namespace + '.' + name;
             }
             final FullNameKey cacheKey = new FullNameKey(namespace, name);
             String schemaName = SCHEMA_NAME_CACHE.get(cacheKey);
 
             if (schemaName == null) {
-                // Result is only reliable (and cacheable) if no candidate failed
-                // with a possibly transient linkage problem
-                final boolean[] cacheable = { true };
-                schemaName = _resolve(cacheKey, cacheable);
-                if (cacheable[0]) {
-                    SCHEMA_NAME_CACHE.put(cacheKey, schemaName);
+                // Each dot of the (possibly untrusted) namespace means one more class
+                // loading attempt: no real class name is nested this deep, so skip
+                // probing (and caching) altogether
+                if (_dotCountExceeds(namespace, MAX_NAMESPACE_DOTS)) {
+                    return namespace + '.' + name;
                 }
+                schemaName = _resolve(cacheKey);
+                SCHEMA_NAME_CACHE.put(cacheKey, schemaName);
             }
             return schemaName;
         }
 
-        private static String _resolve(FullNameKey key, boolean[] cacheable) {
+        private static String _resolve(FullNameKey key) {
             // 28-Feb-2020: [dataformats-binary#195] somewhat complicated logic of trying
             //     to support differences between avro-lib 1.8 and 1.9...
             //     Check if this is a nested class
@@ -501,15 +505,12 @@ public abstract class AvroSchemaHelper
                     String className = sb.toString();
                     Class.forName(className, false, FullNameResolver.class.getClassLoader());
                     return className;
-                } catch (ClassNotFoundException | LinkageError e) {
-                    // Class does not exist (or cannot be loaded; e.g. missing superclass,
-                    // case-only name mismatch) - perhaps last dot is actually a nested class
-                    // But: `LinkageError`s other than `NoClassDefFoundError` (circularity,
-                    // duplicate definition under concurrent loading) may be transient,
-                    // in which case class may well exist: must not cache the outcome
-                    if ((e instanceof LinkageError) && !(e instanceof NoClassDefFoundError)) {
-                        cacheable[0] = false;
-                    }
+                } catch (ClassNotFoundException e) {
+                    // Class does not exist - perhaps last dot is actually a nested class.
+                    // NOTE: `LinkageError`s (including `NoClassDefFoundError` for class
+                    // that exists but cannot be loaded, e.g. due to missing superclass)
+                    // are intentionally NOT caught: class may well exist, and fallback
+                    // name would get retained by callers, masking the actual problem
                     lastDot = sb.lastIndexOf(".", lastDot);
                     if (lastDot == -1) {
                         // No more dots so we are unable to resolve, should we throw an exception?
