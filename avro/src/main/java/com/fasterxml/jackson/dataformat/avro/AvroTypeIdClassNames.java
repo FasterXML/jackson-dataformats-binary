@@ -26,12 +26,12 @@ final class AvroTypeIdClassNames
     final static int MAX_CLASS_NAME_LENGTH = 1024;
 
     /**
-     * Type ids for which class was found, mapped to type id with name of that class.
+     * Names from schema for which class was found, mapped to name of that class.
      * Only names are retained (no references to classes), and only for successful
      * lookups: whether class is found may depend on context ClassLoader, so failure
      * must not be remembered beyond a single parser.
      */
-    private final static LRUMap<String, String> RESOLVED = new LRUMap<>(80, 800);
+    private final static LRUMap<String, String> CLASS_NAMES = new LRUMap<>(80, 800);
 
     private AvroTypeIdClassNames() { }
 
@@ -41,82 +41,72 @@ final class AvroTypeIdClassNames
      *   {@code EnumSet} and {@code EnumMap} (like {@code java.util.EnumSet<package.Outer.Inner>}),
      *   for which the first type parameter is name from schema.
      *
-     * @return Type id with name of class found, if any (may be {@code typeId} itself);
-     *    {@code null} if no class was found
+     * @return Type id with name of class found, if any; {@code typeId} itself otherwise
      */
     static String resolve(String typeId)
     {
-        // Name to probe is either the whole id, or the first type parameter
-        final int ltIndex = typeId.indexOf('<');
-        final int start, end;
-        if (ltIndex < 0) {
-            start = 0;
-            end = typeId.length();
-        } else {
-            start = ltIndex + 1;
-            int ix = typeId.indexOf(',', start);
-            end = (ix < 0) ? typeId.indexOf('>', start) : ix;
+        final int start = typeId.indexOf('<') + 1;
+        if (start == 0) {
+            return _resolveClassName(typeId);
+        }
+        int end = typeId.indexOf(',', start);
+        if (end < 0) {
+            end = typeId.indexOf('>', start);
             if (end < 0) { // malformed, leave for databind to report
-                return null;
+                return typeId;
             }
         }
-        // Only probe names that could be those of nested classes; and for
-        // which variants are worth trying (no real class has name very long
-        // or nested very deep)
-        final String name = typeId.substring(start, end);
-        if ((name.indexOf('.') < 0) || (name.indexOf('<') >= 0) || !_shouldProbe(name)) {
-            return null;
-        }
-        String resolved = RESOLVED.get(typeId);
-        if (resolved != null) {
-            return resolved;
-        }
-        final ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
-        final ClassLoader moduleLoader = AvroTypeIdClassNames.class.getClassLoader();
+        return typeId.substring(0, start)
+                + _resolveClassName(typeId.substring(start, end))
+                + typeId.substring(end);
+    }
 
+    private static String _resolveClassName(String name)
+    {
+        // Nothing to probe without namespace; and no real class has name
+        // very long or nested very deep
+        if ((name.indexOf('.') < 0) || !_shouldProbe(name)) {
+            return name;
+        }
+        String className = CLASS_NAMES.get(name);
+        if (className != null) {
+            return className;
+        }
         // 23-Aug-2024:[dataformats-binary#167] Based on SpecificData::getClass
         //   from Apache Avro. Initially assume that namespace is a Java package
         final StringBuilder sb = new StringBuilder(name);
         int lastDot = sb.length();
-        while (true) {
-            if (_classExists(sb.toString(), contextLoader, moduleLoader)) {
-                break;
-            }
+        while (!_classExists(sb.toString())) {
             // Class does not exist - perhaps last dot is actually a nested class
             lastDot = sb.lastIndexOf(".", lastDot);
             if (lastDot < 0) {
-                return null;
+                return name;
             }
             sb.setCharAt(lastDot, '$');
         }
-        resolved = (ltIndex < 0) ? sb.toString()
-                : typeId.substring(0, start) + sb + typeId.substring(end);
-        // avoid retaining separate copy of the common case
-        if (resolved.equals(typeId)) {
-            resolved = typeId;
-        }
-        RESOLVED.put(typeId, resolved);
-        return resolved;
+        className = sb.toString();
+        CLASS_NAMES.put(name, className);
+        return className;
+    }
+
+    // Same lookup order as databind has: context ClassLoader (if any) first
+    private static boolean _classExists(String className)
+    {
+        final ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
+        final ClassLoader moduleLoader = AvroTypeIdClassNames.class.getClassLoader();
+        return ((contextLoader != null) && (contextLoader != moduleLoader)
+                    && _classExists(className, contextLoader))
+                || _classExists(className, moduleLoader);
     }
 
     // NOTE: `LinkageError`s (including `NoClassDefFoundError` for class that exists
     // but cannot be loaded, e.g. due to missing superclass) are intentionally NOT
     // caught: class may well exist, and fallback name would mask the actual problem
-    private static boolean _classExists(String className,
-            ClassLoader contextLoader, ClassLoader moduleLoader)
+    private static boolean _classExists(String className, ClassLoader loader)
     {
-        // Only need to know class exists, so must not initialize it
-        if (contextLoader != null) {
-            try {
-                Class.forName(className, false, contextLoader);
-                return true;
-            } catch (ClassNotFoundException e) { }
-            if (contextLoader == moduleLoader) {
-                return false;
-            }
-        }
         try {
-            Class.forName(className, false, moduleLoader);
+            // Only need to know class exists, so must not initialize it
+            Class.forName(className, false, loader);
             return true;
         } catch (ClassNotFoundException e) {
             return false;

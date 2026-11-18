@@ -320,12 +320,11 @@ public abstract class AvroWriteContext
             //  - ByteBuffer
             //  - Number wrappers (Integer, ...)
 
-            final String typeId = AvroSchemaHelper.getTypeId(raw);
-            final String dottedTypeId = _dottedTypeId(typeId);
+            final String typeId = _dottedTypeId(AvroSchemaHelper.getTypeId(raw));
             for (int i = 0, size = types.size(); i < size; ++i) {
                 Schema schema = types.get(i);
-                // Exact schema match?
-                if (_matchesTypeId(typeId, dottedTypeId, AvroSchemaHelper.getTypeId(schema))) {
+                // Schema for the class?
+                if (typeId.equals(_dottedTypeId(AvroSchemaHelper.getTypeId(schema)))) {
                     return i;
                 }
             }
@@ -370,12 +369,11 @@ public abstract class AvroWriteContext
                 return types.get(_resolveMapIndex(unionSchema, types, datum));
             }
 
-            final String typeId = AvroSchemaHelper.getTypeId(raw);
-            final String dottedTypeId = _dottedTypeId(typeId);
+            final String typeId = _dottedTypeId(AvroSchemaHelper.getTypeId(raw));
             for (int i = 0, size = types.size(); i < size; ++i) {
                 Schema schema = types.get(i);
-                // Exact schema match?
-                if (_matchesTypeId(typeId, dottedTypeId, AvroSchemaHelper.getTypeId(schema))) {
+                // Schema for the class?
+                if (typeId.equals(_dottedTypeId(AvroSchemaHelper.getTypeId(schema)))) {
                     return schema;
                 }
             }
@@ -419,18 +417,10 @@ public abstract class AvroWriteContext
 
     // [dataformats-binary#908]: schemas (as of Avro 1.9) use dot as separator for
     // nested classes too, whereas class names use dollar sign (and schemas may
-    // use mix of the two): so if no exact match, compare with separators unified.
-    // Done by comparing names only, without trying to load class named by schema.
+    // use mix of the two): so compare names with separators unified.
+    // No attempt made to load class named by schema.
     private static String _dottedTypeId(String typeId) {
-        return (typeId.indexOf('$') < 0) ? typeId : typeId.replace('$', '.');
-    }
-
-    private static boolean _matchesTypeId(String typeId, String dottedTypeId, String schemaTypeId) {
-        if (schemaTypeId == null) {
-            return false;
-        }
-        return typeId.equals(schemaTypeId)
-                || dottedTypeId.equals(_dottedTypeId(schemaTypeId));
+        return (typeId == null) ? null : typeId.replace('$', '.');
     }
 
     private static Schema _findNotNull(List<Schema> types)

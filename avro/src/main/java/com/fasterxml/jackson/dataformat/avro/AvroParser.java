@@ -246,25 +246,14 @@ public abstract class AvroParser extends ParserBase
 
     @Override
     public Object getTypeId() throws IOException {
-        if (_avroContext == null) {
-            return null;
-        }
-        final String typeId = _avroContext.getTypeId();
+        final String typeId = (_avroContext == null) ? null : _avroContext.getTypeId();
         if (typeId == null) {
             return null;
         }
         // [dataformats-binary#908]: names from schema use dot as separator for
         // nested classes too: need to find the actual class name. Outcome (found
         // or not) only retained here, for duration of parsing.
-        String resolved = _resolvedTypeIds.get(typeId);
-        if (resolved == null) {
-            resolved = AvroTypeIdClassNames.resolve(typeId);
-            if (resolved == null) {
-                resolved = typeId;
-            }
-            _resolvedTypeIds.put(typeId, resolved);
-        }
-        return resolved;
+        return _resolvedTypeIds.computeIfAbsent(typeId, AvroTypeIdClassNames::resolve);
     }
 
     /*
