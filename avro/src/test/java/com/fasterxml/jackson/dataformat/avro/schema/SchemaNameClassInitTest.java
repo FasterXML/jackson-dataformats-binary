@@ -13,10 +13,12 @@ import com.fasterxml.jackson.dataformat.avro.AvroTestBase;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
-// Resolving the Java class name of a record, enum or fixed schema must not
-// initialize the class named by the (possibly untrusted) schema
+// Resolving the name of a record, enum or fixed schema must not load (and
+// certainly not initialize) the class named by the (possibly untrusted) schema.
+// As of 2.24 [dataformats-binary#908] no probing for nested classes is done
+// for schema names at all: see `NestedClassTypeId908Test` for resolution of
+// type ids into nested classes.
 public class SchemaNameClassInitTest extends AvroTestBase
 {
     static class InitTracker {
@@ -69,10 +71,10 @@ public class SchemaNameClassInitTest extends AvroTestBase
                 .readValue(new byte[] { 2, 'a' });
         assertEquals("a", result.value.x);
 
-        // Name is still resolved to the nested class...
-        assertEquals(SchemaNameClassInitTest.class.getName() + "$NotToBeInitialized",
+        // Name is that of schema, with no probing for nested class...
+        assertEquals(SchemaNameClassInitTest.class.getName() + ".NotToBeInitialized",
                 AvroSchemaHelper.getFullName(schema.getAvroSchema().getField("value").schema()));
-        // ... but without running its static initializer
+        // ... and without running static initializer of the class
         assertFalse(InitTracker.initialized);
     }
 
@@ -81,7 +83,7 @@ public class SchemaNameClassInitTest extends AvroTestBase
     {
         Schema schema = Schema.createEnum("EnumNotToBeInitialized", null,
                 SchemaNameClassInitTest.class.getName(), Arrays.asList("A", "B"));
-        assertEquals(SchemaNameClassInitTest.class.getName() + "$EnumNotToBeInitialized",
+        assertEquals(SchemaNameClassInitTest.class.getName() + ".EnumNotToBeInitialized",
                 AvroSchemaHelper.getFullName(schema));
         assertFalse(InitTracker.enumInitialized);
     }
@@ -91,7 +93,7 @@ public class SchemaNameClassInitTest extends AvroTestBase
     {
         Schema schema = Schema.createFixed("FixedNotToBeInitialized", null,
                 SchemaNameClassInitTest.class.getName(), 4);
-        assertEquals(SchemaNameClassInitTest.class.getName() + "$FixedNotToBeInitialized",
+        assertEquals(SchemaNameClassInitTest.class.getName() + ".FixedNotToBeInitialized",
                 AvroSchemaHelper.getFullName(schema));
         assertFalse(InitTracker.fixedInitialized);
     }
@@ -111,40 +113,11 @@ public class SchemaNameClassInitTest extends AvroTestBase
         assertEquals(namespace + ".Rec", AvroSchemaHelper.getFullName(schema));
     }
 
-    @Test
-    public void testDotCountLimitBoundary() throws Exception
-    {
-        final int max = AvroSchemaHelper.MAX_NAMESPACE_DOTS;
-        assertEquals(32, max);
-        assertTrue(AvroSchemaHelper._shouldProbe("", "Rec"));
-        assertTrue(AvroSchemaHelper._shouldProbe("abc", "Rec"));
-        assertTrue(AvroSchemaHelper._shouldProbe(_dottedName(max - 1), "Rec"));
-        assertTrue(AvroSchemaHelper._shouldProbe(_dottedName(max), "Rec"));
-        assertFalse(AvroSchemaHelper._shouldProbe(_dottedName(max + 1), "Rec"));
-        assertFalse(AvroSchemaHelper._shouldProbe(_dottedName(max + 100), "Rec"));
-    }
-
-    // Limit applies to length of full name: namespace, dot, name
-    @Test
-    public void testNameLengthLimitBoundary() throws Exception
-    {
-        final int max = AvroSchemaHelper.MAX_CLASS_NAME_LENGTH;
-        assertEquals(1024, max);
-        final String name = "Rec";
-        final int maxNamespace = max - 1 - name.length();
-        assertTrue(AvroSchemaHelper._shouldProbe(_longName(maxNamespace - 1), name));
-        assertTrue(AvroSchemaHelper._shouldProbe(_longName(maxNamespace), name));
-        assertFalse(AvroSchemaHelper._shouldProbe(_longName(maxNamespace + 1), name));
-        assertFalse(AvroSchemaHelper._shouldProbe(_longName(100_000), name));
-        // and long simple name counts too
-        assertFalse(AvroSchemaHelper._shouldProbe("a.b", _longName(max)));
-    }
-
     // Over-long name with few dots: fallback to plain dotted name
     @Test
     public void testNoClassProbingForExcessivelyLongNamespace() throws Exception
     {
-        final String namespace = "a.b.c." + _longName(AvroSchemaHelper.MAX_CLASS_NAME_LENGTH);
+        final String namespace = "a.b.c." + _longName(2000);
         Schema schema = Schema.createRecord("Rec", null, namespace, false);
         assertEquals(namespace + ".Rec", AvroSchemaHelper.getFullName(schema));
     }
@@ -157,21 +130,23 @@ public class SchemaNameClassInitTest extends AvroTestBase
         return sb.toString();
     }
 
-    private static String _dottedName(int dots) {
-        StringBuilder sb = new StringBuilder("a");
-        for (int i = 0; i < dots; ++i) {
-            sb.append(".a");
-        }
-        return sb.toString();
+    // Legacy (Avro before 1.9) namespace with trailing dollar sign: name appended as-is
+    @Test
+    public void testLegacyDollarNamespace() throws Exception
+    {
+        Schema schema = Schema.createRecord("Inner", null,
+                SchemaNameClassInitTest.class.getName() + "$", false);
+        assertEquals(SchemaNameClassInitTest.class.getName() + "$Inner",
+                AvroSchemaHelper.getFullName(schema));
     }
 
-    // But nesting within limit is still resolved
+    // [dataformats-binary#908]: no probing, so dotted name even for existing nested class
     @Test
-    public void testNestedClassStillResolvedWithinDotLimit() throws Exception
+    public void testNestedClassNameNotProbed() throws Exception
     {
         Schema schema = Schema.createRecord("Inner", null,
                 SchemaNameClassInitTest.class.getName(), false);
-        assertEquals(SchemaNameClassInitTest.class.getName() + "$Inner",
+        assertEquals(SchemaNameClassInitTest.class.getName() + ".Inner",
                 AvroSchemaHelper.getFullName(schema));
     }
 }

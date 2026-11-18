@@ -14,6 +14,14 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.24.0 (not yet released)
+
+#908: (avro) `AvroSchemaHelper.getFullName()` probes for nested classes with different
+  ClassLoader than databind uses to load them
+  (NOTE: schema names are no longer probed for; type ids exposed by `AvroParser.getTypeId()`
+  for nested classes now use `.` instead of `$` as separator, resolved into
+  classes by `AvroTypeIdResolver`)
+
 2.23.1 (not yet released)
 
 #906: (avro) Do not initialize class named by Avro schema when resolving its full name;

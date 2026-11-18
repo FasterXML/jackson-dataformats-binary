@@ -320,11 +320,12 @@ public abstract class AvroWriteContext
             //  - ByteBuffer
             //  - Number wrappers (Integer, ...)
 
-            String typeId = AvroSchemaHelper.getTypeId(datum.getClass());
+            final String typeId = AvroSchemaHelper.getTypeId(raw);
+            final String altTypeId = _dottedTypeId(typeId);
             for (int i = 0, size = types.size(); i < size; ++i) {
                 Schema schema = types.get(i);
                 // Exact schema match?
-                if (typeId.equals(AvroSchemaHelper.getTypeId(schema))) {
+                if (_matchesTypeId(typeId, altTypeId, AvroSchemaHelper.getTypeId(schema))) {
                     return i;
                 }
             }
@@ -369,11 +370,12 @@ public abstract class AvroWriteContext
                 return types.get(_resolveMapIndex(unionSchema, types, datum));
             }
 
-            String typeId = AvroSchemaHelper.getTypeId(datum.getClass());
+            final String typeId = AvroSchemaHelper.getTypeId(raw);
+            final String altTypeId = _dottedTypeId(typeId);
             for (int i = 0, size = types.size(); i < size; ++i) {
                 Schema schema = types.get(i);
                 // Exact schema match?
-                if (typeId.equals(AvroSchemaHelper.getTypeId(schema))) {
+                if (_matchesTypeId(typeId, altTypeId, AvroSchemaHelper.getTypeId(schema))) {
                     return schema;
                 }
             }
@@ -413,6 +415,19 @@ public abstract class AvroWriteContext
             }
         }
         return ReflectData.get().resolveUnion(unionSchema, value);
+    }
+
+    // [dataformats-binary#908]: schemas (as of Avro 1.9) use dot as separator for
+    // nested classes too, whereas class names use dollar sign: so need to match
+    // class name against both variants. Done by comparing names only, without
+    // trying to load class named by schema.
+    private static String _dottedTypeId(String typeId) {
+        return (typeId.indexOf('$') < 0) ? null : typeId.replace('$', '.');
+    }
+
+    private static boolean _matchesTypeId(String typeId, String altTypeId, String schemaTypeId) {
+        return typeId.equals(schemaTypeId)
+                || ((altTypeId != null) && altTypeId.equals(schemaTypeId));
     }
 
     private static Schema _findNotNull(List<Schema> types)
