@@ -3705,7 +3705,15 @@ len, currentToken());
         case 1:
             return _decode16Bits();
         case 2:
-            return _decode32Bits();
+            {
+                // Unsigned 32-bit value: must not let lengths above `Integer.MAX_VALUE`
+                // wrap to negative, as callers take that to mean indefinite length
+                final int len = _decode32Bits();
+                if (len < 0) {
+                    throw _constructError("Illegal length for "+currentToken()+": "+(len & 0xFFFFFFFFL));
+                }
+                return len;
+            }
         case 3:
             long l = _decode64Bits();
             if (l < 0 || l > MAX_INT_L) {
