@@ -163,13 +163,22 @@ public abstract class AvroParser extends ParserBase
             return;
         }
         _initSchema((AvroSchema) schema);
+        // 17-Nov-2026, tatu: was never assigned before 3.1.9; needed for
+        //   resolving type ids [dataformats-binary#908]
+        _rootSchema = schema;
     }
 
     protected abstract void _initSchema(AvroSchema schema) throws JacksonException;
 
     @Override
     public Object getTypeId() throws JacksonException {
-        return _avroContext != null ? _avroContext.getTypeId() : null;
+        final String typeId = (_avroContext == null) ? null : _avroContext.getTypeId();
+        if ((typeId == null) || (_rootSchema == null)) {
+            return typeId;
+        }
+        // [dataformats-binary#908]: names from schema use dot as separator for
+        // nested classes too: need to find name of the actual class
+        return _rootSchema.resolveTypeId(typeId);
     }
 
     /*

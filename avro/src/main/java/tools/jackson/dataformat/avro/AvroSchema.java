@@ -1,6 +1,10 @@
 package tools.jackson.dataformat.avro;
 
+import java.lang.ref.WeakReference;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.avro.Schema;
@@ -35,6 +39,24 @@ public class AvroSchema implements FormatSchema
      * Lazily instantiated value reader for this schema.
      */
     protected final AtomicReference<AvroStructureReader> _reader = new AtomicReference<>();
+
+    /**
+     * Outcomes of resolving type ids (as used by {@link AvroStructureReader}s of
+     * this schema) into names of Java classes, separately for each ClassLoader
+     * used for lookups (weakly referenced): see {@link #resolveTypeId}.
+     * Access must be synchronized.
+     *
+     * @since 3.1.9
+     */
+    private final Map<ClassLoader, ResolvedTypeIds> _typeIdsByLoader = new WeakHashMap<>(4);
+
+    /**
+     * Most recently used entry of {@link #_typeIdsByLoader}, to avoid
+     * synchronized access in the common case of a single ClassLoader.
+     *
+     * @since 3.1.9
+     */
+    private volatile ResolvedTypeIds _recentTypeIds;
 
     public AvroSchema(Schema asch)
     {
@@ -153,6 +175,82 @@ r.getType().getName(), w.getFullName(), r.getFullName()));
     /* Factory methods
     /**********************************************************************
      */
+
+    /**
+     * Method for translating type id from this schema into one with name of the
+     * actual Java class: names of record, enum and fixed schemas use dot as the
+     * separator between enclosing and nested class ({@code package.Outer.Inner})
+     * so need to probe to find the class ({@code package.Outer$Inner}).
+     *<p>
+     * Outcomes of lookups (both class found and not found) are retained, as
+     * probing is costly; especially when there is no class to find, common when
+     * binding as "untyped". But since whether class is found may depend on context
+     * ClassLoader, outcomes are only used for the ClassLoader they were
+     * produced with: lookup with another one is done from scratch.
+     *
+     * @return Type id with name of class found, if any; {@code typeId} itself otherwise
+     *
+     * @since 3.1.9
+     */
+    String resolveTypeId(String typeId)
+    {
+        final ClassLoader loader = AvroTypeIdClassNames.lookupClassLoader();
+        // Without ClassLoader to associate outcome with, cannot retain
+        if (loader == null) {
+            final String resolved = AvroTypeIdClassNames.resolve(typeId);
+            return (resolved == null) ? typeId : resolved;
+        }
+        ResolvedTypeIds typeIds = _recentTypeIds;
+        if ((typeIds == null) || !typeIds.isFor(loader)) {
+            synchronized (_typeIdsByLoader) {
+                typeIds = _typeIdsByLoader.get(loader);
+                if (typeIds == null) {
+                    typeIds = new ResolvedTypeIds(loader);
+                    _typeIdsByLoader.put(loader, typeIds);
+                }
+            }
+            _recentTypeIds = typeIds;
+        }
+        return typeIds.resolve(typeId);
+    }
+
+    /**
+     * Outcomes of resolving type ids using specific context ClassLoader: type ids
+     * mapped to ones with name of the class found, or to themselves if none
+     * was (or if type id is not one to probe for).
+     * ClassLoader is only weakly referenced, and only type ids (not classes)
+     * retained, to avoid preventing its garbage collection.
+     * Size bounded by number of types schema has.
+     */
+    private final static class ResolvedTypeIds
+    {
+        private final WeakReference<ClassLoader> _loader;
+
+        private final ConcurrentHashMap<String, String> _resolved = new ConcurrentHashMap<>();
+
+        ResolvedTypeIds(ClassLoader loader) {
+            _loader = new WeakReference<>(loader);
+        }
+
+        // NOTE: `loader` must not be null (reference may have been cleared)
+        boolean isFor(ClassLoader loader) {
+            return _loader.get() == loader;
+        }
+
+        // NOTE: must be called with ClassLoader this instance is for
+        // as the context ClassLoader (or without one, if for that of module)
+        String resolve(String typeId) {
+            String resolved = _resolved.get(typeId);
+            if (resolved == null) {
+                resolved = AvroTypeIdClassNames.resolve(typeId);
+                if (resolved == null) {
+                    resolved = typeId;
+                }
+                _resolved.put(typeId, resolved);
+            }
+            return resolved;
+        }
+    }
 
     public AvroStructureReader getReader()
     {

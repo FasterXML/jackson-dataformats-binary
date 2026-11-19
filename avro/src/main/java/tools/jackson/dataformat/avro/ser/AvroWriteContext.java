@@ -312,11 +312,11 @@ public abstract class AvroWriteContext
             //  - ByteBuffer
             //  - Number wrappers (Integer, ...)
 
-            String typeId = AvroSchemaHelper.getTypeId(datum.getClass());
+            final String typeId = _dottedTypeId(AvroSchemaHelper.getTypeId(raw));
             for (int i = 0, size = types.size(); i < size; ++i) {
                 Schema schema = types.get(i);
-                // Exact schema match?
-                if (typeId.equals(AvroSchemaHelper.getTypeId(schema))) {
+                // Schema for the class?
+                if (typeId.equals(_dottedTypeId(AvroSchemaHelper.getTypeId(schema)))) {
                     return i;
                 }
             }
@@ -361,11 +361,11 @@ public abstract class AvroWriteContext
                 return types.get(_resolveMapIndex(unionSchema, types, datum));
             }
 
-            String typeId = AvroSchemaHelper.getTypeId(datum.getClass());
+            final String typeId = _dottedTypeId(AvroSchemaHelper.getTypeId(raw));
             for (int i = 0, size = types.size(); i < size; ++i) {
                 Schema schema = types.get(i);
-                // Exact schema match?
-                if (typeId.equals(AvroSchemaHelper.getTypeId(schema))) {
+                // Schema for the class?
+                if (typeId.equals(_dottedTypeId(AvroSchemaHelper.getTypeId(schema)))) {
                     return schema;
                 }
             }
@@ -405,6 +405,14 @@ public abstract class AvroWriteContext
             }
         }
         return ReflectData.get().resolveUnion(unionSchema, value);
+    }
+
+    // [dataformats-binary#908]: schemas (as of Avro 1.9) use dot as separator for
+    // nested classes too, whereas class names use dollar sign (and schemas may
+    // use mix of the two): so compare names with separators unified.
+    // No attempt made to load class named by schema.
+    private static String _dottedTypeId(String typeId) {
+        return (typeId == null) ? null : typeId.replace('$', '.');
     }
 
     private static Schema _findNotNull(List<Schema> types)

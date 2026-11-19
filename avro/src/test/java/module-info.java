@@ -13,6 +13,8 @@ module tools.jackson.dataformat.avro
     requires org.assertj.core;
     requires org.junit.jupiter.api;
     requires org.junit.jupiter.params;
+    // [dataformats-binary#908]: for compiling test classes on-the-fly
+    requires java.compiler;
 
     // Further, need to open up some packages for JUnit et al
 
