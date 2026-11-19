@@ -58,11 +58,15 @@ public class AvroUntypedDeserializer
     public Object deserializeWithType(JsonParser p, DeserializationContext ctxt,
             TypeDeserializer typeDeserializer) throws IOException {
         // Use type deserializer if we have type information, even for scalar values
-        if (p.canReadTypeId() && p.getTypeId() != null && typeDeserializer != null) {
-            TypeIdResolver resolver = typeDeserializer.getTypeIdResolver();
-            // Make sure that we actually can resolve the type ID, otherwise we'll end up in a recursive loop
-            if (resolver != null && resolver.typeFromId(ctxt, p.getTypeId().toString()) != null) {
-                return typeDeserializer.deserializeTypedFromAny(p, ctxt);
+        if (typeDeserializer != null && p.canReadTypeId()) {
+            // NOTE: only get type id once, access may be costly [dataformats-binary#908]
+            final Object typeId = p.getTypeId();
+            if (typeId != null) {
+                TypeIdResolver resolver = typeDeserializer.getTypeIdResolver();
+                // Make sure that we actually can resolve the type ID, otherwise we'll end up in a recursive loop
+                if (resolver != null && resolver.typeFromId(ctxt, typeId.toString()) != null) {
+                    return typeDeserializer.deserializeTypedFromAny(p, ctxt);
+                }
             }
         }
         return super.deserializeWithType(p, ctxt, typeDeserializer);
@@ -94,10 +98,12 @@ public class AvroUntypedDeserializer
         }
 
         KeyDeserializer deserializer = null;
-        if (p.getTypeId() != null) {
-            if (_typeDeserializer != null) {
+        if (_typeDeserializer != null) {
+            // NOTE: only get type id once, access may be costly [dataformats-binary#908]
+            final Object keyTypeId = p.getTypeId();
+            if (keyTypeId != null) {
                 TypeIdResolver idResolver = _typeDeserializer.getTypeIdResolver();
-                JavaType keyType = idResolver.typeFromId(ctxt, p.getTypeId().toString());
+                JavaType keyType = idResolver.typeFromId(ctxt, keyTypeId.toString());
                 if (keyType != null) {
                     deserializer = ctxt.findKeyDeserializer(keyType, null);
                 }
