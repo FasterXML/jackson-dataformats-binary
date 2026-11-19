@@ -340,6 +340,12 @@ public abstract class AvroSchemaHelper
 
     /**
      * Returns the type ID for this schema, or {@code null} if none is present.
+     *<p>
+     * NOTE: since 2.24 type id of record, enum and fixed schemas is name exactly
+     * as schema has it (see {@link #getFullName}), using dot as the separator
+     * for nested classes too ({@code package.Outer.Inner}): so it does not
+     * necessarily equal {@link #getTypeId(Class)} of matching class
+     * ({@code package.Outer$Inner}), nor can be used for loading the class as-is.
      */
     public static String getTypeId(Schema schema) {
         switch (schema.getType()) {

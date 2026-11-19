@@ -18,9 +18,11 @@ Active maintainers:
 
 #908: (avro) `AvroSchemaHelper.getFullName()` probes for nested classes with different
   ClassLoader than databind uses to load them
-  (NOTE: `AvroSchemaHelper.getFullName()` no longer probes for classes, returns name
-  as schema has it; probing now done by `AvroParser.getTypeId()`, using context
-  ClassLoader first)
+  (NOTE: `AvroSchemaHelper.getFullName()` and `AvroSchemaHelper.getTypeId(Schema)`
+  no longer probe for classes, return name as schema has it (`package.Outer.Inner`
+  for nested classes, not `package.Outer$Inner`); probing now done by
+  `AvroParser.getTypeId()`, using context ClassLoader first.
+  Also: `AvroParser.getSchema()` now returns schema set, instead of `null`)
 
 2.23.1 (not yet released)
 

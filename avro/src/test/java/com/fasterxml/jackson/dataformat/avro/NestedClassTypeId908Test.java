@@ -16,6 +16,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.dataformat.avro.ser.AvroWriteContext;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -158,6 +160,41 @@ public class NestedClassTypeId908Test extends AvroTestBase
             Object result = _roundTrip(mapper, schema, loader, loader);
             assertEquals(NS + "$ImplB", result.getClass().getName());
             assertSame(loader, result.getClass().getClassLoader());
+        }
+    }
+
+    // Finding class with one ClassLoader must not be remembered for others
+    // either, for shared schema: type id must not depend on order of access
+    @Test
+    public void testSuccessfulLookupNotSharedAcrossClassLoaders() throws Exception
+    {
+        final AvroMapper mapper = newMapper();
+        final AvroSchema schema = mapper.schemaFrom(SCHEMA_JSON);
+        try (URLClassLoader loader = isolatedLoader()) {
+            assertEquals(NS + "$ImplB", _streamingTypeId(mapper, schema, loader));
+            assertEquals(NS + ".ImplB", _streamingTypeId(mapper, schema, null));
+            assertEquals(NS + "$ImplB", _streamingTypeId(mapper, schema, loader));
+            assertEquals(NS + ".ImplB", _streamingTypeId(mapper, schema, null));
+        }
+    }
+
+    // Returns type id parser exposes for `ImplB` value of `Bean`, using given
+    // context ClassLoader (if any)
+    private Object _streamingTypeId(AvroMapper mapper, AvroSchema schema,
+            ClassLoader contextLoader) throws Exception
+    {
+        final Thread thread = Thread.currentThread();
+        final ClassLoader oldLoader = thread.getContextClassLoader();
+        thread.setContextClassLoader(contextLoader);
+        // union index 1 (zigzag: 2), then int 42 (zigzag: 84)
+        try (JsonParser p = mapper.getFactory().createParser(new byte[] { 2, 84 })) {
+            p.setSchema(schema);
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertToken(JsonToken.FIELD_NAME, p.nextToken());
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            return p.getTypeId();
+        } finally {
+            thread.setContextClassLoader(oldLoader);
         }
     }
 

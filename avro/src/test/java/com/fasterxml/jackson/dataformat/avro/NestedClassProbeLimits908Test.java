@@ -116,10 +116,11 @@ public class NestedClassProbeLimits908Test extends AvroTestBase
         assertTrue(count2 >= dots + 1, "Expected at least "+(dots+1)+" attempts, got: "+count2);
         assertEquals(count1, loader1.count.get());
 
-        // and back to the first one: probed again, as only the latest is retained
+        // and outcomes are retained for both, when alternating
         _read(schema, loader1);
-        final int count1b = loader1.count.get() - count1;
-        assertTrue(count1b >= dots + 1, "Expected at least "+(dots+1)+" attempts, got: "+count1b);
+        _assertNotProbed(loader1.count.get() - count1);
+        _read(schema, loader2);
+        _assertNotProbed(loader2.count.get() - count2);
     }
 
     @Test
