@@ -224,6 +224,9 @@ public abstract class AvroParser extends ParserBase
             } catch (IOException e) {
                 throw new IllegalArgumentException(e);
             }
+            // 17-Nov-2026, tatu: was never assigned before 2.24; needed for
+            //   resolving type ids [dataformats-binary#908]
+            _rootSchema = (AvroSchema) schema;
         } else {
             throw new IllegalArgumentException("Can not use FormatSchema of type "
                     +schema.getClass().getName());
@@ -239,7 +242,13 @@ public abstract class AvroParser extends ParserBase
 
     @Override
     public Object getTypeId() throws IOException {
-        return _avroContext != null ? _avroContext.getTypeId() : null;
+        final String typeId = (_avroContext == null) ? null : _avroContext.getTypeId();
+        if ((typeId == null) || (_rootSchema == null)) {
+            return typeId;
+        }
+        // [dataformats-binary#908]: names from schema use dot as separator for
+        // nested classes too: need to find name of the actual class
+        return _rootSchema.resolveTypeId(typeId);
     }
 
     /*

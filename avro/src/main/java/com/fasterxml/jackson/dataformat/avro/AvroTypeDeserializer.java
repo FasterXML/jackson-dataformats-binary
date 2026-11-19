@@ -54,7 +54,9 @@ public class AvroTypeDeserializer extends TypeDeserializerBase
 
     @Override
     public Object deserializeTypedFromAny(JsonParser p, DeserializationContext ctxt) throws IOException {
-        if (p.getTypeId() == null && getDefaultImpl() == null) {
+        // NOTE: only get type id once, access may be costly [dataformats-binary#908]
+        final Object typeId = p.getTypeId();
+        if (typeId == null && getDefaultImpl() == null) {
             JsonDeserializer<Object> deser = _findDeserializer(ctxt, AvroSchemaHelper.getTypeId(_baseType));
             if (deser == null) {
                 ctxt.reportInputMismatch(_baseType, "No (native) type id found when one was expected for polymorphic type handling");
@@ -62,7 +64,7 @@ public class AvroTypeDeserializer extends TypeDeserializerBase
             }
             return deser.deserialize(p, ctxt);
         }
-        return _deserializeWithNativeTypeId(p, ctxt, p.getTypeId());
+        return _deserializeWithNativeTypeId(p, ctxt, typeId);
     }
 
     @Override
