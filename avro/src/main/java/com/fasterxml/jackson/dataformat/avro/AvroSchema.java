@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.dataformat.avro;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -46,6 +47,14 @@ public class AvroSchema implements FormatSchema
      * @since 2.24
      */
     private final ConcurrentHashMap<String, String> _resolvedTypeIds = new ConcurrentHashMap<>();
+
+    /**
+     * Type ids for which no Java class was found, for the ClassLoader most recently
+     * used for lookups (if any): see {@link #resolveTypeId}.
+     *
+     * @since 2.24
+     */
+    private volatile UnresolvedTypeIds _unresolvedTypeIds;
 
     public AvroSchema(Schema asch)
     {
@@ -174,8 +183,12 @@ r.getType().getName(), w.getFullName(), r.getFullName()));
      * actual Java class: names of record, enum and fixed schemas use dot as the
      * separator between enclosing and nested class ({@code package.Outer.Inner})
      * so need to probe to find the class ({@code package.Outer$Inner}).
-     * Only successful lookups are retained: whether class is found may depend on
-     * context ClassLoader, so failure must not be remembered.
+     *<p>
+     * Outcomes of lookups are retained, as probing is costly (especially when there
+     * is no class to find, common when binding as "untyped"). But since whether
+     * class is found may depend on context ClassLoader, failures are only
+     * remembered for the ClassLoader that was used: lookup with another one
+     * is done from scratch.
      *
      * @return Type id with name of class found, if any; {@code typeId} itself otherwise
      *
@@ -184,14 +197,62 @@ r.getType().getName(), w.getFullName(), r.getFullName()));
     String resolveTypeId(String typeId)
     {
         String resolved = _resolvedTypeIds.get(typeId);
-        if (resolved == null) {
-            resolved = AvroTypeIdClassNames.resolve(typeId);
-            if (resolved == null) {
-                return typeId;
-            }
-            _resolvedTypeIds.put(typeId, resolved);
+        if (resolved != null) {
+            return resolved;
         }
-        return resolved;
+        final ClassLoader loader = AvroTypeIdClassNames.lookupClassLoader();
+        UnresolvedTypeIds unresolved = _unresolvedTypeIds;
+        if ((unresolved != null) && !unresolved.isFor(loader)) {
+            unresolved = null;
+        }
+        if ((unresolved != null) && unresolved.contains(typeId)) {
+            return typeId;
+        }
+        resolved = AvroTypeIdClassNames.resolve(typeId);
+        if (resolved != null) {
+            _resolvedTypeIds.put(typeId, resolved);
+            return resolved;
+        }
+        // Without ClassLoader to associate failure with, cannot retain
+        if (loader != null) {
+            if (unresolved == null) {
+                // Benign race: at worst some lookups are repeated
+                _unresolvedTypeIds = unresolved = new UnresolvedTypeIds(loader);
+            }
+            unresolved.add(typeId);
+        }
+        return typeId;
+    }
+
+    /**
+     * Set of type ids for which no class was found using specific ClassLoader.
+     * ClassLoader is only weakly referenced (and only type ids, not classes,
+     * retained) to avoid preventing its garbage collection. Size bounded
+     * by number of types schema has.
+     */
+    private final static class UnresolvedTypeIds
+    {
+        private final WeakReference<ClassLoader> _loader;
+
+        private final Set<String> _typeIds = ConcurrentHashMap.newKeySet();
+
+        UnresolvedTypeIds(ClassLoader loader) {
+            _loader = new WeakReference<>(loader);
+        }
+
+        // NOTE: `loader` may be null, but must not then match (reference
+        // may have been cleared)
+        boolean isFor(ClassLoader loader) {
+            return (loader != null) && (_loader.get() == loader);
+        }
+
+        boolean contains(String typeId) {
+            return _typeIds.contains(typeId);
+        }
+
+        void add(String typeId) {
+            _typeIds.add(typeId);
+        }
     }
 
     public AvroStructureReader getReader() throws IOException

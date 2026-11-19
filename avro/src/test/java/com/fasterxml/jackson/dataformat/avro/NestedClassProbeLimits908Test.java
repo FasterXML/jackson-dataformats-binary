@@ -77,6 +77,51 @@ public class NestedClassProbeLimits908Test extends AvroTestBase
         assertTrue(count >= dots + 1, "Expected at least "+(dots+1)+" attempts, got: "+count);
     }
 
+    // Failure to find class is remembered for schema, so that probing is not
+    // repeated for every value (and document)...
+    @Test
+    public void testFailedProbingNotRepeated() throws Exception
+    {
+        final int dots = 10;
+        final AvroSchema schema = _schema("probe908v." + _dottedName(dots - 1));
+        final CountingClassLoader loader = new CountingClassLoader(
+                getClass().getClassLoader(), "probe908v.");
+        _read(schema, loader);
+        final int first = loader.count.get();
+        assertTrue(first >= dots + 1, "Expected at least "+(dots+1)+" attempts, got: "+first);
+
+        _read(schema, loader);
+        final int second = loader.count.get();
+        _assertNotProbed(second - first);
+        _read(schema, loader);
+        _assertNotProbed(loader.count.get() - second);
+    }
+
+    // ... but only for the ClassLoader used: with another one class might be found
+    @Test
+    public void testFailedProbingRepeatedForDifferentClassLoader() throws Exception
+    {
+        final int dots = 10;
+        final AvroSchema schema = _schema("probe908w." + _dottedName(dots - 1));
+        final CountingClassLoader loader1 = new CountingClassLoader(
+                getClass().getClassLoader(), "probe908w.");
+        _read(schema, loader1);
+        final int count1 = loader1.count.get();
+        assertTrue(count1 >= dots + 1, "Expected at least "+(dots+1)+" attempts, got: "+count1);
+
+        final CountingClassLoader loader2 = new CountingClassLoader(
+                getClass().getClassLoader(), "probe908w.");
+        _read(schema, loader2);
+        final int count2 = loader2.count.get();
+        assertTrue(count2 >= dots + 1, "Expected at least "+(dots+1)+" attempts, got: "+count2);
+        assertEquals(count1, loader1.count.get());
+
+        // and back to the first one: probed again, as only the latest is retained
+        _read(schema, loader1);
+        final int count1b = loader1.count.get() - count1;
+        assertTrue(count1b >= dots + 1, "Expected at least "+(dots+1)+" attempts, got: "+count1b);
+    }
+
     @Test
     @Timeout(value = 10, unit = TimeUnit.SECONDS)
     public void testNoProbingForExcessivelyDottedName() throws Exception
@@ -104,20 +149,31 @@ public class NestedClassProbeLimits908Test extends AvroTestBase
     // via context ClassLoader, for names with given prefix
     private int _readAndCountLoads(String namespace, String prefix) throws Exception
     {
+        final CountingClassLoader loader = new CountingClassLoader(
+                getClass().getClassLoader(), prefix);
+        _read(_schema(namespace), loader);
+        return loader.count.get();
+    }
+
+    private AvroSchema _schema(String namespace)
+    {
         Schema rec = Schema.createRecord("Rec", null, namespace, false,
                 Arrays.asList(new Schema.Field("b", Schema.create(Schema.Type.INT))));
         Schema root = Schema.createRecord("ObjectBean", null, "probe908", false,
                 Arrays.asList(new Schema.Field("value", rec)));
+        return new AvroSchema(root);
+    }
 
-        final CountingClassLoader loader = new CountingClassLoader(
-                getClass().getClassLoader(), prefix);
+    // Reads `ObjectBean` using given schema and context ClassLoader
+    private void _read(AvroSchema schema, ClassLoader contextLoader) throws Exception
+    {
         final Thread thread = Thread.currentThread();
         final ClassLoader oldLoader = thread.getContextClassLoader();
-        thread.setContextClassLoader(loader);
+        thread.setContextClassLoader(contextLoader);
         try {
             // int 42 (zigzag: 84)
             ObjectBean result = MAPPER.readerFor(ObjectBean.class)
-                    .with(new AvroSchema(root))
+                    .with(schema)
                     .readValue(new byte[] { 84 });
             assertTrue(result.value instanceof Map<?,?>,
                     "Expected Map, got: "+result.value.getClass().getName());
@@ -125,7 +181,6 @@ public class NestedClassProbeLimits908Test extends AvroTestBase
         } finally {
             thread.setContextClassLoader(oldLoader);
         }
-        return loader.count.get();
     }
 
     private static String _longName(int len) {

@@ -74,6 +74,18 @@ final class AvroTypeIdClassNames
         return sb.toString();
     }
 
+    /**
+     * @return ClassLoader that determines outcome of {@link #resolve}, for the
+     *   current thread: context ClassLoader, if any (ClassLoader of this module
+     *   is used as fallback, but is always the same); otherwise that of this module.
+     */
+    static ClassLoader lookupClassLoader()
+    {
+        final ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
+        return (contextLoader != null) ? contextLoader
+                : AvroTypeIdClassNames.class.getClassLoader();
+    }
+
     // Same lookup order as databind has: context ClassLoader (if any) first
     private static boolean _classExists(String className)
     {
