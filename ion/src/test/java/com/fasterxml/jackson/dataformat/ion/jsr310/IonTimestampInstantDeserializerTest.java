@@ -263,8 +263,10 @@ public class IonTimestampInstantDeserializerTest {
     /**
      * Binary Ion timestamp with fractional seconds of 1E-10000000 (exponent is
      * encoded, not digits): like with decimal values above, should not take long.
+     * Timeout is more lenient as this is the only test to load the binary Ion reader
+     * (without fix, conversion takes multiple seconds).
      */
-    @Timeout(value = 100, unit = TimeUnit.MILLISECONDS)
+    @Timeout(value = 2000, unit = TimeUnit.MILLISECONDS)
     @Test
     public void testDeserializationAsIonTimestampLargeFractionScale() throws Exception {
         final byte[] doc = new byte[] {

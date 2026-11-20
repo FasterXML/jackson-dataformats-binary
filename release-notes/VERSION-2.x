@@ -35,7 +35,8 @@ Active maintainers:
   also skip nested-class probing for schema namespaces with more than 32 dots
  (contributed by @Dhanu-dynamic)
 #907: (ion) Avoid slow `BigDecimal` math converting Ion timestamps to `Instant`
-  (with `IonJavaTimeModule`) for fractional seconds with huge negative exponent
+  (with `IonJavaTimeModule`) for fractional seconds with huge negative exponent;
+  also: sub-nanosecond digits of pre-1970 timestamps are now truncated, not rounded
  (contributed by @Dhanu-dynamic)
 
 2.21.8 (17-Oct-2026)

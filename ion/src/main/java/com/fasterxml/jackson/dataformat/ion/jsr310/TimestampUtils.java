@@ -21,6 +21,10 @@ final class TimestampUtils {
         return Timestamp.forMillis(getFractionalMillis(instant), offsetMinutes);
     }
 
+    // `getZFractionalSecond()` is deprecated but must NOT be replaced with suggested
+    // `getZDecimalSecond()`: that adds whole seconds to the fraction, aligning scales
+    // (the slow operation avoided here)
+    @SuppressWarnings("deprecation")
     static Instant toInstant(Timestamp timestamp) {
         // Fractional seconds may have arbitrarily large scale (binary Ion encodes the
         // exponent), so avoid arithmetic that aligns it with whole seconds, like
