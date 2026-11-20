@@ -584,8 +584,9 @@ public class IonParser
     @Override
     public byte[] getBinaryValue(Base64Variant arg0) throws IOException
     {
-        if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT) {
-            switch (_reader.getType()) {
+        final IonType type = _reader.getType();
+        if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT && type != null) {
+            switch (type) {
             case BLOB:
             case CLOB: // looks like CLOBs are much like BLOBs...
                 return _bytesFromIonReader();
@@ -602,10 +603,14 @@ public class IonParser
         if (_system == null) {
             throw new IllegalStateException("This "+getClass().getSimpleName()+" instance cannot be used for IonValue mapping");
         }
+        // [dataformats-binary#911]: need a current value
+        if (_reader.getType() == null) {
+            throw _constructError("No current value to read as `IonValue`");
+        }
         _updateToken(JsonToken.VALUE_EMBEDDED_OBJECT);
         IonList l = _system.newEmptyList();
         IonWriter writer = _system.newWriter(l);
-        writer.writeValue(_reader);
+        _copyValue(writer);
         IonValue v = l.get(0);
         v.removeFromContainer();
 
@@ -622,10 +627,62 @@ public class IonParser
         return v;
     }
 
+    // [dataformats-binary#911]: copy the current value one container level at
+    // a time, instead of `IonWriter.writeValue(IonReader)` for the whole subtree,
+    // so that nesting depth is validated as with `nextToken()`
+    private void _copyValue(IonWriter writer) throws IOException {
+        final int startDepth = _reader.getDepth();
+        try {
+            _copyValue(writer, startDepth);
+        } catch (IOException | IonException | IllegalStateException | IllegalArgumentException e) {
+            // NOTE: reader may be left part-way into the value, so parser is not
+            // usable after failure. Not stepped back out, as that would require
+            // reading rest of the value: constraint violations need to fail fast.
+            if (e instanceof IOException) {
+                throw (IOException) e;
+            }
+            // Not only `IonException`: `ion-java` also throws `IllegalStateException`,
+            // `IllegalArgumentException` for invalid content. May also wrap a
+            // constraint violation.
+            _reportCorruptContent(e);
+        }
+    }
+
+    private void _copyValue(IonWriter writer, final int startDepth) throws IOException {
+        final int baseDepth = _parsingContext.getNestingDepth() - startDepth;
+        IonType type = _reader.getType();
+        while (true) {
+            if (type == null) { // end of container
+                _reader.stepOut();
+                writer.stepOut();
+                if (_reader.getDepth() == startDepth) {
+                    return;
+                }
+            } else if (IonType.isContainer(type) && !_reader.isNullValue()) {
+                // validate before stepping in, as `nextToken()` does
+                _streamReadConstraints.validateNestingDepth(baseDepth + _reader.getDepth() + 1);
+                if (writer.isInStruct()) {
+                    writer.setFieldNameSymbol(_reader.getFieldNameSymbol());
+                }
+                writer.setTypeAnnotationSymbols(_reader.getTypeAnnotationSymbols());
+                writer.stepIn(type);
+                _reader.stepIn();
+            } else {
+                writer.writeValue(_reader);
+                if (_reader.getDepth() == startDepth) {
+                    return;
+                }
+            }
+            type = _reader.next();
+        }
+    }
+
     @Override
     public Object getEmbeddedObject() throws IOException {
-        if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT) {
-            switch (_reader.getType()) {
+        // (no current value if already copied as `IonValue`: reader has moved past it)
+        final IonType type = _reader.getType();
+        if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT && type != null) {
+            switch (type) {
             case TIMESTAMP:
                 return _timestampFromIonReader();
             case BLOB:

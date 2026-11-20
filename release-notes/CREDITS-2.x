@@ -503,3 +503,5 @@ Dhanraj E (@Dhanu-dynamic)
 * Contributed #907: (ion) Avoid slow `BigDecimal` math converting Ion timestamps
   to `Instant`
  (2.21.9)
+* Contributed #911: (ion) Enforce `maxNestingDepth` when reading `IonValue`
+ (2.21.9)
