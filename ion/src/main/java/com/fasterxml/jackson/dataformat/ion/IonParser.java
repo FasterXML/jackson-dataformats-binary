@@ -622,7 +622,7 @@ public class IonParser
         return v;
     }
 
-    // [dataformats-binary#358]: copy the current value one container level at
+    // [dataformats-binary#911]: copy the current value one container level at
     // a time, instead of `IonWriter.writeValue(IonReader)` for the whole subtree,
     // so that nesting depth is validated as with `nextToken()`
     private void _copyValue(IonWriter writer) throws IOException {
