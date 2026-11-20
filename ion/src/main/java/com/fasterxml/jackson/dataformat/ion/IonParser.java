@@ -627,6 +627,26 @@ public class IonParser
     // so that nesting depth is validated as with `nextToken()`
     private void _copyValue(IonWriter writer) throws IOException {
         final int startDepth = _reader.getDepth();
+        try {
+            _copyValue(writer, startDepth);
+        } catch (StreamConstraintsException e) {
+            // Reader is part-way into the value, but parser context is not: step
+            // back out so that `nextToken()` continues from the value that follows
+            _stepOutTo(startDepth);
+            throw e;
+        } catch (IonException e) {
+            // as with other reader access, may also wrap a constraint violation
+            try {
+                _rethrowIfConstraintViolation(e);
+            } catch (StreamConstraintsException sce) {
+                _stepOutTo(startDepth);
+                throw sce;
+            }
+            _reportCorruptContent(e);
+        }
+    }
+
+    private void _copyValue(IonWriter writer, final int startDepth) throws IOException {
         final int baseDepth = _parsingContext.getNestingDepth() - startDepth;
         IonType type = _reader.getType();
         if (type == null) { // not positioned on a value
@@ -641,13 +661,14 @@ public class IonParser
                     return;
                 }
             } else if (IonType.isContainer(type) && !_reader.isNullValue()) {
+                // validate before stepping in, as `nextToken()` does
+                _streamReadConstraints.validateNestingDepth(baseDepth + _reader.getDepth() + 1);
                 if (writer.isInStruct()) {
                     writer.setFieldNameSymbol(_reader.getFieldNameSymbol());
                 }
                 writer.setTypeAnnotationSymbols(_reader.getTypeAnnotationSymbols());
                 writer.stepIn(type);
                 _reader.stepIn();
-                _streamReadConstraints.validateNestingDepth(baseDepth + _reader.getDepth());
             } else {
                 writer.writeValue(_reader);
                 if (_reader.getDepth() == startDepth) {
@@ -655,6 +676,18 @@ public class IonParser
                 }
             }
             type = _reader.next();
+        }
+    }
+
+    // Best-effort: content being skipped may itself be invalid, in which case
+    // the original failure is the one to report
+    private void _stepOutTo(int depth) {
+        try {
+            while (_reader.getDepth() > depth) {
+                _reader.stepOut();
+            }
+        } catch (IonException e) {
+            // ignore
         }
     }
 

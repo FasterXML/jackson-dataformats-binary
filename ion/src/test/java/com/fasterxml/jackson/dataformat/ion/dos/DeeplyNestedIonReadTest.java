@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.dataformat.ion.dos;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.jupiter.api.Test;
@@ -9,7 +10,9 @@ import com.amazon.ion.IonSystem;
 import com.amazon.ion.IonValue;
 import com.amazon.ion.system.IonSystemBuilder;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -20,6 +23,7 @@ import com.fasterxml.jackson.dataformat.ion.ionvalue.IonValueMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -128,6 +132,84 @@ public class DeeplyNestedIonReadTest
         assertNotNull(CONSTRAINED_VALUE_MAPPER.readValue(TEXT_MAPPER.writeValueAsString(
                 Collections.singletonMap("value", _nestedLists(MAX_DEPTH - 1))),
                 IonValueWrapper.class).value);
+    }
+
+    // After failure to copy too deeply nested value, parser must not be left
+    // part-way into that value: reading continues from the value after it
+    @Test
+    public void testParserUsableAfterIonValueDepthFailure() throws Exception {
+        _verifyUsableAfterFailure(TEXT_MAPPER.writeValueAsString(_nestedLists(OVER_LIMIT)) + " 123");
+        _verifyUsableAfterFailure(TEXT_MAPPER.writeValueAsString(_nestedStructs(OVER_LIMIT)) + " 123");
+        // and with value to skip (far) deeper than what parser's own stack could handle
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 100_000; ++i) {
+            sb.append('[');
+        }
+        for (int i = 0; i < 100_000; ++i) {
+            sb.append(']');
+        }
+        _verifyUsableAfterFailure(sb.append(" 123").toString());
+    }
+
+    @Test
+    public void testParserUsableAfterIonValuePropertyDepthFailure() throws Exception {
+        final String doc = "{value:" + TEXT_MAPPER.writeValueAsString(_nestedLists(MAX_DEPTH)) + ",b:123}";
+        try (JsonParser p = CONSTRAINED_VALUE_MAPPER.createParser(doc)) {
+            assertEquals(JsonToken.START_OBJECT, p.nextToken());
+            assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+            assertEquals(JsonToken.START_ARRAY, p.nextToken());
+            try {
+                p.getEmbeddedObject();
+                fail("Should not pass: nesting depth should exceed limit");
+            } catch (StreamConstraintsException e) {
+                _verifyException(e);
+            }
+            assertEquals(JsonToken.FIELD_NAME, p.nextToken());
+            assertEquals("b", p.currentName());
+            assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(123, p.getIntValue());
+            assertEquals(JsonToken.END_OBJECT, p.nextToken());
+            assertNull(p.nextToken());
+        }
+    }
+
+    private void _verifyUsableAfterFailure(String doc) throws Exception {
+        try (JsonParser p = CONSTRAINED_VALUE_MAPPER.createParser(doc)) {
+            assertNotNull(p.nextToken());
+            try {
+                p.getEmbeddedObject();
+                fail("Should not pass: nesting depth should exceed limit");
+            } catch (StreamConstraintsException e) {
+                _verifyException(e);
+            }
+            assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(123, p.getIntValue());
+            assertNull(p.nextToken());
+        }
+    }
+
+    // Problems from underlying `IonReader` during copy must be reported the
+    // same way as for `nextToken()`, not as unchecked `IonException`
+    @Test
+    public void testTruncatedContentReadAsIonValue() throws Exception {
+        for (String doc : new String[] { "[[1, 2", "{a:{b:[1,", "[1, [2, }" }) {
+            try {
+                CONSTRAINED_VALUE_MAPPER.readValue(doc, IonValue.class);
+                fail("Should not pass for: "+doc);
+            } catch (JsonParseException e) {
+                assertTrue(e.getMessage().contains("Corrupt content to decode"),
+                        "Unexpected message: "+e.getMessage());
+            }
+        }
+        // binary too
+        byte[] bin = BINARY_MAPPER.writeValueAsBytes(_nestedLists(MAX_DEPTH));
+        try {
+            CONSTRAINED_VALUE_MAPPER.readValue(Arrays.copyOf(bin, bin.length - 3), IonValue.class);
+            fail("Should not pass");
+        } catch (JsonParseException e) {
+            assertTrue(e.getMessage().contains("Corrupt content to decode"),
+                    "Unexpected message: "+e.getMessage());
+        }
     }
 
     @Test
