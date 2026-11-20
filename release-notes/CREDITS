@@ -87,3 +87,6 @@ Dhanraj E (@Dhanu-dynamic)
 * Contributed #906: (avro) Do not initialize class named by Avro schema when resolving
   its full name
  (3.1.9)
+* Contributed #907: (ion) Avoid slow `BigDecimal` math converting Ion timestamps
+  to `Instant`
+ (3.1.9)
