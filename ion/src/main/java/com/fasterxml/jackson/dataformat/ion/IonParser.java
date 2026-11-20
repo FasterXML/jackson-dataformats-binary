@@ -635,9 +635,9 @@ public class IonParser
         try {
             _copyValue(writer, startDepth);
         } catch (IOException | IonException | IllegalStateException | IllegalArgumentException e) {
-            // Reader may be part-way into the value, but parser context is not:
-            // step back out so that `nextToken()` continues from the value that follows
-            _stepOutTo(startDepth);
+            // NOTE: reader may be left part-way into the value, so parser is not
+            // usable after failure. Not stepped back out, as that would require
+            // reading rest of the value: constraint violations need to fail fast.
             if (e instanceof IOException) {
                 throw (IOException) e;
             }
@@ -674,19 +674,6 @@ public class IonParser
                 }
             }
             type = _reader.next();
-        }
-    }
-
-    // Steps reader out of value that `_copyValue()` failed part-way into.
-    // Best-effort: content being skipped may itself be invalid, in which case
-    // the original failure is the one to report
-    private void _stepOutTo(int depth) {
-        try {
-            while (_reader.getDepth() > depth) {
-                _reader.stepOut();
-            }
-        } catch (IonException | IllegalStateException | IllegalArgumentException e) {
-            // ignore
         }
     }
 
