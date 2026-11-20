@@ -260,6 +260,66 @@ public class DeeplyNestedIonReadTest
         }
     }
 
+    // Same for other failures during copy, where content after the value is
+    // still readable: here, invalid timestamp (month 15) within binary lists
+    @Test
+    public void testParserUsableAfterIonValueCorruptContentFailure() throws Exception {
+        final byte[] doc = new byte[] {
+                (byte) 0xE0, 0x01, 0x00, (byte) 0xEA, // Ion version marker
+                (byte) 0xB6, (byte) 0xB5, // list of 6 bytes, list of 5 bytes
+                0x64, (byte) 0x80, 0x0F, (byte) 0xD0, (byte) 0x8F, // timestamp: offset 0, year 2000, month 15
+                0x21, 0x7B // int 123
+        };
+        try (JsonParser p = CONSTRAINED_VALUE_MAPPER.createParser(doc)) {
+            assertEquals(JsonToken.START_ARRAY, p.nextToken());
+            try {
+                p.getEmbeddedObject();
+                fail("Should not pass");
+            } catch (JsonParseException e) {
+                assertTrue(e.getMessage().contains("Corrupt content to decode"),
+                        "Unexpected message: "+e.getMessage());
+            }
+            // and no second attempt at the same value
+            try {
+                p.getEmbeddedObject();
+                fail("Should not pass");
+            } catch (JsonParseException e) {
+                assertTrue(e.getMessage().contains("earlier attempt failed"),
+                        "Unexpected message: "+e.getMessage());
+            }
+            assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(123, p.getIntValue());
+            assertNull(p.nextToken());
+        }
+    }
+
+    // Without current value there is nothing to copy: should get regular
+    // parse exception, not `IndexOutOfBoundsException`
+    @Test
+    public void testReadAsIonValueWithoutCurrentValue() throws Exception {
+        try (JsonParser p = CONSTRAINED_VALUE_MAPPER.createParser("[1] 2")) {
+            _verifyNoCurrentValue(p); // before first token
+            assertEquals(JsonToken.START_ARRAY, p.nextToken());
+            assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(JsonToken.END_ARRAY, p.nextToken());
+            _verifyNoCurrentValue(p);
+            assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(ION_SYSTEM.newInt(2), p.getEmbeddedObject());
+            assertNull(p.nextToken());
+            _verifyNoCurrentValue(p); // at end of input
+        }
+    }
+
+    private void _verifyNoCurrentValue(JsonParser p) throws Exception {
+        try {
+            p.getEmbeddedObject();
+            fail("Should not pass");
+        } catch (JsonParseException e) {
+            assertTrue(e.getMessage().contains("No current value to read as `IonValue`"),
+                    "Unexpected message: "+e.getMessage());
+        }
+    }
+
     // Problems from underlying `IonReader` during copy must be reported the
     // same way as for `nextToken()`, not as unchecked `IonException`
     @Test

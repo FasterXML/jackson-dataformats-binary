@@ -40,7 +40,7 @@ Active maintainers:
   dropped (earlier, value was moved 1 nanosecond towards epoch)
  (contributed by @Dhanu-dynamic)
 #911: (ion) Enforce `maxNestingDepth` when reading `IonValue` (via
-  `IonParser.getIonValue()` / `getEmbeddedObject()`, `IonValueDeserializer`)
+  `IonParser.getEmbeddedObject()`, `IonValueDeserializer`)
  (contributed by @Dhanu-dynamic)
 
 2.21.8 (17-Oct-2026)

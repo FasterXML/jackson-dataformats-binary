@@ -144,6 +144,15 @@ public class IonParser
     protected JsonToken _valueToken;
 
     /**
+     * Depth to step {@link #_reader} back out to before reading the next token,
+     * or {@code -1} if none: set when copying current value as {@code IonValue}
+     * fails part-way into the value.
+     *
+     * @since 2.21.9
+     */
+    private int _pendingStepOutDepth = -1;
+
+    /**
      * Bit flag composed of bits that indicate which
      * {@link IonParser.Feature}s
      * are enabled.
@@ -602,6 +611,14 @@ public class IonParser
         if (_system == null) {
             throw new IllegalStateException("This "+getClass().getSimpleName()+" instance cannot be used for IonValue mapping");
         }
+        // [dataformats-binary#911]: need a current value, and one that an earlier
+        // failed attempt has not left reader part-way into
+        if (_pendingStepOutDepth >= 0) {
+            throw _constructError("Can not read current value as `IonValue`: earlier attempt failed");
+        }
+        if (_reader.getType() == null) {
+            throw _constructError("No current value to read as `IonValue`");
+        }
         _updateToken(JsonToken.VALUE_EMBEDDED_OBJECT);
         IonList l = _system.newEmptyList();
         IonWriter writer = _system.newWriter(l);
@@ -629,19 +646,17 @@ public class IonParser
         final int startDepth = _reader.getDepth();
         try {
             _copyValue(writer, startDepth);
-        } catch (StreamConstraintsException e) {
-            // Reader is part-way into the value, but parser context is not: step
-            // back out so that `nextToken()` continues from the value that follows
-            _stepOutTo(startDepth);
-            throw e;
-        } catch (IonException e) {
-            // as with other reader access, may also wrap a constraint violation
-            try {
-                _rethrowIfConstraintViolation(e);
-            } catch (StreamConstraintsException sce) {
-                _stepOutTo(startDepth);
-                throw sce;
+        } catch (IOException | RuntimeException e) {
+            // Reader may be part-way into the value, but parser context is not:
+            // `nextToken()` needs to step back out, to continue from the value
+            // that follows. Not done here as that requires skipping rest of the
+            // value, which is wasted effort unless caller does read further.
+            _pendingStepOutDepth = startDepth;
+            if (e instanceof IOException) {
+                throw (IOException) e;
             }
+            // Not only `IonException`: `ion-java` also throws `IllegalStateException`
+            // and such for invalid content. May also wrap a constraint violation.
             _reportCorruptContent(e);
         }
     }
@@ -649,10 +664,6 @@ public class IonParser
     private void _copyValue(IonWriter writer, final int startDepth) throws IOException {
         final int baseDepth = _parsingContext.getNestingDepth() - startDepth;
         IonType type = _reader.getType();
-        if (type == null) { // not positioned on a value
-            writer.writeValue(_reader);
-            return;
-        }
         while (true) {
             if (type == null) { // end of container
                 _reader.stepOut();
@@ -679,21 +690,22 @@ public class IonParser
         }
     }
 
-    // Best-effort: content being skipped may itself be invalid, in which case
-    // the original failure is the one to report
-    private void _stepOutTo(int depth) {
+    // Steps reader out of value that `_copyValue()` failed part-way into
+    private void _finishPendingStepOut() throws IOException {
+        final int depth = _pendingStepOutDepth;
+        _pendingStepOutDepth = -1;
         try {
             while (_reader.getDepth() > depth) {
                 _reader.stepOut();
             }
         } catch (IonException e) {
-            // ignore
+            _reportCorruptContent(e);
         }
     }
 
     @Override
     public Object getEmbeddedObject() throws IOException {
-        if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT) {
+        if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT && _pendingStepOutDepth < 0) {
             switch (_reader.getType()) {
             case TIMESTAMP:
                 return _timestampFromIonReader();
@@ -784,6 +796,11 @@ public class IonParser
         // special case: if we return field name, we know value type, return it:
         if (_currToken == JsonToken.FIELD_NAME) {
             return _updateToken(_valueToken);
+        }
+        // [dataformats-binary#911]: failed `IonValue` copy may have left reader
+        // inside the value
+        if (_pendingStepOutDepth >= 0) {
+            _finishPendingStepOut();
         }
         // also, when starting array/object, need to create new context
         if (_currToken == JsonToken.START_OBJECT) {
