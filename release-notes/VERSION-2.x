@@ -34,6 +34,9 @@ Active maintainers:
 #906: (avro) Do not initialize class named by Avro schema when resolving its full name;
   also skip nested-class probing for schema namespaces with more than 32 dots
  (contributed by @Dhanu-dynamic)
+#907: (ion) Avoid slow `BigDecimal` math converting Ion timestamps to `Instant`
+  (with `IonJavaTimeModule`) for fractional seconds with huge negative exponent
+ (contributed by @Dhanu-dynamic)
 
 2.21.8 (17-Oct-2026)
 
