@@ -279,14 +279,9 @@ public class DeeplyNestedIonReadTest
                 assertTrue(e.getMessage().contains("Corrupt content to decode"),
                         "Unexpected message: "+e.getMessage());
             }
-            // and no second attempt at the same value
-            try {
-                p.getEmbeddedObject();
-                fail("Should not pass");
-            } catch (JsonParseException e) {
-                assertTrue(e.getMessage().contains("earlier attempt failed"),
-                        "Unexpected message: "+e.getMessage());
-            }
+            // reader has moved past the value: nothing to read on second attempt
+            _verifyNoCurrentValue(p);
+            assertNull(p.getBinaryValue());
             assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
             assertEquals(123, p.getIntValue());
             assertNull(p.nextToken());
@@ -307,6 +302,15 @@ public class DeeplyNestedIonReadTest
             assertEquals(ION_SYSTEM.newInt(2), p.getEmbeddedObject());
             assertNull(p.nextToken());
             _verifyNoCurrentValue(p); // at end of input
+        }
+        // also after value has been copied: reader has moved past it
+        try (JsonParser p = CONSTRAINED_VALUE_MAPPER.createParser("[1, 2] 3")) {
+            assertEquals(JsonToken.START_ARRAY, p.nextToken());
+            assertEquals(ION_SYSTEM.singleValue("[1, 2]"), p.getEmbeddedObject());
+            _verifyNoCurrentValue(p);
+            assertNull(p.getBinaryValue());
+            assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(3, p.getIntValue());
         }
     }
 
