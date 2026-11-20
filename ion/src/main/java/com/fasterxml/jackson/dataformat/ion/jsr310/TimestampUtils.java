@@ -21,14 +21,30 @@ final class TimestampUtils {
         return Timestamp.forMillis(getFractionalMillis(instant), offsetMinutes);
     }
 
+    // `getZFractionalSecond()` is deprecated but must NOT be replaced with suggested
+    // `getZDecimalSecond()`: that adds whole seconds to the fraction, aligning scales
+    // (the slow operation avoided here)
+    @SuppressWarnings("deprecation")
     static Instant toInstant(Timestamp timestamp) {
-        final BigDecimal decSeconds = timestamp.getDecimalMillis().divide(ONE_THOUSAND);
-        final long epocSeconds = decSeconds.longValue();
-        final long nanoAdjustment = decSeconds.subtract(BigDecimal.valueOf(epocSeconds))
-                .multiply(ONE_BILLION)
-                .longValue();
+        // Fractional seconds may have arbitrarily large scale (binary Ion encodes the
+        // exponent), so avoid arithmetic that aligns it with whole seconds, like
+        // `getDecimalMillis()` does: it can take unbounded time, much like
+        // https://github.com/FasterXML/jackson-databind/issues/2141
+        final long epochSeconds = Math.floorDiv(timestamp.getMillis(), 1000L);
+        return Instant.ofEpochSecond(epochSeconds, fractionToNanos(timestamp.getZFractionalSecond()));
+    }
 
-        return Instant.ofEpochSecond(epocSeconds, nanoAdjustment);
+    private static long fractionToNanos(BigDecimal fraction) {
+        if (fraction == null) {
+            return 0L;
+        }
+        final BigDecimal nanos = fraction.scaleByPowerOfTen(9);
+        // No non-zero digits to the left of the decimal point (same check
+        // as in `fromFractionalSeconds()`): also protects against very large scale
+        if (nanos.precision() - nanos.scale() <= 0) {
+            return 0L;
+        }
+        return nanos.longValue();
     }
 
     static BigDecimal getFractionalSeconds(Instant instant) {
