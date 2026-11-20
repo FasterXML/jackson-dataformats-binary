@@ -36,7 +36,8 @@ Active maintainers:
  (contributed by @Dhanu-dynamic)
 #907: (ion) Avoid slow `BigDecimal` math converting Ion timestamps to `Instant`
   (with `IonJavaTimeModule`) for fractional seconds with huge negative exponent;
-  also: sub-nanosecond digits of pre-1970 timestamps are now truncated, not rounded
+  also: extra digits of pre-1970 timestamps with more than 9 fraction digits are now
+  dropped (earlier, value was moved 1 nanosecond towards epoch)
  (contributed by @Dhanu-dynamic)
 
 2.21.8 (17-Oct-2026)

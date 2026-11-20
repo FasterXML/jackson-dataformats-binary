@@ -258,6 +258,9 @@ public class IonTimestampInstantDeserializerTest {
                 READER.readValue("2020-01-01T00:00:00.1234567891Z"));
         assertEquals(Instant.ofEpochSecond(-1L, 500000000),
                 READER.readValue("1969-12-31T23:59:59.5Z"));
+        // Pre-1970 too: before [dataformats-binary#907] was moved 1 nanosecond towards epoch
+        assertEquals(Instant.ofEpochSecond(-1L, 123456789),
+                READER.readValue("1969-12-31T23:59:59.1234567891Z"));
     }
 
     /**
