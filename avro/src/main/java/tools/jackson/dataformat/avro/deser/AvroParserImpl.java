@@ -9,6 +9,7 @@ import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.core.io.IOContext;
 import tools.jackson.core.sym.PropertyNameMatcher;
 import tools.jackson.dataformat.avro.AvroParser;
+import tools.jackson.dataformat.avro.AvroReadFeature;
 import tools.jackson.dataformat.avro.AvroSchema;
 
 /**
@@ -27,6 +28,8 @@ public abstract class AvroParserImpl
      * @since 2.18.12
      */
     protected final static int LONGEST_NON_CHUNKED_BINARY_READ = 250_000;
+
+    private final static int SINGLE_OBJECT_HEADER_LENGTH = 10;
 
     /*
     /**********************************************************************
@@ -194,7 +197,10 @@ public abstract class AvroParserImpl
 
     @Override
     public final void _initSchema(AvroSchema schema) throws JacksonException {
-        _avroContext = new RootReader(this, schema.getReader());
+        Long singleObjectFingerprint = isEnabled(AvroReadFeature.READ_SINGLE_OBJECT_ENCODING)
+                ? schema.getWriterFingerprint()
+                : null;
+        _avroContext = new RootReader(this, schema.getReader(), singleObjectFingerprint);
     }
 
     /*
@@ -519,6 +525,27 @@ public abstract class AvroParserImpl
         }
         return -1;
         */
+    }
+
+    final void _readSingleObjectHeader(long expectedFingerprint) throws IOException
+    {
+        decodeFixed(SINGLE_OBJECT_HEADER_LENGTH);
+        final byte[] header = _binaryValue;
+        _binaryValue = null;
+        if ((header[0] != (byte) 0xC3) || (header[1] != (byte) 0x01)) {
+            _reportError(String.format(
+"Invalid Avro Single Object Encoding header: expected marker bytes 0xC3 0x01, got 0x%02X 0x%02X",
+                    header[0] & 0xFF, header[1] & 0xFF));
+        }
+        long fingerprint = 0L;
+        for (int i = SINGLE_OBJECT_HEADER_LENGTH - 1; i >= 2; --i) {
+            fingerprint = (fingerprint << 8) | (header[i] & 0xFFL);
+        }
+        if (fingerprint != expectedFingerprint) {
+            _reportError(String.format(
+"Avro Single Object Encoding schema fingerprint mismatch: value has 0x%016X, writer schema used for reading has 0x%016X",
+                    fingerprint, expectedFingerprint));
+        }
     }
 
     /*

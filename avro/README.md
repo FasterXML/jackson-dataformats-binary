@@ -101,6 +101,25 @@ Employee empl = mapper.reader(Employee.class)
    .readValue(avroData);
 ```
 
+### Reading Single Object Encoding
+
+Avro "Single Object Encoding" (written by Avro's `BinaryMessageEncoder`, and by `toByteBuffer()`
+of classes compiled from Avro schemas) adds a 10-byte header before each value: a 2-byte marker
+and the fingerprint of the writer schema. To read such values, enable
+`AvroReadFeature.READ_SINGLE_OBJECT_ENCODING` (since 3.4):
+
+```java
+byte[] message = ... ; // as written by BinaryMessageEncoder
+Employee empl = mapper.readerFor(Employee.class)
+   .with(schema)
+   .with(AvroReadFeature.READ_SINGLE_OBJECT_ENCODING)
+   .readValue(message);
+```
+
+The header of each value is verified: reading fails if its fingerprint is not that of the
+writer schema used for reading. The feature needs to be enabled explicitly because the header
+can not be reliably detected from content.
+
 ## Writing avro data
 
 Writing Avro-encoded data follows similar pattern:

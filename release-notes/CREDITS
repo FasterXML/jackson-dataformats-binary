@@ -131,3 +131,15 @@ Dhanraj E (@Dhanu-dynamic)
 * Contributed #907: (ion) Avoid slow `BigDecimal` math converting Ion timestamps
   to `Instant`
  (3.1.9)
+
+@birTiwana
+
+* Reported #343: (avro) Add `AvroReadFeature.READ_SINGLE_OBJECT_ENCODING` to decode Avro
+  "Single Object Encoding"
+ (3.4.0)
+
+Vineet Singh (@Vineet829)
+
+* Contributed #343: (avro) Add `AvroReadFeature.READ_SINGLE_OBJECT_ENCODING` to decode Avro
+  "Single Object Encoding"
+ (3.4.0)
