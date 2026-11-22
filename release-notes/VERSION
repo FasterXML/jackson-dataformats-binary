@@ -31,6 +31,9 @@ implementations)
   for nested classes, not `package.Outer$Inner`); probing now done by
   `AvroParser.getTypeId()`, using context ClassLoader first.
   Also: `AvroParser.getSchema()` now returns schema set, instead of `null`)
+#911: (ion) Enforce `maxNestingDepth` when reading `IonValue` (via
+  `IonParser.getEmbeddedObject()`, `IonValueDeserializer`)
+ (contributed by @Dhanu-dynamic)
 
 3.3.0 (07-Nov-2026)
 
@@ -350,6 +353,9 @@ No changes since 3.2.0
   for nested classes, not `package.Outer$Inner`); probing now done by
   `AvroParser.getTypeId()`, using context ClassLoader first.
   Also: `AvroParser.getSchema()` now returns schema set, instead of `null`)
+#911: (ion) Enforce `maxNestingDepth` when reading `IonValue` (via
+  `IonParser.getEmbeddedObject()`, `IonValueDeserializer`)
+ (contributed by @Dhanu-dynamic)
 
 3.1.8 (17-Oct-2026)
 
