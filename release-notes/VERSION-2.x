@@ -16,6 +16,9 @@ Active maintainers:
 
 2.21.9 (not yet released)
 
+#339: (avro) `SequenceWriter` with `AVRO_FILE_OUTPUT` wrote a new container per
+  root value, so the second record failed with "Invalid sync"
+ (contributed by @arimu1)
 #881: (protobuf) Known field after a skipped unknown field gets wrong wire type,
   state or token location
  (fix by @cowtowncoder, w/ Claude code)

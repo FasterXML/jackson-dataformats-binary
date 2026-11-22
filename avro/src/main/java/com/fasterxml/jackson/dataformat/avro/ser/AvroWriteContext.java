@@ -77,6 +77,12 @@ public abstract class AvroWriteContext
         throw new IllegalStateException("Can not be called on "+getClass().getName());
     }
 
+    /**
+     * Closes file-format output owned by this context, if any.
+     * Called when the generator is closed. Default does nothing.
+     */
+    public void closeDataFile() throws IOException { }
+
     /*
     /**********************************************************
     /* Accessors

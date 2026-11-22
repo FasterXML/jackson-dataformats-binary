@@ -380,6 +380,11 @@ public class AvroGenerator extends GeneratorBase
                             +e.getClass().getName()+"): "+e.getMessage(), e, this);
                 }
             }
+            // [dataformats-binary#339]: finish the Avro container only when the
+            // generator (and therefore SequenceWriter) is closed.
+            if (_rootContext != null) {
+                _rootContext.closeDataFile();
+            }
             if (_output != null) {
                 if (_ioContext.isResourceManaged() || isEnabled(JsonGenerator.Feature.AUTO_CLOSE_TARGET)) {
                     _output.close();
