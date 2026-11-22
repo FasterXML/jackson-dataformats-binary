@@ -204,6 +204,56 @@ public class DeeplyNestedIonReadTest
         }
     }
 
+    // After failed copy underlying reader may be part-way into the value:
+    // further reads must fail, instead of returning content from wrong position
+    @Test
+    public void testParserNotUsableAfterFailedIonValueCopy() throws Exception {
+        // nesting too deep
+        try (JsonParser p = CONSTRAINED_VALUE_MAPPER.createParser(
+                "[" + _nestedIon("[", "]", OVER_LIMIT) + ", 7] 8")) {
+            assertEquals(JsonToken.START_ARRAY, p.nextToken());
+            try {
+                p.getEmbeddedObject();
+                fail("Should not pass: nesting depth should exceed limit");
+            } catch (StreamConstraintsException e) {
+                _verifyException(e);
+            }
+            _verifyNotUsable(p);
+        }
+        // invalid content
+        try (JsonParser p = CONSTRAINED_VALUE_MAPPER.createParser("[[1, 2}] 3")) {
+            assertEquals(JsonToken.START_ARRAY, p.nextToken());
+            try {
+                p.getEmbeddedObject();
+                fail("Should not pass");
+            } catch (JsonParseException e) {
+                assertTrue(e.getMessage().contains("Corrupt content to decode"),
+                        "Unexpected message: "+e.getMessage());
+            }
+            _verifyNotUsable(p);
+        }
+    }
+
+    private void _verifyNotUsable(JsonParser p) throws Exception {
+        // more than once, for both
+        for (int i = 0; i < 3; ++i) {
+            try {
+                p.getEmbeddedObject();
+                fail("Should not pass");
+            } catch (JsonParseException e) {
+                assertTrue(e.getMessage().contains("Parser not usable"),
+                        "Unexpected message: "+e.getMessage());
+            }
+            try {
+                p.nextToken();
+                fail("Should not pass");
+            } catch (JsonParseException e) {
+                assertTrue(e.getMessage().contains("Parser not usable"),
+                        "Unexpected message: "+e.getMessage());
+            }
+        }
+    }
+
     // Without current value there is nothing to copy: should get regular
     // parse exception, not `IndexOutOfBoundsException`
     @Test
