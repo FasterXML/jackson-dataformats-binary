@@ -234,6 +234,35 @@ public class DeeplyNestedIonReadTest
         }
     }
 
+    // But if copy fails before reader moves (here: container that is itself at
+    // limit), parser state is unchanged: same as if copy had not been attempted
+    @Test
+    public void testParserStateUnchangedIfIonValueCopyFailsUpFront() throws Exception {
+        try (JsonParser p = CONSTRAINED_VALUE_MAPPER.createParser(_nestedIon("[", "]", MAX_DEPTH + 1))) {
+            // outer START_ARRAYs up to and including the innermost one, which is
+            // at depth MAX_DEPTH + 1 once stepped into
+            for (int i = 0; i <= MAX_DEPTH; ++i) {
+                assertEquals(JsonToken.START_ARRAY, p.nextToken());
+            }
+            for (int i = 0; i < 2; ++i) {
+                try {
+                    p.getEmbeddedObject();
+                    fail("Should not pass: nesting depth should exceed limit");
+                } catch (StreamConstraintsException e) {
+                    _verifyException(e);
+                }
+                assertEquals(JsonToken.START_ARRAY, p.currentToken());
+            }
+            // and `nextToken()` fails as it would have without the copy attempt
+            try {
+                p.nextToken();
+                fail("Should not pass: nesting depth should exceed limit");
+            } catch (StreamConstraintsException e) {
+                _verifyException(e);
+            }
+        }
+    }
+
     private void _verifyNotUsable(JsonParser p) throws Exception {
         // more than once, for both
         for (int i = 0; i < 3; ++i) {

@@ -616,10 +616,12 @@ public class IonParser
         if (_reader.getType() == null) {
             throw _constructError("No current value to read as `IonValue`");
         }
-        _updateToken(JsonToken.VALUE_EMBEDDED_OBJECT);
         IonList l = _system.newEmptyList();
         IonWriter writer = _system.newWriter(l);
         _copyValue(writer);
+        // [dataformats-binary#911]: only after successful copy, so that failure
+        // does not change current token
+        _updateToken(JsonToken.VALUE_EMBEDDED_OBJECT);
         IonValue v = l.get(0);
         v.removeFromContainer();
 
@@ -640,12 +642,9 @@ public class IonParser
     // a time, instead of `IonWriter.writeValue(IonReader)` for the whole subtree,
     // so that nesting depth is validated as with `nextToken()`
     private void _copyValue(IonWriter writer) throws IOException {
-        // Considered failed until completed: on failure reader may be left part-way
-        // into the value. It is not stepped back out, as that would require reading
-        // rest of the value, and constraint violations need to fail fast.
-        _ionValueCopyFailed = true;
         final int startDepth = _reader.getDepth();
         final int baseDepth = _parsingContext.getNestingDepth() - startDepth;
+        boolean completed = false;
         try {
             IonType type = _reader.getType();
             while (true) {
@@ -672,11 +671,20 @@ public class IonParser
                 }
                 type = _reader.next();
             }
+            completed = true;
         } catch (IonException e) {
             // as with `nextToken()`; may also wrap a constraint violation
             _reportCorruptContent(e);
+        } finally {
+            // On failure part-way into the value, reader is left there: not stepped
+            // back out, as that would require reading rest of the value, and
+            // constraint violations need to fail fast. Parser is not usable after
+            // that. But if reader is still on the value (failure before stepping
+            // in, or with scalar), parser state is as it was before the call.
+            if (!completed && _reader.getDepth() != startDepth) {
+                _ionValueCopyFailed = true;
+            }
         }
-        _ionValueCopyFailed = false;
     }
 
     private void _verifyIonValueCopyNotFailed() throws IOException {
