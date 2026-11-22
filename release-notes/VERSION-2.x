@@ -42,6 +42,8 @@ Active maintainers:
 #911: (ion) Enforce `maxNestingDepth` when reading `IonValue` (via
   `IonParser.getEmbeddedObject()`, `IonValueDeserializer`)
  (contributed by @Dhanu-dynamic)
+#912: (cbor) Do not read 32-bit lengths of 2^31 or more as indefinite length
+ (contributed by @Dhanu-dynamic)
 
 2.21.8 (17-Oct-2026)
 
