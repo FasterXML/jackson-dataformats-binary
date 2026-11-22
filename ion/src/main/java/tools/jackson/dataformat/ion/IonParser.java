@@ -73,6 +73,15 @@ public class IonParser
      */
     protected JsonToken _valueToken;
 
+    /**
+     * Marker set when copying current value as {@code IonValue} fails: underlying
+     * {@link IonReader} may then be left part-way into the value, out of sync with
+     * parser state, so parser must not be used for further reads.
+     *
+     * @since 3.1.9
+     */
+    private boolean _ionValueCopyFailed;
+
     /*
     /**********************************************************************
     /* Construction
@@ -498,8 +507,9 @@ public class IonParser
     @Override
     public byte[] getBinaryValue(Base64Variant arg0) throws JacksonException
     {
-        if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT) {
-            switch (_reader.getType()) {
+        final IonType type = _reader.getType();
+        if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT && type != null) {
+            switch (type) {
             case BLOB:
             case CLOB: // looks like CLOBs are much like BLOBs...
                 return _bytesFromIonReader();
@@ -516,14 +526,16 @@ public class IonParser
         if (_system == null) {
             throw new IllegalStateException("This "+getClass().getSimpleName()+" instance cannot be used for IonValue mapping");
         }
-        _updateToken(JsonToken.VALUE_EMBEDDED_OBJECT);
+        // [dataformats-binary#911]: need a current value
+        if (_reader.getType() == null) {
+            throw _constructReadException("No current value to read as `IonValue`");
+        }
         IonList l = _system.newEmptyList();
         IonWriter writer = _system.newWriter(l);
-        try {
-            writer.writeValue(_reader);
-        } catch (IOException e) {
-            throw _wrapIOFailure(e);
-        }
+        _copyValue(writer);
+        // [dataformats-binary#911]: only after successful copy, so that failure
+        // does not change current token
+        _updateToken(JsonToken.VALUE_EMBEDDED_OBJECT);
         IonValue v = l.get(0);
         v.removeFromContainer();
 
@@ -540,10 +552,71 @@ public class IonParser
         return v;
     }
 
+    // [dataformats-binary#911]: copy the current value one container level at
+    // a time, instead of `IonWriter.writeValue(IonReader)` for the whole subtree,
+    // so that nesting depth is validated as with `nextToken()`
+    private void _copyValue(IonWriter writer) throws JacksonException {
+        final int startDepth = _reader.getDepth();
+        final int baseDepth = _streamReadContext.getNestingDepth() - startDepth;
+        boolean completed = false;
+        try {
+            IonType type = _reader.getType();
+            while (true) {
+                if (type == null) { // end of container
+                    _reader.stepOut();
+                    writer.stepOut();
+                    if (_reader.getDepth() == startDepth) {
+                        break;
+                    }
+                } else if (IonType.isContainer(type) && !_reader.isNullValue()) {
+                    // validate before stepping in, as `nextToken()` does
+                    _streamReadConstraints.validateNestingDepth(baseDepth + _reader.getDepth() + 1);
+                    if (writer.isInStruct()) {
+                        writer.setFieldNameSymbol(_reader.getFieldNameSymbol());
+                    }
+                    writer.setTypeAnnotationSymbols(_reader.getTypeAnnotationSymbols());
+                    writer.stepIn(type);
+                    _reader.stepIn();
+                } else {
+                    writer.writeValue(_reader);
+                    if (_reader.getDepth() == startDepth) {
+                        break;
+                    }
+                }
+                type = _reader.next();
+            }
+            completed = true;
+        } catch (IonException e) {
+            // as with `nextToken()`; may also wrap a constraint violation
+            _reportCorruptContent(e);
+        } catch (IOException e) {
+            throw _wrapIOFailure(e);
+        } finally {
+            // On failure part-way into the value, reader is left there: not stepped
+            // back out, as that would require reading rest of the value, and
+            // constraint violations need to fail fast. Parser is not usable after
+            // that. But if reader is still on the value (failure before stepping
+            // in, or with scalar), parser state is as it was before the call.
+            if (!completed && _reader.getDepth() != startDepth) {
+                _ionValueCopyFailed = true;
+            }
+        }
+    }
+
+    private void _verifyIonValueCopyNotFailed() throws JacksonException {
+        if (_ionValueCopyFailed) {
+            throw _constructReadException(
+"Parser not usable: earlier attempt to read value as `IonValue` failed, leaving parser in undefined state");
+        }
+    }
+
     @Override
     public Object getEmbeddedObject() throws JacksonException {
-        if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT) {
-            switch (_reader.getType()) {
+        _verifyIonValueCopyNotFailed();
+        // (no current value if already copied as `IonValue`: reader has moved past it)
+        final IonType type = _reader.getType();
+        if (_currToken == JsonToken.VALUE_EMBEDDED_OBJECT && type != null) {
+            switch (type) {
             case TIMESTAMP:
                 return _timestampFromIonReader();
             case BLOB:
@@ -617,6 +690,8 @@ public class IonParser
     @Override
     public JsonToken nextToken() throws JacksonException
     {
+        // [dataformats-binary#911]: not after failed `IonValue` copy
+        _verifyIonValueCopyNotFailed();
         // special case: if we return field name, we know value type, return it:
         if (_currToken == JsonToken.PROPERTY_NAME) {
             return _updateToken(_valueToken);

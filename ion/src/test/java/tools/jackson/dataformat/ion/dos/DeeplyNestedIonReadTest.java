@@ -1,5 +1,7 @@
 package tools.jackson.dataformat.ion.dos;
 
+import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.jupiter.api.Test;
@@ -7,17 +9,25 @@ import org.junit.jupiter.api.Test;
 import com.amazon.ion.IonReader;
 import com.amazon.ion.IonSystem;
 import com.amazon.ion.IonValue;
+import com.amazon.ion.IonWriter;
+import com.amazon.ion.system.IonBinaryWriterBuilder;
 import com.amazon.ion.system.IonSystemBuilder;
 
 import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
 import tools.jackson.core.ObjectReadContext;
 import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.exc.StreamConstraintsException;
+import tools.jackson.core.exc.StreamReadException;
+import tools.jackson.databind.DatabindException;
 
 import tools.jackson.dataformat.ion.IonFactory;
 import tools.jackson.dataformat.ion.IonObjectMapper;
+import tools.jackson.dataformat.ion.ionvalue.IonValueModule;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -47,6 +57,16 @@ public class DeeplyNestedIonReadTest
             .build();
 
     private final IonObjectMapper CONSTRAINED_MAPPER = IonObjectMapper.builder(CONSTRAINED_FACTORY)
+            .build();
+
+    // For `IonValue` binding: needs `IonValueModule`
+    private final IonFactory CONSTRAINED_VALUE_FACTORY = IonFactory.builderForTextualWriters()
+            .ionSystem(ION_SYSTEM)
+            .streamReadConstraints(StreamReadConstraints.builder()
+                    .maxNestingDepth(MAX_DEPTH).build())
+            .build();
+    private final IonObjectMapper CONSTRAINED_VALUE_MAPPER = IonObjectMapper.builder(CONSTRAINED_VALUE_FACTORY)
+            .addModule(new IonValueModule())
             .build();
 
     @Test
@@ -99,6 +119,231 @@ public class DeeplyNestedIonReadTest
         _verifyTripsLimit(CONSTRAINED_FACTORY.createParser(ObjectReadContext.empty(), value));
     }
 
+    // [dataformats-binary#911]: `IonValue` binding copies the value with
+    // `getEmbeddedObject()`, not via `nextToken()`: must also be checked
+    @Test
+    public void testDeepNestingReadAsIonValue() throws Exception {
+        _verifyTripsLimit(TEXT_MAPPER.writeValueAsString(_nestedLists(OVER_LIMIT)), IonValue.class);
+        _verifyTripsLimit(TEXT_MAPPER.writeValueAsString(_nestedStructs(OVER_LIMIT)), IonValue.class);
+        _verifyTripsLimit(BINARY_MAPPER.writeValueAsBytes(_nestedLists(OVER_LIMIT)), IonValue.class);
+    }
+
+    @Test
+    public void testDeepNestingReadAsIonValueProperty() throws Exception {
+        // property value starts one level down, so it trips the limit one level sooner
+        _verifyTripsLimit(TEXT_MAPPER.writeValueAsString(
+                Collections.singletonMap("value", _nestedLists(MAX_DEPTH))), IonValueWrapper.class);
+        assertNotNull(CONSTRAINED_VALUE_MAPPER.readValue(TEXT_MAPPER.writeValueAsString(
+                Collections.singletonMap("value", _nestedLists(MAX_DEPTH - 1))),
+                IonValueWrapper.class).value);
+    }
+
+    // [dataformats-binary#911]: other container kinds, encodings
+    @Test
+    public void testDeepNestingReadAsIonValueOtherContainers() throws Exception {
+        _verifyTripsLimit(BINARY_MAPPER.writeValueAsBytes(_nestedStructs(OVER_LIMIT)), IonValue.class);
+        final String sexps = _nestedIon("(", ")", OVER_LIMIT);
+        _verifyTripsLimit(sexps, IonValue.class);
+        _verifyTripsLimit(_toBinary(sexps), IonValue.class);
+        final String annotated = _nestedIon("ann::{f:x::[y::(", ")]}", (OVER_LIMIT + 2) / 3);
+        _verifyTripsLimit(annotated, IonValue.class);
+        _verifyTripsLimit(_toBinary(annotated), IonValue.class);
+    }
+
+    // [dataformats-binary#911]: copy must retain field names, annotations,
+    // container types (including typed nulls), from textual and binary input
+    @Test
+    public void testIonValueCopyRetainsContent() throws Exception {
+        final String[] docs = new String[] {
+                // 9 levels, mixed containers, annotated at each
+                _nestedIon("ann::{f:x::[y::z::(", ")]}", 3),
+                _nestedIon("(", ")", MAX_DEPTH),
+                "a::{ l:b::[1, c::\"x\", null.list, d::null.struct, (e::f g::(h)), {}],"
+                    +" s:i::{ 'quoted name':j::[[], k::()], n:null.sexp, t:2020-01-01T }, last:m::3.5 }",
+                "[a::{b:c::[d::{e:f::(g::{h:i::[]})}]}, 2]"
+        };
+        for (String doc : docs) {
+            final IonValue exp = ION_SYSTEM.singleValue(doc);
+            assertEquals(exp, CONSTRAINED_VALUE_MAPPER.readValue(doc, IonValue.class));
+            assertEquals(exp, CONSTRAINED_VALUE_MAPPER.readValue(_toBinary(doc), IonValue.class));
+        }
+    }
+
+    // [dataformats-binary#911]: depth is counted from where parser starts, also
+    // when `IonReader` given is already positioned inside a container
+    @Test
+    public void testDeepNestingReadAsIonValueFromSteppedInReader() throws Exception {
+        final IonFactory f = CONSTRAINED_VALUE_FACTORY;
+        final String atLimit = _nestedIon("[", "]", MAX_DEPTH);
+
+        try (IonReader r = ION_SYSTEM.newReader("{a:{b:" + atLimit + ", c:123}}")) {
+            r.next();
+            r.stepIn();
+            r.next();
+            r.stepIn();
+            try (JsonParser p = f.createParser(ObjectReadContext.empty(), r)) {
+                assertEquals(JsonToken.START_ARRAY, p.nextToken());
+                assertEquals(ION_SYSTEM.singleValue(atLimit), p.getEmbeddedObject());
+                assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+                assertEquals(123, p.getIntValue());
+            }
+        }
+        try (IonReader r = ION_SYSTEM.newReader("{a:{b:[" + atLimit + "], c:123}}")) {
+            r.next();
+            r.stepIn();
+            r.next();
+            r.stepIn();
+            try (JsonParser p = f.createParser(ObjectReadContext.empty(), r)) {
+                assertEquals(JsonToken.START_ARRAY, p.nextToken());
+                try {
+                    p.getEmbeddedObject();
+                    fail("Should not pass: nesting depth should exceed limit");
+                } catch (StreamConstraintsException e) {
+                    _verifyException(e);
+                }
+            }
+        }
+    }
+
+    // After failed copy underlying reader may be part-way into the value:
+    // further reads must fail, instead of returning content from wrong position
+    @Test
+    public void testParserNotUsableAfterFailedIonValueCopy() throws Exception {
+        // nesting too deep
+        try (JsonParser p = CONSTRAINED_VALUE_MAPPER.createParser(
+                "[" + _nestedIon("[", "]", OVER_LIMIT) + ", 7] 8")) {
+            assertEquals(JsonToken.START_ARRAY, p.nextToken());
+            try {
+                p.getEmbeddedObject();
+                fail("Should not pass: nesting depth should exceed limit");
+            } catch (StreamConstraintsException e) {
+                _verifyException(e);
+            }
+            _verifyNotUsable(p);
+        }
+        // invalid content
+        try (JsonParser p = CONSTRAINED_VALUE_MAPPER.createParser("[[1, 2}] 3")) {
+            assertEquals(JsonToken.START_ARRAY, p.nextToken());
+            try {
+                p.getEmbeddedObject();
+                fail("Should not pass");
+            } catch (StreamReadException e) {
+                assertTrue(e.getMessage().contains("Corrupt content to decode"),
+                        "Unexpected message: "+e.getMessage());
+            }
+            _verifyNotUsable(p);
+        }
+    }
+
+    // But if copy fails before reader moves (here: container that is itself at
+    // limit), parser state is unchanged: same as if copy had not been attempted
+    @Test
+    public void testParserStateUnchangedIfIonValueCopyFailsUpFront() throws Exception {
+        try (JsonParser p = CONSTRAINED_VALUE_MAPPER.createParser(_nestedIon("[", "]", MAX_DEPTH + 1))) {
+            // outer START_ARRAYs up to and including the innermost one, which is
+            // at depth MAX_DEPTH + 1 once stepped into
+            for (int i = 0; i <= MAX_DEPTH; ++i) {
+                assertEquals(JsonToken.START_ARRAY, p.nextToken());
+            }
+            for (int i = 0; i < 2; ++i) {
+                try {
+                    p.getEmbeddedObject();
+                    fail("Should not pass: nesting depth should exceed limit");
+                } catch (StreamConstraintsException e) {
+                    _verifyException(e);
+                }
+                assertEquals(JsonToken.START_ARRAY, p.currentToken());
+            }
+            // and `nextToken()` fails as it would have without the copy attempt
+            try {
+                p.nextToken();
+                fail("Should not pass: nesting depth should exceed limit");
+            } catch (StreamConstraintsException e) {
+                _verifyException(e);
+            }
+        }
+    }
+
+    private void _verifyNotUsable(JsonParser p) throws Exception {
+        // more than once, for both
+        for (int i = 0; i < 3; ++i) {
+            try {
+                p.getEmbeddedObject();
+                fail("Should not pass");
+            } catch (StreamReadException e) {
+                assertTrue(e.getMessage().contains("Parser not usable"),
+                        "Unexpected message: "+e.getMessage());
+            }
+            try {
+                p.nextToken();
+                fail("Should not pass");
+            } catch (StreamReadException e) {
+                assertTrue(e.getMessage().contains("Parser not usable"),
+                        "Unexpected message: "+e.getMessage());
+            }
+        }
+    }
+
+    // Without current value there is nothing to copy: should get regular
+    // parse exception, not `IndexOutOfBoundsException`
+    @Test
+    public void testReadAsIonValueWithoutCurrentValue() throws Exception {
+        try (JsonParser p = CONSTRAINED_VALUE_MAPPER.createParser("[1] 2")) {
+            _verifyNoCurrentValue(p); // before first token
+            assertEquals(JsonToken.START_ARRAY, p.nextToken());
+            assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(JsonToken.END_ARRAY, p.nextToken());
+            _verifyNoCurrentValue(p);
+            assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(ION_SYSTEM.newInt(2), p.getEmbeddedObject());
+            assertNull(p.nextToken());
+            _verifyNoCurrentValue(p); // at end of input
+        }
+        // also after value has been copied: reader has moved past it
+        try (JsonParser p = CONSTRAINED_VALUE_MAPPER.createParser("[1, 2] 3")) {
+            assertEquals(JsonToken.START_ARRAY, p.nextToken());
+            assertEquals(ION_SYSTEM.singleValue("[1, 2]"), p.getEmbeddedObject());
+            _verifyNoCurrentValue(p);
+            assertNull(p.getBinaryValue());
+            assertEquals(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(3, p.getIntValue());
+        }
+    }
+
+    private void _verifyNoCurrentValue(JsonParser p) throws Exception {
+        try {
+            p.getEmbeddedObject();
+            fail("Should not pass");
+        } catch (StreamReadException e) {
+            assertTrue(e.getMessage().contains("No current value to read as `IonValue`"),
+                    "Unexpected message: "+e.getMessage());
+        }
+    }
+
+    // Problems from underlying `IonReader` during copy must be reported the
+    // same way as for `nextToken()`, not as unchecked `IonException`
+    @Test
+    public void testTruncatedContentReadAsIonValue() throws Exception {
+        for (String doc : new String[] { "[[1, 2", "{a:{b:[1,", "[1, [2, }" }) {
+            try {
+                CONSTRAINED_VALUE_MAPPER.readValue(doc, IonValue.class);
+                fail("Should not pass for: "+doc);
+            } catch (StreamReadException e) {
+                assertTrue(e.getMessage().contains("Corrupt content to decode"),
+                        "Unexpected message: "+e.getMessage());
+            }
+        }
+        // binary too
+        byte[] bin = BINARY_MAPPER.writeValueAsBytes(_nestedLists(MAX_DEPTH));
+        try {
+            CONSTRAINED_VALUE_MAPPER.readValue(Arrays.copyOf(bin, bin.length - 3), IonValue.class);
+            fail("Should not pass");
+        } catch (StreamReadException e) {
+            assertTrue(e.getMessage().contains("Corrupt content to decode"),
+                    "Unexpected message: "+e.getMessage());
+        }
+    }
+
     @Test
     public void testNestingAtLimitPasses() throws Exception {
         // Documents exactly at the limit must still be readable, textual or binary
@@ -109,6 +354,30 @@ public class DeeplyNestedIonReadTest
 
         assertNotNull(CONSTRAINED_MAPPER.readTree(
                 TEXT_MAPPER.writeValueAsString(_nestedLists(MAX_DEPTH))));
+
+        final String doc = TEXT_MAPPER.writeValueAsString(_nestedStructs(MAX_DEPTH));
+        assertEquals(ION_SYSTEM.singleValue(doc), CONSTRAINED_VALUE_MAPPER.readValue(doc, IonValue.class));
+    }
+
+    private void _verifyTripsLimit(Object doc, Class<?> type) throws Exception {
+        try {
+            if (doc instanceof byte[]) {
+                CONSTRAINED_VALUE_MAPPER.readValue((byte[]) doc, type);
+            } else {
+                CONSTRAINED_VALUE_MAPPER.readValue((String) doc, type);
+            }
+            fail("Should not pass: nesting depth should exceed limit");
+        } catch (StreamConstraintsException e) {
+            _verifyException(e);
+        } catch (DatabindException e) {
+            // wrapped by databind when thrown for a POJO property
+            assertTrue(e.getCause() instanceof StreamConstraintsException, "Unexpected exception: "+e);
+            _verifyException((StreamConstraintsException) e.getCause());
+        }
+    }
+
+    static class IonValueWrapper {
+        public IonValue value;
     }
 
     private void _verifyTripsLimit(String doc) throws Exception {
@@ -153,6 +422,27 @@ public class DeeplyNestedIonReadTest
 
     private void _drain(JsonParser p) throws Exception {
         while (p.nextToken() != null) { }
+    }
+
+    // Ion text with given open/close markers repeated, around a scalar
+    private String _nestedIon(String open, String close, int count) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < count; ++i) {
+            sb.append(open);
+        }
+        sb.append("42");
+        for (int i = 0; i < count; ++i) {
+            sb.append(close);
+        }
+        return sb.toString();
+    }
+
+    private byte[] _toBinary(String ionText) throws Exception {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (IonWriter w = IonBinaryWriterBuilder.standard().build(bytes)) {
+            ION_SYSTEM.singleValue(ionText).writeTo(w);
+        }
+        return bytes.toByteArray();
     }
 
     private Object _nestedLists(int depth) {
