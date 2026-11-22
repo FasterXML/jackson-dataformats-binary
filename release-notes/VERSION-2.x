@@ -34,6 +34,9 @@ Active maintainers:
   also: extra digits of pre-1970 timestamps with more than 9 fraction digits are now
   dropped (earlier, value was moved 1 nanosecond towards epoch)
  (contributed by @Dhanu-dynamic)
+#911: (ion) Enforce `maxNestingDepth` when reading `IonValue` (via
+  `IonParser.getEmbeddedObject()`, `IonValueDeserializer`)
+ (contributed by @Dhanu-dynamic)
 
 2.23.0 (07-Nov-2026)
 
@@ -224,6 +227,9 @@ No changes since 2.21
   (with `IonJavaTimeModule`) for fractional seconds with huge negative exponent;
   also: extra digits of pre-1970 timestamps with more than 9 fraction digits are now
   dropped (earlier, value was moved 1 nanosecond towards epoch)
+ (contributed by @Dhanu-dynamic)
+#911: (ion) Enforce `maxNestingDepth` when reading `IonValue` (via
+  `IonParser.getEmbeddedObject()`, `IonValueDeserializer`)
  (contributed by @Dhanu-dynamic)
 
 2.21.8 (17-Oct-2026)
