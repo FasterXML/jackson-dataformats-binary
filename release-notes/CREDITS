@@ -131,6 +131,11 @@ Dhanraj E (@Dhanu-dynamic)
 * Contributed #907: (ion) Avoid slow `BigDecimal` math converting Ion timestamps
   to `Instant`
  (3.1.9)
+* Contributed #911: (ion) Enforce `maxNestingDepth` when reading `IonValue`
+ (3.1.9)
+* Contributed #912: (cbor) Do not read 32-bit lengths of 2^31 or more as
+  indefinite length
+ (3.1.9)
 
 @birTiwana
 
