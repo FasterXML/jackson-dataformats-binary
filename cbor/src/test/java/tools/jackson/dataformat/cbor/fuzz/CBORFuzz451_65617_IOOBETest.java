@@ -27,7 +27,9 @@ public class CBORFuzz451_65617_IOOBETest extends CBORTestBase
                 p.nextToken();
                 fail("Should not reach here (invalid input)");
             } catch (StreamReadException e) {
-                verifyException(e, "Invalid length indicator");
+                // 32-bit length 0xFFD9D4FF is valid (unsigned) since [dataformats-binary#912],
+                // but there is not enough content to skip
+                verifyException(e, "Unexpected end-of-input");
             }
         }
     }
