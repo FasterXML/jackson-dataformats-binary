@@ -42,7 +42,9 @@ Active maintainers:
 #911: (ion) Enforce `maxNestingDepth` when reading `IonValue` (via
   `IonParser.getEmbeddedObject()`, `IonValueDeserializer`)
  (contributed by @Dhanu-dynamic)
-#912: (cbor) Do not read 32-bit lengths of 2^31 or more as indefinite length
+#912: (cbor) Do not read 32-bit lengths of 2^31 or more as indefinite length;
+  also reject Tag values of 2^31 or more (were read as negative), allow skipping
+  values with such 32-bit lengths
  (contributed by @Dhanu-dynamic)
 
 2.21.8 (17-Oct-2026)
