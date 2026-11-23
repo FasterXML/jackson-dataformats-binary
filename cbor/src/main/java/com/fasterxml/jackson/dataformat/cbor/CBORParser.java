@@ -653,6 +653,10 @@ public class CBORParser extends ParserMinimalBase
      * the most recently decoded value (whether completely, for
      * scalar values, or partially, for Objects/Arrays), if any.
      * If no tag was associated with it, -1 is returned.
+     *<p>
+     * NOTE: tag ids are unsigned, so ones above {@link Integer#MAX_VALUE}
+     * (up to {@code 2^32 - 2}) are returned as negative values: only -1
+     * means "no tag".
      *
      * @since 2.5
      */
@@ -664,6 +668,9 @@ public class CBORParser extends ParserMinimalBase
      * Method that can be used to access all tag ids associated with
      * the most recently decoded value (whether completely, for
      * scalar values, or partially, for Objects/Arrays), if any.
+     *<p>
+     * NOTE: as with {@link #getCurrentTag()}, tag ids above
+     * {@link Integer#MAX_VALUE} are included as negative values.
      *
      * @since 2.15
      */
@@ -3624,8 +3631,8 @@ expectedType);
     {
         if (llen < 0L) {
             throw _constructReadException(
-"Corrupt content: invalid length indicator (%d) encountered during skipping, current token: %s",
-llen, currentToken());
+"Corrupt content: invalid length indicator (%s) encountered during skipping, current token: %s",
+Long.toUnsignedString(llen), currentToken());
         }
         while (llen > MAX_INT_L) {
             _skipBytes((int) MAX_INT_L);

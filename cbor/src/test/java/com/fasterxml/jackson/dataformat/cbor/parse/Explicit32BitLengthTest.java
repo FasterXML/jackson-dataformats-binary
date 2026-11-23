@@ -109,6 +109,15 @@ public class Explicit32BitLengthTest extends CBORTestBase
         _verifyTag(bytes(0xDA, 0xFF, 0xFF, 0xFF, 0xFE, 0x01), -2);
     }
 
+    // Not consistent with 32-bit Tags, but behavior from before #912:
+    // 64-bit Tags of 2^64-2^31 and above (but below 2^64-1) are returned as negative
+    @Test
+    public void testLarge64BitTags() throws Exception
+    {
+        _verifyTag(bytes(0xDB, 0xFF, 0xFF, 0xFF, 0xFF, 0x80, 0, 0, 0, 0x01), Integer.MIN_VALUE);
+        _verifyTag(bytes(0xDB, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0x01), -2);
+    }
+
     @Test
     public void testInvalidTags() throws Exception
     {
@@ -116,7 +125,7 @@ public class Explicit32BitLengthTest extends CBORTestBase
         _verifyTagFails(bytes(0xDA, 0xFF, 0xFF, 0xFF, 0xFF, 0x01), "4294967295");
         _verifyTagFails(bytes(0xDB, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01),
                 "18446744073709551615");
-        // 64-bit Tags not fitting in `int` were (and are) rejected
+        // 64-bit Tags from 2^31 to 2^64-2^31-1 were (and are) rejected
         _verifyTagFails(bytes(0xDB, 0, 0, 0, 0, 0x80, 0, 0, 0, 0x01), "2147483648");
     }
 
@@ -153,6 +162,21 @@ public class Explicit32BitLengthTest extends CBORTestBase
             fail("Should not pass: token "+p.currentToken());
         } catch (StreamReadException e) {
             verifyException(e, "Invalid CBOR value token (first byte): 0x7c");
+        }
+    }
+
+    @Test
+    public void testSkipWithHuge64BitLength() throws Exception
+    {
+        // [<String with 64-bit length 2^64-1>, 1]: length reported as unsigned
+        try (CBORParser p = cborParser(F, bytes(0x82,
+                0x7B, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01))) {
+            assertToken(JsonToken.START_ARRAY, p.nextToken());
+            assertToken(JsonToken.VALUE_STRING, p.nextToken());
+            p.nextToken();
+            fail("Should not pass: token "+p.currentToken());
+        } catch (StreamReadException e) {
+            verifyException(e, "invalid length indicator (18446744073709551615)");
         }
     }
 
