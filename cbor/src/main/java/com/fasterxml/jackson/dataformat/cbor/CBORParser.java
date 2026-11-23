@@ -3615,7 +3615,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
 "Invalid chunked-length indicator within chunked-length value (type %d)",
 expectedType);
             default:
-                _invalidToken(_typeByte);
+                _invalidToken(ch);
             }
         }
     }
@@ -3670,11 +3670,12 @@ len, currentToken());
             return _decode16Bits();
         case 2:
             {
-                // Unsigned 32-bit value: must not let values above `Integer.MAX_VALUE`
-                // wrap to negative (and -1 would mean "no tag")
+                // Unsigned 32-bit value: ones above `Integer.MAX_VALUE` are returned
+                // as negative `int`s; but 0xFFFFFFFF (an invalid Tag) would be
+                // confused with -1, "no tag"
                 final int tag = _decode32Bits();
-                if (tag < 0) {
-                    throw _constructReadException("Illegal Tag value: %d", tag & 0xFFFFFFFFL);
+                if (tag == -1) {
+                    throw _constructReadException("Illegal Tag value: %d", 0xFFFFFFFFL);
                 }
                 return tag;
             }
@@ -3682,8 +3683,8 @@ len, currentToken());
             // 16-Jan-2014, tatu: Technically legal, but nothing defined, so let's
             //   only allow for cases where encoder is being wasteful...
             long l = _decode64Bits();
-            // Unsigned too: negative `long` means value of 2^63 or above
-            if (l < 0L || l > MAX_INT_L) {
+            // Unsigned too: -1 means 2^64-1 (an invalid Tag), not "no tag"
+            if (l < MIN_INT_L || l > MAX_INT_L || l == -1L) {
                 throw _constructReadException("Illegal Tag value: %s",
                         Long.toUnsignedString(l));
             }
@@ -3696,9 +3697,15 @@ len, currentToken());
     /**
      * Method used to decode explicit length of a variable-length value
      * (or, for indefinite/chunked, indicate that one is not known).
-     * Note that long (64-bit) length is only allowed if it fits in
-     * 32-bit signed int, for now; expectation being that longer values
-     * are always encoded as chunks.
+     * Note that 32-bit and 64-bit lengths are unsigned, and only allowed if
+     * they fit in 32-bit signed int, for now (expectation being that longer
+     * values are always encoded as chunks): larger ones are rejected, since
+     * negative return value means indefinite length.
+     *
+     * @param majorType CBOR major type of the value (only used for error messages)
+     * @param lowBits Low 5 bits of the type byte (additional information)
+     *
+     * @return Length of the value, or -1 for indefinite length
      */
     private final int _decodeExplicitLength(int majorType, int lowBits) throws IOException
     {

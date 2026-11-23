@@ -13,7 +13,8 @@ import static org.junit.jupiter.api.Assertions.*;
 // 32-bit (additional info 26) lengths are unsigned: values above
 // `Integer.MAX_VALUE` must be rejected (as with 64-bit lengths), not
 // wrap to negative and get handled as indefinite length.
-// Same for Tag values; but skipping such lengths is fine.
+// But skipping such lengths is fine. Tag values above `Integer.MAX_VALUE` are
+// returned as negative ints, except for 0xFFFFFFFF that would be -1 ("no tag").
 public class Explicit32BitLengthTest extends CBORTestBase
 {
     private final static long LEN_2_TO_31 = 0x80000000L;
@@ -100,23 +101,22 @@ public class Explicit32BitLengthTest extends CBORTestBase
     }
 
     @Test
-    public void testValid32BitTag() throws Exception
+    public void testValid32BitTags() throws Exception
     {
-        try (CBORParser p = cborParser(F, bytes(0xDA, 0x7F, 0xFF, 0xFF, 0xFF, 0x01))) {
-            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
-            assertEquals(Integer.MAX_VALUE, p.getCurrentTag());
-        }
+        _verifyTag(bytes(0xDA, 0x7F, 0xFF, 0xFF, 0xFF, 0x01), Integer.MAX_VALUE);
+        // Above `Integer.MAX_VALUE`: returned as negative
+        _verifyTag(bytes(0xDA, 0x80, 0, 0, 0, 0x01), Integer.MIN_VALUE);
+        _verifyTag(bytes(0xDA, 0xFF, 0xFF, 0xFF, 0xFE, 0x01), -2);
     }
 
     @Test
-    public void testTagTooBig() throws Exception
+    public void testInvalidTags() throws Exception
     {
-        // 32-bit: was read as -1 ("no tag") and Integer.MIN_VALUE
+        // Invalid Tags 2^32-1 and 2^64-1: were read as -1 ("no tag")
         _verifyTagFails(bytes(0xDA, 0xFF, 0xFF, 0xFF, 0xFF, 0x01), "4294967295");
-        _verifyTagFails(bytes(0xDA, 0x80, 0, 0, 0, 0x01), "2147483648");
-        // 64-bit: was read as -1 ("no tag")
         _verifyTagFails(bytes(0xDB, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01),
                 "18446744073709551615");
+        // 64-bit Tags not fitting in `int` were (and are) rejected
         _verifyTagFails(bytes(0xDB, 0, 0, 0, 0, 0x80, 0, 0, 0, 0x01), "2147483648");
     }
 
@@ -141,6 +141,21 @@ public class Explicit32BitLengthTest extends CBORTestBase
         _verifySkip(bytes(0x82, 0x7F, 0x7A, 0x80, 0, 0, 0), bytes(0xFF, 0x01), JsonToken.VALUE_STRING);
     }
 
+    @Test
+    public void testSkipChunkWithInvalidLength() throws Exception
+    {
+        // [<chunked String with chunk with reserved length indicator 28>, 1]:
+        // error must report the chunk byte, not the outer one (0x7F)
+        try (CBORParser p = cborParser(F, bytes(0x82, 0x7F, 0x7C, 'a', 0xFF, 0x01))) {
+            assertToken(JsonToken.START_ARRAY, p.nextToken());
+            assertToken(JsonToken.VALUE_STRING, p.nextToken());
+            p.nextToken();
+            fail("Should not pass: token "+p.currentToken());
+        } catch (StreamReadException e) {
+            verifyException(e, "Invalid CBOR value token (first byte): 0x7c");
+        }
+    }
+
     interface ParserAction {
         void run(CBORParser p) throws Exception;
     }
@@ -152,6 +167,15 @@ public class Explicit32BitLengthTest extends CBORTestBase
             fail("Should not pass: token "+p.currentToken());
         } catch (StreamReadException e) {
             verifyException(e, "Illegal length for "+expMsg);
+        }
+    }
+
+    private void _verifyTag(byte[] doc, int expTag) throws Exception
+    {
+        try (CBORParser p = cborParser(F, doc)) {
+            assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+            assertEquals(expTag, p.getCurrentTag());
+            assertEquals(1, p.getIntValue());
         }
     }
 
