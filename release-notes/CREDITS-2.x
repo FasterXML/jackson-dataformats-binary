@@ -527,3 +527,6 @@ Dhanraj E (@Dhanu-dynamic)
  (2.21.9)
 * Contributed #911: (ion) Enforce `maxNestingDepth` when reading `IonValue`
  (2.21.9)
+* Contributed #912: (cbor) Do not read 32-bit lengths of 2^31 or more as
+  indefinite length
+ (2.21.9)

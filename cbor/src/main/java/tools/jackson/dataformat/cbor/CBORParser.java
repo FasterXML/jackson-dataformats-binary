@@ -363,6 +363,10 @@ public class CBORParser extends ParserBase
      * the most recently decoded value (whether completely, for
      * scalar values, or partially, for Objects/Arrays), if any.
      * If no tag was associated with it, -1 is returned.
+     *<p>
+     * NOTE: tag ids are unsigned, so ones above {@link Integer#MAX_VALUE}
+     * (up to {@code 2^32 - 2}) are returned as negative values: only -1
+     * means "no tag".
      */
     public int getCurrentTag() {
         return _tagValues.getFirstTag();
@@ -372,6 +376,9 @@ public class CBORParser extends ParserBase
      * Method that can be used to access all tag ids associated with
      * the most recently decoded value (whether completely, for
      * scalar values, or partially, for Objects/Arrays), if any.
+     *<p>
+     * NOTE: as with {@link #getCurrentTag()}, tag ids above
+     * {@link Integer#MAX_VALUE} are included as negative values.
      *
      * @since 2.15
      */
@@ -677,7 +684,7 @@ public class CBORParser extends ParserBase
         case 4: // Array
             _stringRefs.push(stringrefNamespace);
             {
-                int len = _decodeExplicitLength(lowBits);
+                int len = _decodeExplicitLength(CBORConstants.MAJOR_TYPE_ARRAY, lowBits);
                 if (!_tagValues.isEmpty()) {
                     return _handleTaggedArray(_tagValues, len);
                 }
@@ -689,7 +696,7 @@ public class CBORParser extends ParserBase
             _stringRefs.push(stringrefNamespace);
             _updateToken(JsonToken.START_OBJECT);
             {
-                int len = _decodeExplicitLength(lowBits);
+                int len = _decodeExplicitLength(CBORConstants.MAJOR_TYPE_OBJECT, lowBits);
                 createChildObjectContext(len);
             }
             return _currToken;
@@ -1346,7 +1353,7 @@ public class CBORParser extends ParserBase
                     }
                 }
             } else {
-                nameLen = _decodeExplicitLength(lenMarker);
+                nameLen = _decodeExplicitLength(CBORConstants.MAJOR_TYPE_TEXT, lenMarker);
                 if (nameLen < 0) {
                     name = _decodeChunkedName();
                 } else {
@@ -1531,7 +1538,7 @@ public class CBORParser extends ParserBase
 
     private int _nextNameLong(PropertyNameMatcher matcher, int lenMarker) throws JacksonException
     {
-        final int actualLen = _decodeExplicitLength(lenMarker);
+        final int actualLen = _decodeExplicitLength(CBORConstants.MAJOR_TYPE_TEXT, lenMarker);
         String name;
         if (actualLen < 0) {
             // NOTE: `_decodeChunkedName()` enforces `maxNameLength` incrementally
@@ -1936,7 +1943,7 @@ public class CBORParser extends ParserBase
         }
 
         _tokenIncomplete = false;
-        int len = _decodeExplicitLength(_typeByte & 0x1F);
+        int len = _decodeExplicitLength(CBORConstants.MAJOR_TYPE_BYTES, _typeByte & 0x1F);
         if (!_stringRefs.empty()) {
             try {
                 out.write(_finishBytes(len));
@@ -2364,7 +2371,7 @@ public class CBORParser extends ParserBase
         // Either String or byte[]
         if (type != CBORConstants.MAJOR_TYPE_TEXT) {
             if (type == CBORConstants.MAJOR_TYPE_BYTES) {
-                _binaryValue = _finishBytes(_decodeExplicitLength(ch));
+                _binaryValue = _finishBytes(_decodeExplicitLength(CBORConstants.MAJOR_TYPE_BYTES, ch));
                 return;
             }
             // should never happen so
@@ -2372,7 +2379,7 @@ public class CBORParser extends ParserBase
         }
 
         // String value, decode
-        final int len = _decodeExplicitLength(ch);
+        final int len = _decodeExplicitLength(CBORConstants.MAJOR_TYPE_TEXT, ch);
 
         if (len <= 0) {
             if (len < 0) {
@@ -2410,7 +2417,7 @@ public class CBORParser extends ParserBase
         }
 
         // String value, decode
-        final int len = _decodeExplicitLength(ch);
+        final int len = _decodeExplicitLength(CBORConstants.MAJOR_TYPE_TEXT, ch);
         if (len <= 0) {
             if (len == 0) {
                 _textBuffer.resetWithEmpty();
@@ -3005,7 +3012,7 @@ public class CBORParser extends ParserBase
 "Mismatched chunk in chunked content: expected %d but encountered %d",
 CBORConstants.MAJOR_TYPE_BYTES, type);
             }
-            int len = _decodeExplicitLength(ch & 0x1F);
+            int len = _decodeExplicitLength(CBORConstants.MAJOR_TYPE_BYTES, ch & 0x1F);
             if (len < 0) {
                 throw _constructReadException("Illegal chunked-length indicator within chunked-length value (type %d)",
                         CBORConstants.MAJOR_TYPE_BYTES);
@@ -3131,7 +3138,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
                 }
             }
         } else {
-            nameLen = _decodeExplicitLength(lenMarker);
+            nameLen = _decodeExplicitLength(CBORConstants.MAJOR_TYPE_TEXT, lenMarker);
             if (nameLen < 0) {
                 name = _decodeChunkedName();
             } else {
@@ -3283,7 +3290,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
         } else if (type == CBORConstants.MAJOR_TYPE_BYTES) {
             // 08-Sep-2014, tatu: As per [Issue#5], there are codecs
             //   (f.ex. Perl module "CBOR::XS") that use Binary data...
-            final int blen = _decodeExplicitLength(ch & 0x1F);
+            final int blen = _decodeExplicitLength(CBORConstants.MAJOR_TYPE_BYTES, ch & 0x1F);
             // 24-Jul-2026, tatu: [dataformats-binary#725] Binary names bound by
             //    `maxNameLength` too: for chunked case incrementally
             final byte[] b;
@@ -3518,7 +3525,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
                 _finishTextToken(_typeByte);
             } else {
                 // For bytes: decode length then read (which may add to stringRefs)
-                int len = _decodeExplicitLength(_typeByte & 0x1F);
+                int len = _decodeExplicitLength(CBORConstants.MAJOR_TYPE_BYTES, _typeByte & 0x1F);
                 _finishBytes(len);
             }
             return;
@@ -3540,7 +3547,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
             _skipBytes(_decode16Bits());
             break;
         case 26:
-            _skipBytes(_decode32Bits());
+            _skipBytesL(_decode32Bits() & 0xFFFFFFFFL);
             break;
         case 27: // seriously?
             _skipBytesL(_decode64Bits());
@@ -3586,7 +3593,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
                 _skipBytes(_decode16Bits());
                 break;
             case 26:
-                _skipBytes(_decode32Bits());
+                _skipBytesL(_decode32Bits() & 0xFFFFFFFFL);
                 break;
             case 27: // seriously?
                 _skipBytesL(_decode64Bits());
@@ -3596,7 +3603,7 @@ CBORConstants.MAJOR_TYPE_BYTES, type);
 "Invalid chunked-length indicator within chunked-length value (type %d)",
 expectedType);
             default:
-                _invalidToken(_typeByte);
+                _invalidToken(ch);
             }
         }
     }
@@ -3605,8 +3612,8 @@ expectedType);
     {
         if (llen < 0L) {
             throw _constructReadException(
-"Corrupt content: invalid length indicator (%d) encountered during skipping, current token: %s",
-llen, currentToken());
+"Corrupt content: invalid length indicator (%s) encountered during skipping, current token: %s",
+Long.toUnsignedString(llen), currentToken());
         }
         while (llen > MAX_INT_L) {
             _skipBytes((int) MAX_INT_L);
@@ -3650,13 +3657,24 @@ len, currentToken());
         case 1:
             return _decode16Bits();
         case 2:
-            return _decode32Bits();
+            {
+                // Unsigned 32-bit value: ones above `Integer.MAX_VALUE` are returned
+                // as negative `int`s; but 0xFFFFFFFF (an invalid Tag) would be
+                // confused with -1, "no tag"
+                final int tag = _decode32Bits();
+                if (tag == -1) {
+                    throw _constructReadException("Illegal Tag value: %d", 0xFFFFFFFFL);
+                }
+                return tag;
+            }
         case 3:
             // 16-Jan-2014, tatu: Technically legal, but nothing defined, so let's
             //   only allow for cases where encoder is being wasteful...
             long l = _decode64Bits();
-            if (l < MIN_INT_L || l > MAX_INT_L) {
-                throw _constructReadException("Illegal Tag value: %d", l);
+            // Unsigned too: -1 means 2^64-1 (an invalid Tag), not "no tag"
+            if (l < MIN_INT_L || l > MAX_INT_L || l == -1L) {
+                throw _constructReadException("Illegal Tag value: %s",
+                        Long.toUnsignedString(l));
             }
             return (int) l;
         }
@@ -3667,11 +3685,17 @@ len, currentToken());
     /**
      * Method used to decode explicit length of a variable-length value
      * (or, for indefinite/chunked, indicate that one is not known).
-     * Note that long (64-bit) length is only allowed if it fits in
-     * 32-bit signed int, for now; expectation being that longer values
-     * are always encoded as chunks.
+     * Note that 32-bit and 64-bit lengths are unsigned, and only allowed if
+     * they fit in 32-bit signed int, for now (expectation being that longer
+     * values are always encoded as chunks): larger ones are rejected, since
+     * negative return value means indefinite length.
+     *
+     * @param majorType CBOR major type of the value (only used for error messages)
+     * @param lowBits Low 5 bits of the type byte (additional information)
+     *
+     * @return Length of the value, or -1 for indefinite length
      */
-    private final int _decodeExplicitLength(int lowBits) throws JacksonException
+    private final int _decodeExplicitLength(int majorType, int lowBits) throws JacksonException
     {
         // common case, indefinite length; relies on marker
         if (lowBits == 31) {
@@ -3686,17 +3710,42 @@ len, currentToken());
         case 1:
             return _decode16Bits();
         case 2:
-            return _decode32Bits();
+            {
+                // Unsigned 32-bit value: must not let lengths above `Integer.MAX_VALUE`
+                // wrap to negative, as callers take that to mean indefinite length
+                final int len = _decode32Bits();
+                if (len < 0) {
+                    throw _constructReadException("Illegal length for %s: %d",
+                            _majorTypeDesc(majorType), len & 0xFFFFFFFFL);
+                }
+                return len;
+            }
         case 3:
             long l = _decode64Bits();
             if (l < 0 || l > MAX_INT_L) {
-                throw _constructReadException("Illegal length for "+currentToken()+": "+l);
+                throw _constructReadException("Illegal length for %s: %s",
+                        _majorTypeDesc(majorType), Long.toUnsignedString(l));
             }
             return (int) l;
         }
         throw _constructReadException(
-                "Invalid 5-bit length indicator for `JsonToken.%s`: 0x%02X; only 0x00-0x17, 0x1F allowed",
-                currentToken(), lowBits);
+                "Invalid 5-bit length indicator for %s: 0x%02X; only 0x00-0x17, 0x1F allowed",
+                _majorTypeDesc(majorType), lowBits);
+    }
+
+    // Description of CBOR major type for error messages
+    private static String _majorTypeDesc(int majorType) {
+        switch (majorType) {
+        case CBORConstants.MAJOR_TYPE_BYTES:
+            return "CBOR Byte String";
+        case CBORConstants.MAJOR_TYPE_TEXT:
+            return "CBOR Text String";
+        case CBORConstants.MAJOR_TYPE_ARRAY:
+            return "CBOR Array";
+        case CBORConstants.MAJOR_TYPE_OBJECT:
+            return "CBOR Map";
+        }
+        return "CBOR major type "+majorType;
     }
 
     private int _decodeChunkLength(int expType) throws JacksonException
@@ -3714,7 +3763,7 @@ len, currentToken());
 "Mismatched chunk in chunked content: expected major type %d but encountered %d (byte 0x%02X)",
 expType, type, ch));
         }
-        int len = _decodeExplicitLength(ch & 0x1F);
+        int len = _decodeExplicitLength(expType, ch & 0x1F);
         if (len < 0) {
             throw _constructReadException(
 "Illegal chunked-length indicator within chunked-length value (major type %d)", expType);
