@@ -149,38 +149,23 @@ public abstract class AvroParserImpl
     @Override
     public JsonParser skipChildren() throws IOException
     {
-        if (_currToken != JsonToken.START_OBJECT
-            && _currToken != JsonToken.START_ARRAY) {
+        if (_currToken == null || !_currToken.isStructStart()) {
             return this;
         }
-        if (_currToken == JsonToken.START_ARRAY) {
-            _skipZeroLengthElements();
-        }
-        int open = 1;
-        while (true) {
-            JsonToken t = nextToken();
-            if (t == null) {
-                _handleEOF();
-                return this;
-            }
+        int open = 0;
+        for (JsonToken t = _currToken; t != null; t = nextToken()) {
             if (t.isStructStart()) {
                 ++open;
-                if (t == JsonToken.START_ARRAY) {
-                    _skipZeroLengthElements();
+                // Right after START_ARRAY, Array reader is the current context
+                if ((t == JsonToken.START_ARRAY) && (_avroContext instanceof ArrayReader)) {
+                    ((ArrayReader) _avroContext).skipZeroLengthElements();
                 }
-            } else if (t.isStructEnd()) {
-                if (--open == 0) {
-                    return this;
-                }
+            } else if (t.isStructEnd() && (--open == 0)) {
+                return this;
             }
         }
-    }
-
-    // Called right after START_ARRAY returned, when Array reader is the current context
-    private void _skipZeroLengthElements() throws IOException {
-        if (_avroContext instanceof ArrayReader) {
-            ((ArrayReader) _avroContext).skipZeroLengthElements();
-        }
+        _handleEOF();
+        return this;
     }
 
     @Override
