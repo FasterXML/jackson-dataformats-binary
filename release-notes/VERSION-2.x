@@ -14,7 +14,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.21.9 (not yet released)
+2.21.9 (24-Nov-2026)
 
 #881: (protobuf) Known field after a skipped unknown field gets wrong wire type,
   state or token location
