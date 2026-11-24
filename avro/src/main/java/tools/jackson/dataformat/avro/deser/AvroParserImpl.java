@@ -90,6 +90,39 @@ public abstract class AvroParserImpl
     }
 
     /**
+     * Overridden to skip Arrays with zero-length elements (like {@code null}s)
+     * without iterating over elements: their item count is not bounded by
+     * input length.
+     *
+     * @since 3.1.9
+     */
+    @Override
+    public JsonParser skipChildren() throws JacksonException
+    {
+        if (_currToken == null || !_currToken.isStructStart()) {
+            return this;
+        }
+        int open = 0;
+        for (JsonToken t = _currToken; t != null; t = nextToken()) {
+            if (t.isStructStart()) {
+                ++open;
+                // Right after START_ARRAY, Array reader is the current context
+                if ((t == JsonToken.START_ARRAY) && (_avroContext instanceof ArrayReader)) {
+                    try {
+                        ((ArrayReader) _avroContext).skipZeroLengthElements();
+                    } catch (IOException e) {
+                        throw _wrapIOFailure(e);
+                    }
+                }
+            } else if (t.isStructEnd() && (--open == 0)) {
+                return this;
+            }
+        }
+        _handleEOF();
+        return this;
+    }
+
+    /**
      * Skip to the end of the current structure (array/map/object); This is different
      * from {@link #skipMap()} and {@link #skipArray()} because it operates at the parser
      * level instead of at the decoder level and advances the parsing context in addition
