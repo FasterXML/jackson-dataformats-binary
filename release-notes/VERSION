@@ -310,7 +310,7 @@ No changes since 3.2.0
   method signatures
 #674: Smile parser does not update `StreamReadContext` index or entry count
 
-3.1.9 (not yet released)
+3.1.9 (24-Nov-2026)
 
 #868: (cbor) Wrong cached property name returned for names containing 0xFF bytes
  (fix by @pjfanning, w/ Claude code)
