@@ -41,7 +41,14 @@ public class AvroSchema implements FormatSchema
      */
     protected final AtomicReference<AvroStructureReader> _reader = new AtomicReference<>();
 
-    private final AtomicReference<Long> _writerFingerprint = new AtomicReference<>();
+    /**
+     * Lazily calculated fingerprint of the writer schema; only valid once
+     * {@link #_writerFingerprintSet} is {@code true}.
+     */
+    private long _writerFingerprint;
+
+    // Written after `_writerFingerprint` and read before it, to make it visible
+    private volatile boolean _writerFingerprintSet;
 
     /**
      * Outcomes of resolving type ids (as used by {@link AvroStructureReader}s of
@@ -182,12 +189,12 @@ r.getType().getName(), w.getFullName(), r.getFullName()));
      */
     public long getWriterFingerprint()
     {
-        Long fingerprint = _writerFingerprint.get();
-        if (fingerprint == null) {
-            fingerprint = SchemaNormalization.parsingFingerprint64(_fingerprintSchema());
-            _writerFingerprint.set(fingerprint);
+        // Racy but benign: concurrent calls would calculate the same value
+        if (!_writerFingerprintSet) {
+            _writerFingerprint = SchemaNormalization.parsingFingerprint64(_fingerprintSchema());
+            _writerFingerprintSet = true;
         }
-        return fingerprint;
+        return _writerFingerprint;
     }
 
     Schema _fingerprintSchema() {
@@ -365,7 +372,8 @@ r.getType().getName(), w.getFullName(), r.getFullName()));
 
         @Override
         public int hashCode() {
-            return super.hashCode() ^ _readerSchema.hashCode();
+            return super.hashCode() ^ _readerSchema.hashCode()
+                    ^ _originalWriterSchema.hashCode();
         }
 
         @Override

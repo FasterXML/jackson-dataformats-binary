@@ -27,6 +27,15 @@ public enum AvroReadFeature
      * fingerprint is not that of the writer schema used for reading
      * (see {@link AvroSchema#getWriterFingerprint()}).
      *<p>
+     * Note that the check is strict: schema used for reading (or, with
+     * {@link AvroSchema#withReaderSchema}, the writer schema given) must be the exact
+     * schema used for writing, as determined by its "Parsing Canonical Form", and
+     * not just a compatible one. For example, a schema generated with
+     * {@link AvroMapper#schemaFor} that differs from the writer schema in name or
+     * namespace of a named type will fail the check, even if the content itself could be
+     * decoded with it. Unlike Avro's {@code BinaryMessageDecoder} there is no
+     * lookup of alternate writer schemas by fingerprint.
+     *<p>
      * Disabled by default, since the header can not be reliably detected:
      * "raw" content may start with the same two bytes.
      *
