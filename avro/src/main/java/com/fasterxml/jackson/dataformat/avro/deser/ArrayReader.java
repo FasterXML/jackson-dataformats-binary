@@ -133,6 +133,8 @@ public abstract class ArrayReader extends AvroStructureReader
         // Elements of current block take no bytes, so only need to read
         // counts of following blocks (same input as when reading elements)
         while (_parser.decodeArrayNext() > 0L) { }
+        _index = 0;
+        _count = 0L;
         _state = STATE_END;
         return true;
     }
