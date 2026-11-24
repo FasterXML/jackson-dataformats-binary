@@ -139,6 +139,50 @@ public abstract class AvroParserImpl
         return name.equals(sstr.getValue());
     }
 
+    /**
+     * Overridden to skip Arrays with zero-length elements (like {@code null}s)
+     * without iterating over elements: their item count is not bounded by
+     * input length.
+     *
+     * @since 2.21.9
+     */
+    @Override
+    public JsonParser skipChildren() throws IOException
+    {
+        if (_currToken != JsonToken.START_OBJECT
+            && _currToken != JsonToken.START_ARRAY) {
+            return this;
+        }
+        if (_currToken == JsonToken.START_ARRAY) {
+            _skipZeroLengthElements();
+        }
+        int open = 1;
+        while (true) {
+            JsonToken t = nextToken();
+            if (t == null) {
+                _handleEOF();
+                return this;
+            }
+            if (t.isStructStart()) {
+                ++open;
+                if (t == JsonToken.START_ARRAY) {
+                    _skipZeroLengthElements();
+                }
+            } else if (t.isStructEnd()) {
+                if (--open == 0) {
+                    return this;
+                }
+            }
+        }
+    }
+
+    // Called right after START_ARRAY returned, when Array reader is the current context
+    private void _skipZeroLengthElements() throws IOException {
+        if (_avroContext instanceof ArrayReader) {
+            ((ArrayReader) _avroContext).skipZeroLengthElements();
+        }
+    }
+
     @Override
     public abstract String nextTextValue() throws IOException;
 

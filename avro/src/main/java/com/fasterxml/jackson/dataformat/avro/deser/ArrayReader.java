@@ -113,6 +113,30 @@ public abstract class ArrayReader extends AvroStructureReader
         return _currToken != JsonToken.START_ARRAY && _currToken != JsonToken.END_ARRAY ? _elementTypeId : super.getTypeId();
     }
 
+    /**
+     * Method called by {@link AvroParserImpl#skipChildren()} right after
+     * {@link JsonToken#START_ARRAY} has been returned: if elements are zero-length,
+     * skips all of them without returning a token for each: item count is not bounded
+     * by input length, as each block takes only a few bytes.
+     * After skipping, the next call to {@link #nextToken()} returns
+     * {@link JsonToken#END_ARRAY}.
+     *
+     * @return {@code true} if elements were skipped; {@code false} if not
+     *    (elements not zero-length, or no elements)
+     *
+     * @since 2.21.9
+     */
+    boolean skipZeroLengthElements() throws IOException {
+        if (!_zeroLengthElements || (_state != STATE_ELEMENTS)) {
+            return false;
+        }
+        // Elements of current block take no bytes, so only need to read
+        // counts of following blocks (same input as when reading elements)
+        while (_parser.decodeArrayNext() > 0L) { }
+        _state = STATE_END;
+        return true;
+    }
+
     /*
     /**********************************************************************
     /* Reader implementations for Avro arrays
