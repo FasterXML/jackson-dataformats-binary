@@ -31,6 +31,14 @@ class RootContext
      */
     private NonBSGenericDatumWriter<Object> _writer;
 
+    /**
+     * File-container writer kept open for every root value when
+     * {@link Feature#AVRO_FILE_OUTPUT} is enabled. Closed from
+     * {@link AvroGenerator#close()}, not after each root: {@code DataFileWriter.close()}
+     * closes the caller stream.
+     */
+    private DataFileWriter<Object> _dataFileWriter;
+
     public RootContext(AvroGenerator generator, Schema schema, BinaryEncoder encoder) {
         super(TYPE_ROOT, null, generator, schema, null);
         _encoder = encoder;
@@ -98,7 +106,6 @@ class RootContext
         _writer().write(null, _encoder);
     }
 
-    @SuppressWarnings("resource")
     @Override
     public void complete() throws IOException {
         final Object rootValue = _rootValue;
@@ -106,14 +113,11 @@ class RootContext
 
         // 21-Feb-2017, tatu: As per [dataformats-binary#15], need to ensure schema gets
         //   written, if using "File" format (not raw "rpc" one)
+        // [dataformats-binary#339]: one container for the whole sequence. create()
+        // once, then append() each root. Closing the writer here would close the
+        // caller stream and the next root would start a second file ("Invalid sync").
         if (_generator.isEnabled(Feature.AVRO_FILE_OUTPUT)) {
-            OutputStream outputStream = (OutputStream) _generator.getOutputTarget();
-            DatumWriter<Object> datumWriter = new NonBSGenericDatumWriter<>(_schema);
-            DataFileWriter<Object> dataFileWriter = new DataFileWriter<>(datumWriter);
-
-            dataFileWriter.create(_schema, outputStream);
-            dataFileWriter.append(rootValue);
-            dataFileWriter.close();
+            _appendFileValue(rootValue);
             return;
         }
         // 19-Jan-2017, tatu: Gets also called for root-level scalar, in which
@@ -122,6 +126,28 @@ class RootContext
             _writer().write(rootValue, _encoder);
         }
         _encoder.flush();
+    }
+
+    @Override
+    public void closeDataFile() throws IOException {
+        DataFileWriter<Object> dataFileWriter = _dataFileWriter;
+        if (dataFileWriter != null) {
+            _dataFileWriter = null;
+            dataFileWriter.close();
+        }
+    }
+
+    @SuppressWarnings("resource")
+    private void _appendFileValue(Object rootValue) throws IOException {
+        DataFileWriter<Object> dataFileWriter = _dataFileWriter;
+        if (dataFileWriter == null) {
+            OutputStream outputStream = (OutputStream) _generator.getOutputTarget();
+            DatumWriter<Object> datumWriter = new NonBSGenericDatumWriter<>(_schema);
+            dataFileWriter = new DataFileWriter<>(datumWriter);
+            dataFileWriter.create(_schema, outputStream);
+            _dataFileWriter = dataFileWriter;
+        }
+        dataFileWriter.append(rootValue);
     }
 
     @Override

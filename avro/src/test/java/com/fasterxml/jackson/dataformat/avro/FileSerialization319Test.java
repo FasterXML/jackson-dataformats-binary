@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.dataformat.avro.tofix;
+package com.fasterxml.jackson.dataformat.avro;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -10,19 +10,16 @@ import org.apache.avro.io.DatumReader;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.SequenceWriter;
-import com.fasterxml.jackson.dataformat.avro.*;
 import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
-import com.fasterxml.jackson.dataformat.avro.testutil.failure.JacksonTestFailureExpected;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-// For [dataformats-binary#319]: not 100% certain test is valid,
-// but there is need for work wrt File-backed Avro content
+// For [dataformats-binary#339]: file output via SequenceWriter is one Avro
+// container. Test originally added for #319.
 public class FileSerialization319Test extends AvroTestBase
 {
-    // [dataformats-binary#319]
-    @JacksonTestFailureExpected
+    // [dataformats-binary#339]
     @Test
     public void testFileSerialization() throws Exception
     {
@@ -64,8 +61,6 @@ public class FileSerialization319Test extends AvroTestBase
         assertNotNull(output);
         assertEquals(output.get("name").toString(), employee.name);
 
-        // This line currently throws the following exception:
-        // org.apache.avro.AvroRuntimeException: java.io.IOException: Invalid sync!
         output = dataFileReader.next();
         assertNotNull(output);
         assertEquals(output.get("name").toString(), employee.name);

@@ -508,3 +508,14 @@ Dhanraj E (@Dhanu-dynamic)
 * Contributed #912: (cbor) Do not read 32-bit lengths of 2^31 or more as
   indefinite length
  (2.21.9)
+
+Will Soto (@willsoto)
+
+* Reported #339: (avro) Invalid Avro file produced using `SequenceWriter`
+ (2.21.9)
+
+dev_Hakaze (@arimu1)
+
+* Contributed fix for #339: (avro) `AVRO_FILE_OUTPUT` with `SequenceWriter`
+  wrote a new container per root value
+ (2.21.9)
