@@ -229,6 +229,10 @@ No changes since 2.21
   also allow skipping values with such 32-bit lengths (outside stringref namespaces),
   reject invalid Tag values 2^32-1 and 2^64-1 (were read as -1, "no tag")
  (contributed by @Dhanu-dynamic)
+#915: (avro) `AvroParser.skipChildren()` iterates over all elements of an Array
+  with zero-length elements (`null`, zero-length `fixed`), whose item count is not
+  bounded by input length
+ (fix by @cowtowncoder, w/ Claude code)
 
 2.21.8 (17-Oct-2026)
 
