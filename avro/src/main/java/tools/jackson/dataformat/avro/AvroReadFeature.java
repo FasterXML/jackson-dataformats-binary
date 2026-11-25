@@ -16,7 +16,32 @@ public enum AvroReadFeature
      *<p>
      * Enabled by default to preserve the existing behavior.
      */
-    AVRO_BUFFERING(true)
+    AVRO_BUFFERING(true),
+
+    /**
+     * Feature that tells parser that each root-level value is in Avro "Single Object
+     * Encoding" (as written by {@code BinaryMessageEncoder} of Apache Avro lib):
+     * preceded by a header of 2-byte marker ({@code 0xC3 0x01}) and 8-byte
+     * fingerprint of the writer schema. Parser fails with
+     * {@link tools.jackson.core.exc.StreamReadException} if the marker is wrong, or the
+     * fingerprint is not that of the writer schema used for reading
+     * (see {@link AvroSchema#getWriterFingerprint()}).
+     *<p>
+     * Note that the check is strict: schema used for reading (or, with
+     * {@link AvroSchema#withReaderSchema}, the writer schema given) must be the exact
+     * schema used for writing, as determined by its "Parsing Canonical Form", and
+     * not just a compatible one. For example, a schema generated with
+     * {@link AvroMapper#schemaFor} that differs from the writer schema in name or
+     * namespace of a named type will fail the check, even if the content itself could be
+     * decoded with it. Unlike Avro's {@code BinaryMessageDecoder} there is no
+     * lookup of alternate writer schemas by fingerprint.
+     *<p>
+     * Disabled by default, since the header can not be reliably detected:
+     * "raw" content may start with the same two bytes.
+     *
+     * @since 3.4
+     */
+    READ_SINGLE_OBJECT_ENCODING(false)
     ;
 
     private final boolean _defaultState;

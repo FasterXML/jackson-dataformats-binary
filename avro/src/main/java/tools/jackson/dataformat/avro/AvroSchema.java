@@ -11,6 +11,7 @@ import org.apache.avro.Schema;
 import org.apache.avro.SchemaCompatibility;
 import org.apache.avro.SchemaCompatibility.SchemaCompatibilityType;
 import org.apache.avro.SchemaCompatibility.SchemaPairCompatibility;
+import org.apache.avro.SchemaNormalization;
 
 import tools.jackson.core.FormatSchema;
 import tools.jackson.core.JsonParser;
@@ -39,6 +40,15 @@ public class AvroSchema implements FormatSchema
      * Lazily instantiated value reader for this schema.
      */
     protected final AtomicReference<AvroStructureReader> _reader = new AtomicReference<>();
+
+    /**
+     * Lazily calculated fingerprint of the writer schema; only valid once
+     * {@link #_writerFingerprintSet} is {@code true}.
+     */
+    private long _writerFingerprint;
+
+    // Written after `_writerFingerprint` and read before it, to make it visible
+    private volatile boolean _writerFingerprintSet;
 
     /**
      * Outcomes of resolving type ids (as used by {@link AvroStructureReader}s of
@@ -119,7 +129,7 @@ r.getType().getName(), w.getFullName(), r.getFullName()));
             throw DatabindException.from((JsonParser) null, String.format("Incompatible writer/reader schemas: %s",
                     comp.getDescription()));
         }
-        return Resolving.create(w, r);
+        return Resolving.create(w, r, _fingerprintSchema());
     }
 
     private boolean _schemaNamesEqual(Schema w, Schema r)
@@ -157,7 +167,7 @@ r.getType().getName(), w.getFullName(), r.getFullName()));
             return this;
         }
         w = Schema.applyAliases(w, r);
-        return Resolving.create(w, r);
+        return Resolving.create(w, r, _fingerprintSchema());
     }
 
     @Override
@@ -169,6 +179,27 @@ r.getType().getName(), w.getFullName(), r.getFullName()));
      * Accessor for "writer schema" contained in this instance.
      */
     public Schema getAvroSchema() { return _writerSchema; }
+
+    /**
+     * Accessor for the 64-bit ("CRC-64-AVRO") fingerprint of the writer schema: the one
+     * that the header of Avro "Single Object Encoding" contains. With a reader schema,
+     * it is that of the writer schema as given (without aliases of the reader schema).
+     *
+     * @since 3.4
+     */
+    public long getWriterFingerprint()
+    {
+        // Racy but benign: concurrent calls would calculate the same value
+        if (!_writerFingerprintSet) {
+            _writerFingerprint = SchemaNormalization.parsingFingerprint64(_fingerprintSchema());
+            _writerFingerprintSet = true;
+        }
+        return _writerFingerprint;
+    }
+
+    Schema _fingerprintSchema() {
+        return _writerSchema;
+    }
 
     /*
     /**********************************************************************
@@ -305,14 +336,22 @@ r.getType().getName(), w.getFullName(), r.getFullName()));
     {
         private final Schema _readerSchema;
 
-        public Resolving(Schema writer, Schema reader)
+        private final Schema _originalWriterSchema;
+
+        public Resolving(Schema writer, Schema reader, Schema originalWriter)
         {
             super(writer);
             _readerSchema = reader;
+            _originalWriterSchema = originalWriter;
         }
 
-        public static Resolving create(Schema writer, Schema reader) {
-            return new Resolving(writer, reader);
+        public static Resolving create(Schema writer, Schema reader, Schema originalWriter) {
+            return new Resolving(writer, reader, originalWriter);
+        }
+
+        @Override
+        Schema _fingerprintSchema() {
+            return _originalWriterSchema;
         }
 
         @Override
@@ -333,7 +372,8 @@ r.getType().getName(), w.getFullName(), r.getFullName()));
 
         @Override
         public int hashCode() {
-            return super.hashCode() ^ _readerSchema.hashCode();
+            return super.hashCode() ^ _readerSchema.hashCode()
+                    ^ _originalWriterSchema.hashCode();
         }
 
         @Override
@@ -342,7 +382,8 @@ r.getType().getName(), w.getFullName(), r.getFullName()));
             if ((o == null) || o.getClass() != getClass()) return false;
             Resolving other = (Resolving) o;
             return _writerSchema.equals(other._writerSchema)
-                    && _readerSchema.equals(other._readerSchema);
+                    && _readerSchema.equals(other._readerSchema)
+                    && _originalWriterSchema.equals(other._originalWriterSchema);
         }
     }
 }
